@@ -107,7 +107,7 @@ resource "hcloud_server" "db_replica" {
 # Getrennte Datenträger für die Datenbank, damit ein Server-Neuaufbau die Daten nicht berührt.
 resource "hcloud_volume" "db_primary" {
   name      = "db-nbg1-data"
-  size      = 100
+  size      = var.db_volume_size
   server_id = hcloud_server.db_primary.id
   format    = "ext4"
   labels    = local.labels
@@ -115,7 +115,7 @@ resource "hcloud_volume" "db_primary" {
 
 resource "hcloud_volume" "db_replica" {
   name      = "db-fsn1-data"
-  size      = 100
+  size      = var.db_volume_size
   server_id = hcloud_server.db_replica.id
   format    = "ext4"
   labels    = local.labels
