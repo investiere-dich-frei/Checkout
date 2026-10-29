@@ -192,8 +192,13 @@ if ((use_s3)); then
     AWS_ACCESS_KEY_ID=$S3_KEY AWS_SECRET_ACCESS_KEY=$S3_SECRET AWS_DEFAULT_REGION=${S3_REGION:-eu-central-1} \
       aws --endpoint-url "https://$S3_ENDPOINT:${S3_PORT:-443}" --no-verify-ssl s3api "$@" 2>/dev/null
   }
-  read -r key version < <(aws_s3 list-object-versions --bucket "$S3_BUCKET" --prefix pgbackrest/backup/ \
-    --query 'Versions[0].[Key,VersionId]' --output text)
+  listing=$(aws_s3 list-object-versions --bucket "$S3_BUCKET" --prefix pgbackrest/backup/ \
+    --query 'Versions[0].[Key,VersionId]' --output text) || true
+  read -r key version <<<"$listing" || true
+  if [[ -z "${key:-}" || -z "${version:-}" || "$key" == None ]]; then
+    echo "FEHLER: keine Sicherungsdatei mit Version in Backup B gefunden" >&2
+    exit 1
+  fi
   if aws_s3 delete-object --bucket "$S3_BUCKET" --key "$key" --version-id "$version" >/dev/null; then
     echo "FEHLER: $key ließ sich trotz Object Lock löschen" >&2
     failed=1

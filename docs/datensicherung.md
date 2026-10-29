@@ -25,7 +25,7 @@ Zwei voneinander unabhängige Sicherungen, bei zwei Anbietern, an zwei Standorte
 ## Prüfung
 
 - **Bei jeder Änderung (CI)**: Generalprobe `infra/backup/probe/run.sh`.
-  - Sie baut beide Ziele nach: einen SFTP-Server für A und MinIO mit Object Lock für B.
+  - Sie baut beide Ziele nach: einen SFTP-Server für A und ein S3-Gateway mit Object Lock für B.
   - Sie sichert eine Datenbank mit Testrechnungen und legt danach weitere Rechnungen an, die nur im WAL-Archiv stehen.
   - Dann wirft sie den Server weg und stellt aus A und aus B getrennt wieder her.
   - Geprüft wird, dass alle Rechnungen da sind, dass die Nummern keine Lücke haben und dass die Audit-Kette identisch mit dem Original ist.
