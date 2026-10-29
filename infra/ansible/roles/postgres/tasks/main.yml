@@ -19,4 +19,8 @@
     mode: "0644"
   when: pg_role == "primary"
 
-# Streaming-Replikation nach FSN1 wird in Phase 0, Schritt "Replikat", ergänzt.
+- name: Datenbank auf eigenem Datenträger
+  ansible.builtin.import_tasks: volume.yml
+
+- name: Streaming-Replikation nach FSN1
+  ansible.builtin.import_tasks: replikation.yml

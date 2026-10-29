@@ -1,0 +1,78 @@
+# Streaming-Replikation db-nbg1 (primary) → db-fsn1 (replica) über das private Netz.
+# Das private Hetzner-Netz wird von den Cloud-Firewalls nicht gefiltert; PostgreSQL lauscht
+# deshalb nur auf localhost und der privaten Adresse, pg_hba lässt nur das Replikat zu.
+
+# acl: damit Ansible Module als Nutzer postgres ausführen kann.
+- name: psycopg2 und acl
+  ansible.builtin.apt:
+    name: [python3-psycopg2, acl]
+
+- name: Primary – auf privater Adresse lauschen, Replikationsslot-Grenze
+  ansible.builtin.copy:
+    dest: /etc/postgresql/17/main/conf.d/replikation.conf
+    content: |
+      # Von Ansible verwaltet (roles/postgres/tasks/replikation.yml), nicht von Hand ändern.
+      listen_addresses = 'localhost,{{ private_ip }}'
+      # Ein steckengebliebener Slot darf die Platte nicht füllen.
+      max_slot_wal_keep_size = 10GB
+    mode: "0644"
+  when: pg_role == "primary"
+  register: pg_repl_conf
+
+- name: Primary – Zugang nur für das Replikat
+  ansible.builtin.lineinfile:
+    path: /etc/postgresql/17/main/pg_hba.conf
+    line: "hostssl replication replicator {{ hostvars['db-fsn1'].private_ip }}/32 scram-sha-256"
+  when: pg_role == "primary"
+  register: pg_repl_hba
+
+- name: Primary – neu starten, damit listen_addresses greift
+  ansible.builtin.service:
+    name: postgresql@17-main
+    state: restarted
+  when: pg_role == "primary" and (pg_repl_conf.changed or pg_repl_hba.changed)
+
+- name: Primary – Replikationsnutzer
+  community.postgresql.postgresql_user:
+    name: replicator
+    password: "{{ pg_replication_password }}"
+    role_attr_flags: REPLICATION,LOGIN
+  become_user: postgres
+  no_log: true
+  when: pg_role == "primary"
+
+- name: Replikat – schon eingerichtet?
+  ansible.builtin.stat:
+    path: /var/lib/postgresql/17/main/standby.signal
+  register: pg_standby
+  when: pg_role == "replica"
+
+- name: Replikat – Grundkopie vom Primary ziehen
+  when: pg_role == "replica" and not pg_standby.stat.exists
+  block:
+    - name: PostgreSQL anhalten
+      ansible.builtin.service:
+        name: postgresql@17-main
+        state: stopped
+
+    - name: Leeres Datenverzeichnis zur Seite legen (bleibt erhalten)
+      ansible.builtin.command: mv /var/lib/postgresql/17/main /var/lib/postgresql/17/main.vor-replikat
+      args:
+        creates: /var/lib/postgresql/17/main.vor-replikat
+
+    - name: pg_basebackup mit Replikationsslot
+      ansible.builtin.command: >-
+        pg_basebackup -h {{ hostvars['db-nbg1'].private_ip }} -U replicator
+        -D /var/lib/postgresql/17/main -X stream -R -C -S {{ inventory_hostname | replace('-', '_') }}
+        --checkpoint=fast
+      environment:
+        PGPASSWORD: "{{ pg_replication_password }}"
+        PGSSLMODE: require
+      become_user: postgres
+      no_log: true
+      changed_when: true
+
+    - name: PostgreSQL als Replikat starten
+      ansible.builtin.service:
+        name: postgresql@17-main
+        state: started

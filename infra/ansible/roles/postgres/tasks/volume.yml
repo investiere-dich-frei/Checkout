@@ -1,0 +1,84 @@
+# Das Hetzner-Volume (von Terraform angelegt und mit ext4 formatiert) wird unter
+# /var/lib/postgresql eingehängt. So überlebt die Datenbank einen Neuaufbau des Servers.
+# Beim ersten Lauf werden die vorhandenen Daten auf das Volume kopiert; das alte
+# Verzeichnis bleibt als /var/lib/postgresql.vor-volume liegen und wird nicht gelöscht.
+
+- name: rsync für den Umzug
+  ansible.builtin.apt:
+    name: rsync
+
+- name: Volume suchen
+  ansible.builtin.find:
+    paths: /dev/disk/by-id
+    patterns: "scsi-0HC_Volume_*"
+    file_type: link
+  register: pg_volume
+
+- name: Genau ein Volume erwartet
+  ansible.builtin.assert:
+    that: pg_volume.files | length == 1
+    fail_msg: "Erwartet genau ein Hetzner-Volume, gefunden: {{ pg_volume.files | map(attribute='path') | list }}"
+
+- name: Volume schon eingehängt?
+  ansible.builtin.command: findmnt --noheadings --output SOURCE /var/lib/postgresql
+  register: pg_mounted
+  changed_when: false
+  failed_when: false
+
+- name: Daten auf das Volume umziehen
+  when: pg_mounted.rc != 0
+  block:
+    - name: PostgreSQL anhalten
+      ansible.builtin.service:
+        name: postgresql@17-main
+        state: stopped
+
+    - name: Volume vorübergehend einhängen
+      ansible.posix.mount:
+        path: /mnt/pg-volume
+        src: "{{ pg_volume.files[0].path }}"
+        fstype: ext4
+        state: ephemeral
+
+    - name: Daten kopieren
+      ansible.builtin.command: rsync -aHAX /var/lib/postgresql/ /mnt/pg-volume/
+      changed_when: true
+
+    - name: Vorübergehendes Einhängen lösen
+      ansible.posix.mount:
+        path: /mnt/pg-volume
+        state: unmounted
+
+    - name: Altes Verzeichnis zur Seite legen (bleibt erhalten)
+      ansible.builtin.command: mv /var/lib/postgresql /var/lib/postgresql.vor-volume
+      args:
+        creates: /var/lib/postgresql.vor-volume
+
+    - name: Leerer Einhängepunkt
+      ansible.builtin.file:
+        path: /var/lib/postgresql
+        state: directory
+        owner: postgres
+        group: postgres
+        mode: "0755"
+
+- name: Volume dauerhaft einhängen
+  ansible.posix.mount:
+    path: /var/lib/postgresql
+    src: "{{ pg_volume.files[0].path }}"
+    fstype: ext4
+    opts: discard,nofail,defaults
+    state: mounted
+
+- name: Datenverzeichnis vorhanden?
+  ansible.builtin.stat:
+    path: /var/lib/postgresql/17/main/PG_VERSION
+  register: pg_datadir
+
+# Fehlt das Datenverzeichnis (abgebrochener Replikat-Aufbau), legt replikation.yml es neu an
+# und startet PostgreSQL dann selbst.
+- name: PostgreSQL läuft
+  ansible.builtin.service:
+    name: postgresql@17-main
+    state: started
+  when: pg_datadir.stat.exists

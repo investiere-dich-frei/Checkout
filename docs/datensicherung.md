@@ -46,6 +46,16 @@ Zwei voneinander unabhängige Sicherungen, bei zwei Anbietern, an zwei Standorte
 - Eigenheiten der Storage Box: SFTP schreibt nur unterhalb von `/home` (daher `/home/pgbackrest`),
   und pgBackRest handelt den ECDSA-Host-Key aus, nicht ED25519 (Fingerabdruck in `group_vars/db/backup.yml`).
 
+## Datenträger und Replikat
+
+- Auf beiden Datenbank-Servern liegt `/var/lib/postgresql` auf einem eigenen Hetzner-Volume (50 GB).
+  Ein Neuaufbau des Servers lässt die Daten unberührt.
+- db-fsn1 ist ein Streaming-Replikat von db-nbg1 über das private Netz (Slot `db_fsn1`,
+  Nutzer `replicator`, Passwort in SOPS). `max_slot_wal_keep_size = 10GB` verhindert, dass ein
+  ausgefallenes Replikat die Platte des Primary füllt.
+- Eingerichtet am 29.10.2026: Replikat streamt (async), Testzeile kam sofort in Falkenstein an.
+  Die alten Verzeichnisse `/var/lib/postgresql.vor-volume` (beide) und `17/main.vor-replikat` (db-fsn1) liegen noch daneben.
+
 ## Offen
 
 - Backup A (Storage Box) ist eingerichtet. Geheimnisse liegen SOPS-verschlüsselt in
