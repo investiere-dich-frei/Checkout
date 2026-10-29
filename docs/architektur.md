@@ -40,6 +40,8 @@ Unveränderbarkeit, lückenlose Nummern und Audit-Trail sind in PostgreSQL selbs
   - Bestellung mit Verweis auf die zugestimmten Rechtstexte;
   - Vertriebsperson der Bestellung;
   - Zeitpunkt des Widerrufsverzichts.
+- `order_installments`: Zahlplan einer Bestellung, eine Zeile je Fälligkeit. Betrag und Datum sind festgeschrieben, nur Status und Zahlungsverweis ändern sich.
+- Bestellpositionen speichern Netto, Steuer, Brutto, Satz, Hinweistext und die angewendete Steuerregel samt Version; sie sind danach unveränderbar.
 - `payments`: Zahlungen je Anbieter, eindeutig über die Referenz des Anbieters.
 - `invoice_number_series`, `invoices`, `invoice_items`: Rechnungen, siehe [Verfahrensdokumentation](gobd/verfahrensdokumentation.md).
 - `audit_log`: Protokoll aller Änderungen an den Tabellen oben, nur anhängend, mit Hash-Kette.

@@ -10,6 +10,7 @@
     "test": "node --import tsx --test --test-concurrency=1 test/*.test.ts"
   },
   "dependencies": {
+    "@idf/core": "workspace:*",
     "pg": "^8.23.1"
   },
   "devDependencies": {
