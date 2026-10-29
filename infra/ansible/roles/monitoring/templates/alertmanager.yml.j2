@@ -1,14 +1,4 @@
 # {{ ansible_managed }}
-{% set mail_ready = alert_smtp_host != 'TODO' and alert_smtp_password is defined %}
-{% if mail_ready %}
-global:
-  smtp_smarthost: "{{ alert_smtp_host }}:{{ alert_smtp_port }}"
-  smtp_from: "{{ alert_smtp_from }}"
-  smtp_auth_username: "{{ alert_smtp_user }}"
-  smtp_auth_password: "{{ alert_smtp_password }}"
-  smtp_require_tls: true
-{% endif %}
-
 route:
   receiver: email
   group_by: [alertname]
@@ -17,10 +7,11 @@ route:
 
 receivers:
   - name: email
-{% if mail_ready %}
-    email_configs:
-      - to: "{{ alert_email_to }}"
+{% if alert_mail_ready %}
+    # Versand über den Dienst alert-mail (Microsoft Graph), siehe infra/monitoring/alert-mail.
+    webhook_configs:
+      - url: http://alert-mail:8080/
         send_resolved: true
 {% else %}
-    # Noch kein Postfach hinterlegt: Alarme erscheinen nur in Alertmanager und Grafana.
+    # Noch keine App-Registrierung für Microsoft Graph: Alarme erscheinen nur in Alertmanager und Grafana.
 {% endif %}

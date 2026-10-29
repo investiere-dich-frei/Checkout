@@ -1,6 +1,6 @@
-# Alarm-E-Mails (keine Geheimnisse; Passwörter in secrets.sops.yml daneben).
+# Alarm-E-Mails über Microsoft 365 (Microsoft Graph, App-Registrierung „IDF Überwachung“).
+# Tenant-ID, Client-ID und Client-Secret liegen in secrets.sops.yml daneben
+# (graph_tenant_id, graph_client_id, graph_client_secret).
 alert_email_to: christian@investieredichfrei.de
-alert_smtp_from: service@investieredichfrei.de
-alert_smtp_host: TODO
-alert_smtp_port: 587
-alert_smtp_user: service@investieredichfrei.de
+alert_email_from: service@investieredichfrei.de
+alert_mail_ready: "{{ graph_client_secret is defined }}"

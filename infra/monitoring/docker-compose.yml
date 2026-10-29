@@ -18,6 +18,13 @@ services:
     ports: ["127.0.0.1:9093:9093"]
     restart: unless-stopped
 
+  # Versendet Alarme per Microsoft Graph (nur mit Profil „mail“, sobald die App-Registrierung steht).
+  alert-mail:
+    build: ./alert-mail
+    env_file: /etc/idf/alert-mail.env
+    profiles: [mail]
+    restart: unless-stopped
+
   grafana:
     image: grafana/grafana:12.1.1
     environment:

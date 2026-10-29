@@ -10,14 +10,14 @@
     path: "{{ item }}"
     state: directory
     mode: "0750"
-  loop: [/opt/idf-monitoring, /etc/idf]
+  loop: [/opt/idf-monitoring, /opt/idf-monitoring/alert-mail, /etc/idf]
 
 - name: Compose-Datei und Prometheus-Regeln
   ansible.builtin.copy:
     src: "../../../monitoring/{{ item }}"
     dest: "/opt/idf-monitoring/{{ item }}"
     mode: "0644"
-  loop: [docker-compose.yml, prometheus.yml, alerts.yml]
+  loop: [docker-compose.yml, prometheus.yml, alerts.yml, alert-mail/alert_mail.py, alert-mail/Dockerfile]
   notify: monitoring neu starten
 
 - name: Alertmanager (E-Mail-Versand)
@@ -32,11 +32,26 @@
   ansible.builtin.copy:
     dest: /etc/idf/grafana_admin
     content: "{{ grafana_admin_password }}"
-    mode: "0644"
+    owner: "472"  # Nutzer grafana im Container
+    mode: "0400"
   no_log: true
 
+- name: Zugang für den Mailversand (Microsoft Graph)
+  ansible.builtin.copy:
+    dest: /etc/idf/alert-mail.env
+    content: |
+      GRAPH_TENANT_ID={{ graph_tenant_id }}
+      GRAPH_CLIENT_ID={{ graph_client_id }}
+      GRAPH_CLIENT_SECRET={{ graph_client_secret }}
+      ALERT_FROM={{ alert_email_from }}
+      ALERT_TO={{ alert_email_to }}
+    mode: "0600"
+  no_log: true
+  when: alert_mail_ready | bool
+  notify: monitoring neu starten
+
 - name: Dienste starten
-  ansible.builtin.command: docker-compose up -d --remove-orphans
+  ansible.builtin.command: "docker-compose {{ '--profile mail' if alert_mail_ready | bool else '' }} up -d --build --remove-orphans"
   args:
     chdir: /opt/idf-monitoring
   register: compose_up
