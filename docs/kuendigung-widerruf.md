@@ -40,3 +40,20 @@ select received_at, kind, full_name, contract_reference from app.contract_notice
   - Bei einem Fehler folgt ein neuer Versuch nach 1, 2, 4 … Minuten, höchstens stündlich.
   - Gesendete E-Mails liegen zusätzlich im Ordner „Gesendet“ des Absender-Postfachs.
 - Umgebung: `GRAPH_TENANT_ID`, `GRAPH_CLIENT_ID`, `GRAPH_CLIENT_SECRET` (dieselbe Entra-App wie die Alarm-Mails) und `MAIL_FROM`.
+
+## Bestellbestätigung und Rechnungsmail
+
+- Mit jeder Bestellung geht eine Bestätigung in den Postausgang, in derselben Transaktion:
+  - Leistung, Gesamtbetrag, Steuerhinweis und Zahlplan;
+  - Link zur Bestellseite zum Bezahlen;
+  - Bestätigung des vorzeitigen Leistungsbeginns (§ 356 Abs. 5 BGB), falls erklärt;
+  - Widerrufsbelehrung und AGB im Wortlaut der zugestimmten Fassung (dauerhafter Datenträger, § 312f BGB).
+- Mit jeder gebuchten Zahlung geht die Rechnung per E-Mail raus, genau einmal. Das PDF hängt sich an, sobald es erzeugt ist.
+- `PUBLIC_BASE_URL` setzt die Adresse für Links in E-Mails (z. B. `https://kasse.investieredichfrei.de`).
+
+## USt-IdNr.-Prüfung (VIES)
+
+- Gibt ein Unternehmen aus einem anderen EU-Land eine USt-IdNr. an, prüft der Checkout sie beim VIES-System der EU.
+- Gültig: Reverse Charge, ohne Umsatzsteuer. Die Abfrage steht mit Abfragenummer in `app.vat_id_checks`.
+- Ungültig: Hinweis im Formular; ohne USt-IdNr. wird Umsatzsteuer berechnet.
+- VIES nicht erreichbar: Bestellung mit Umsatzsteuer, die Abfrage wird trotzdem festgehalten.

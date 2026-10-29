@@ -9,7 +9,8 @@
     "./stripe": "./src/stripe.ts",
     "./paypal": "./src/paypal.ts",
     "./notices": "./src/notices.ts",
-    "./mail-outbox": "./src/mail-outbox.ts"
+    "./mail-outbox": "./src/mail-outbox.ts",
+    "./customer-mails": "./src/customer-mails.ts"
   },
   "scripts": {
     "migrate": "tsx src/cli.ts",
