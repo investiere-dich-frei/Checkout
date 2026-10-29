@@ -1,0 +1,7 @@
+# Backup B (IONOS S3 mit Object Lock) wird eingeschaltet, sobald das Konto besteht
+# und ionos_s3_key, ionos_s3_secret und pgbackrest_repo2_cipher_pass in SOPS liegen.
+backup_b_enabled: false
+
+pgbackrest_storagebox_key: /etc/pgbackrest/storagebox_ed25519
+# Die Storage Box erlaubt per SFTP nur Schreiben unterhalb von /home.
+pgbackrest_repo1_path: /home/pgbackrest

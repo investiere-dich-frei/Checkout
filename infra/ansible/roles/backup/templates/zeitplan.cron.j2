@@ -1,9 +1,11 @@
+# {{ ansible_managed }}
 # /etc/cron.d/idf-backup auf db-nbg1. Zeiten in Europe/Berlin.
 # Vollsicherung sonntags, differenziell täglich, beide Ziele unabhängig voneinander.
 CRON_TZ=Europe/Berlin
 15 1 * * 0   postgres  pgbackrest --stanza=idf --repo=1 --type=full backup
-45 1 * * 0   postgres  pgbackrest --stanza=idf --repo=2 --type=full backup
 15 1 * * 1-6 postgres  pgbackrest --stanza=idf --repo=1 --type=diff backup
+{% if backup_b_enabled %}
+45 1 * * 0   postgres  pgbackrest --stanza=idf --repo=2 --type=full backup
 45 1 * * 1-6 postgres  pgbackrest --stanza=idf --repo=2 --type=diff backup
 # Dateien (Konfiguration, hochgeladene Belege) per restic an beide Ziele
 30 2 * * *   root      /usr/local/bin/idf-restic-backup
@@ -11,3 +13,8 @@ CRON_TZ=Europe/Berlin
 50 23 * * *  postgres  /usr/local/bin/idf-audit-anchor
 # Monatlicher Wiederherstellungstest, abwechselnd aus A und B
 0 4 1 * *    root      /usr/local/bin/idf-restore-test
+{% else %}
+# Backup B (IONOS) fehlt noch. restic, Audit-Anker und der monatliche Test aus
+# restore-test.sh brauchen beide Ziele bzw. den WORM-Speicher und die App-Datenbank;
+# sie werden mit Backup B eingeschaltet (backup_b_enabled).
+{% endif %}

@@ -12,11 +12,49 @@
     - { src: restore-test.sh, dest: idf-restore-test }
     - { src: audit-anchor.sh, dest: idf-audit-anchor }
 
+# Ab hier nur auf dem Primary: Er schreibt die Sicherungen, das Replikat liest sie nur im Notfall.
+- name: Verzeichnisse für pgBackRest
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: "0750"
+  loop: [/etc/pgbackrest, /var/log/pgbackrest, /var/spool/pgbackrest]
+  when: pg_role == "primary"
+
+# Eigener Schlüssel nur für die Storage Box. Er verlässt den Server nie;
+# nur der öffentliche Teil wird bei der Storage Box hinterlegt.
+- name: SSH-Schlüssel für die Storage Box
+  community.crypto.openssh_keypair:
+    path: "{{ pgbackrest_storagebox_key }}"
+    type: ed25519
+    owner: postgres
+    group: postgres
+    mode: "0600"
+    comment: "pgbackrest@{{ inventory_hostname }}"
+  when: pg_role == "primary"
+
+- name: Öffentlichen Schlüssel zum Hinterlegen bei der Storage Box abholen
+  ansible.builtin.fetch:
+    src: "{{ pgbackrest_storagebox_key }}.pub"
+    dest: "{{ playbook_dir }}/../../.pgbackrest-keys/"
+    flat: false
+  when: pg_role == "primary"
+
+- name: Konfiguration pgBackRest
+  ansible.builtin.template:
+    src: pgbackrest.conf.j2
+    dest: /etc/pgbackrest/pgbackrest.conf
+    owner: postgres
+    group: postgres
+    mode: "0640"
+  no_log: true
+  when: pg_role == "primary"
+
 - name: Zeitplan
-  ansible.builtin.copy:
-    src: ../../../backup/zeitplan.cron
+  ansible.builtin.template:
+    src: zeitplan.cron.j2
     dest: /etc/cron.d/idf-backup
     mode: "0644"
   when: pg_role == "primary"
-
-# pgbackrest.conf mit Geheimnissen wird aus SOPS gerendert, sobald die Konten bei Hetzner und IONOS bestehen.

@@ -18,7 +18,7 @@ Zwei voneinander unabhängige Sicherungen, bei zwei Anbietern, an zwei Standorte
 
 ## Was gesichert wird
 
-- **Datenbank**: pgBackRest. Vollsicherung sonntags, differenziell täglich, WAL laufend. Konfiguration: `infra/backup/pgbackrest.conf`.
+- **Datenbank**: pgBackRest. Vollsicherung sonntags, differenziell täglich, WAL laufend. Konfiguration: `infra/ansible/roles/backup/templates/pgbackrest.conf.j2`, Zeitplan: `zeitplan.cron.j2` daneben.
 - **Dateien und Konfiguration**: restic, täglich an beide Ziele (`infra/backup/restic-backup.sh`).
 - **Kopf der Audit-Kette**: täglich in den WORM-Speicher (`infra/backup/audit-anchor.sh`).
 
@@ -38,7 +38,18 @@ Zwei voneinander unabhängige Sicherungen, bei zwei Anbietern, an zwei Standorte
   - Das Ergebnis geht an Uptime Kuma; fehlt die Meldung, kommt ein Alarm.
 - **Quartalsweise**: Notfallübung mit Neuaufbau auf frischen Servern, protokolliert.
 
+## Stand der echten Server
+
+- 29.10.2026: Backup A auf db-nbg1 eingerichtet. Erste Vollsicherung `20261029-161922F` an die Storage Box,
+  danach Wiederherstellung in ein Testverzeichnis auf db-nbg1: Die Zeile, die erst nach der Sicherung
+  geschrieben wurde und nur im WAL-Archiv stand, war vollständig da. Die Testdatenbank `idf_backup_probe` bleibt dafür bestehen.
+- Eigenheiten der Storage Box: SFTP schreibt nur unterhalb von `/home` (daher `/home/pgbackrest`),
+  und pgBackRest handelt den ECDSA-Host-Key aus, nicht ED25519 (Fingerabdruck in `group_vars/db/backup.yml`).
+
 ## Offen
 
-- Christian legt die Konten bei Hetzner (Cloud, Storage Box, Object Storage) und IONOS (S3) an.
-- Danach werden Zugangsdaten mit SOPS verschlüsselt hinterlegt, und die Platzhalter in `pgbackrest.conf` werden ersetzt.
+- Backup A (Storage Box) ist eingerichtet. Geheimnisse liegen SOPS-verschlüsselt in
+  `infra/ansible/inventories/prod/group_vars/db/secrets.sops.yml`. Den age-Schlüssel dazu hat der Mac mini;
+  eine Kopie verwahrt Christian getrennt davon. Ohne diesen Schlüssel sind die Sicherungen nicht lesbar.
+- Backup B: Christian legt das IONOS-Konto an. Danach kommen die Zugangsdaten in SOPS, und
+  `backup_b_enabled: true` schaltet repo2, restic, den Audit-Anker und den monatlichen Test ein.
