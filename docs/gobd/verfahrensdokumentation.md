@@ -37,6 +37,9 @@ Bestellung → Zahlung → Rechnung → Auszahlung des Zahlungsanbieters.
 
 - Der Steuersatz wird je Position als Wert festgeschrieben.
 - Eine Steuerbefreiung braucht einen Hinweistext auf der Position, z. B. „Steuerfrei nach § 4 Nr. 21 UStG“.
+- Jedes Produkt hat eine Steuerkategorie mit Herkunft (`tax_source`).
+- Verkaufbar ist ein Produkt erst, wenn ein Admin die Steuerkategorie bestätigt hat (`tax_confirmed_at`, `tax_confirmed_by`). Die Datenbank erzwingt das.
+- Der Import aus Thrivecart übernimmt die Kategorie nur als Vorschlag und bestätigt nie selbst, siehe [Thrivecart-Import](../thrivecart-import.md).
 
 ### 3.5 Protokollierung
 
