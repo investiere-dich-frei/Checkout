@@ -1,0 +1,11 @@
+# Grundeinrichtung aller Server. Aufruf:
+#   ansible-playbook -i inventories/prod site.yml
+- name: Basis für alle Server
+  hosts: all
+  become: true
+  roles: [base]
+
+- name: Datenbank und Sicherung
+  hosts: db
+  become: true
+  roles: [postgres, backup]
