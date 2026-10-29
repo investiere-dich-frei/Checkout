@@ -72,7 +72,7 @@ describe("Thrivecart-Altdaten", () => {
     const stats = await run();
     assert.deepEqual(
       { ...stats },
-      { customers: 3, invoices: 4, orders: 4, subscriptions: 1, events: 2, missingInvoiceNumbers: [3] },
+      { customers: 3, invoices: 4, orders: 4, subscriptions: 1, events: 2, missingInvoiceNumbers: [3], replacedInvoiceDates: 0, subscriptionsWithoutInvoice: [] },
     );
   });
 
@@ -108,7 +108,7 @@ describe("Thrivecart-Altdaten", () => {
     await db.pool.query(`update src.tc_subscriptions set payments = 3, payments_remaining = '9', total_paid = '29700'`);
     await db.pool.query(`insert into src.tc_events values (3, 9100, 4, 7001, 'rebill', '2026-03-10 10:00:00+00', 9900, 'thrivepay', 'ch_12')`);
     const stats = await run();
-    assert.deepEqual({ ...stats }, { customers: 0, invoices: 0, orders: 1, subscriptions: 1, events: 1, missingInvoiceNumbers: [3] });
+    assert.deepEqual({ ...stats }, { customers: 0, invoices: 0, orders: 1, subscriptions: 1, events: 1, missingInvoiceNumbers: [3], replacedInvoiceDates: 0, subscriptionsWithoutInvoice: [] });
     const st = (await db.pool.query(`select status from legacy.thrivecart_orders where order_id = 9001`)).rows[0].status;
     assert.equal(st, "refunded");
   });
@@ -125,5 +125,52 @@ describe("Thrivecart-Altdaten", () => {
     assert.deepEqual((await db.pool.query(`select * from app.audit_verify()`)).rows, []);
     const actors = (await db.pool.query(`select distinct actor from app.audit_log where table_name like 'thrivecart_%' order by actor`)).rows;
     assert.deepEqual(actors, [{ actor: "db:postgres" }, { actor: "system:thrivecart-altdaten" }]);
+  });
+});
+
+describe("Thrivecart-Altdaten: Abos ohne Startdatum", () => {
+  let db: TestDb;
+
+  before(async () => {
+    db = await createTestDb();
+    await db.pool.query(SOURCE_DDL);
+    // Ausgedachte Abos: eines ohne Startdatum mit Zahlungsereignis, eines ganz ohne Datum.
+    await db.pool.query(`
+      insert into src.tc_subscriptions values
+        (7002, 9200, 11, 'erika@example.org', 'active', 'thrivepay', 'sub_2', 'month', 'EUR', '5000', 1, '5', '5000',
+         null, null, null, 10),
+        (7003, 9300, 12, 'max@example.org', 'cancelled', 'thrivepay', 'sub_3', 'month', 'EUR', '5000', 0, '0', '0',
+         null, null, null, 10);
+      insert into src.tc_events values (20, 9200, 11, 7002, 'charge', '2025-01-05 09:00:00+00', 5000, 'thrivepay', 'ch_20');
+    `);
+  });
+  after(() => db.drop());
+
+  it("archiviert die Rechnung mit gekennzeichnetem Ersatzdatum und meldet Abos ganz ohne Datum", async () => {
+    const c = await db.pool.connect();
+    let stats;
+    try {
+      const data = await readSource(c, "src");
+      stats = await tx(db.pool, (t) => importHistory(t, data));
+    } finally {
+      c.release();
+    }
+    assert.equal(stats.replacedInvoiceDates, 1);
+    assert.deepEqual(stats.subscriptionsWithoutInvoice, [7003]);
+    const inv = (await db.pool.query(
+      `select invoice_number::int n, issued_at_source, issuer_name, gross_cents::int g from legacy.thrivecart_invoices where invoice_number = 11`,
+    )).rows[0];
+    assert.deepEqual(inv, { n: 11, issued_at_source: "ersatz_ereignis", issuer_name: "ECB Holding GmbH", g: 5000 });
+    const subs = (await db.pool.query(`select subscription_id::int id, invoice_number::int n from legacy.thrivecart_subscriptions order by 1`)).rows;
+    assert.deepEqual(subs.filter((x) => x.id !== 7001), [
+      { id: 7002, n: 11 },
+      { id: 7003, n: null },
+    ]);
+    const kinds = (await db.pool.query(`select issued_at_source s, count(*)::int n from legacy.thrivecart_invoices group by 1 order by 1`)).rows;
+    assert.deepEqual(kinds, [
+      { s: "abo_start", n: 1 },
+      { s: "ersatz_ereignis", n: 1 },
+      { s: "kauf", n: 3 },
+    ]);
   });
 });
