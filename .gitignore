@@ -1,5 +1,7 @@
 node_modules/
 dist/
+.next/
+*.tsbuildinfo
 .env
 .env.*
 !.env.example
@@ -13,3 +15,4 @@ coverage/
 # Öffentliche Schlüssel, die Ansible zum Hinterlegen bei der Storage Box abholt
 .pgbackrest-keys/
 __pycache__/
+next-env.d.ts

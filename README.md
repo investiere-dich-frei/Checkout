@@ -13,6 +13,7 @@ Der Bauplan liegt im Projekt-Dokument „Eigene Thrivecart-Alternative: Funktion
 | Ordner | Inhalt |
 |---|---|
 | `packages/db` | Datenmodell, Migrationen und GoBD-Kern mit Tests |
+| `apps/web` | Checkout-Seiten (Next.js), Kauflinks je Vertriebsperson |
 | `packages/core` | Preis-, Zahlplan- und Steuerberechnung ohne Datenbank |
 | `infra/terraform` | Server bei Hetzner (Nürnberg und Falkenstein) |
 | `infra/ansible` | Einrichtung der Server |

@@ -8,10 +8,11 @@ Das System ist ein modularer Monolith in TypeScript. Ein Repository, ein Deploym
 |---|---|---|
 | Datenbank, GoBD-Kern | PostgreSQL 17, `packages/db` | 0 |
 | Preise, Zahlpläne, Umsatzsteuer | TypeScript, `packages/core` | 1 |
-| Backend und API | NestJS, `apps/api` | 1 |
-| Checkout und Verwaltung | Next.js, `apps/web` | 1 |
+| Checkout, Verwaltung und API | Next.js (Server Actions, Route Handler), `apps/web` | 1 |
 | Hintergrundjobs (Raten, Mahnungen, Webhooks) | Redis und BullMQ | 2 |
 | Infrastruktur | Terraform (Hetzner), Ansible | 0 |
+
+Entscheidung 29.10.2026: Kein eigenes NestJS-Backend in Phase 1. Die Geschäftslogik liegt in `packages/core` und `packages/db`; `apps/web` ruft sie auf dem Server auf. Das spart einen zweiten Dienst. Ein eigenes API-Paket kommt erst, wenn andere Systeme (n8n, HubSpot) mehr als Webhooks brauchen.
 
 ## Server
 
