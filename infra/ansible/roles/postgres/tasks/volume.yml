@@ -70,7 +70,15 @@
     opts: discard,nofail,defaults
     state: mounted
 
+- name: Datenverzeichnis vorhanden?
+  ansible.builtin.stat:
+    path: /var/lib/postgresql/17/main/PG_VERSION
+  register: pg_datadir
+
+# Fehlt das Datenverzeichnis (abgebrochener Replikat-Aufbau), legt replikation.yml es neu an
+# und startet PostgreSQL dann selbst.
 - name: PostgreSQL läuft
   ansible.builtin.service:
     name: postgresql@17-main
     state: started
+  when: pg_datadir.stat.exists

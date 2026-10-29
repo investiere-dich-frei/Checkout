@@ -11,7 +11,7 @@
   ansible.builtin.copy:
     dest: /etc/postgresql/17/main/conf.d/replikation.conf
     content: |
-      # {{ ansible_managed }}
+      # Von Ansible verwaltet (roles/postgres/tasks/replikation.yml), nicht von Hand ändern.
       listen_addresses = 'localhost,{{ private_ip }}'
       # Ein steckengebliebener Slot darf die Platte nicht füllen.
       max_slot_wal_keep_size = 10GB
