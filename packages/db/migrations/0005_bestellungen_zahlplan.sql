@@ -9,6 +9,10 @@
 alter table app.companies
   add column ch_vat_rate_bp integer check (ch_vat_rate_bp is null or ch_vat_rate_bp between 1 and 10000);
 
+-- Kürzel für Kauflinks je Vertriebsperson (?v=<kürzel>), für den Verkäufernachweis.
+alter table app.users
+  add column sales_code text unique check (sales_code ~ '^[a-z0-9-]{2,32}$');
+
 -- Herkunft der Bestellung, für den Verkäufernachweis und spätere Auswertungen.
 alter table app.orders
   add column buyer_country char(2),
