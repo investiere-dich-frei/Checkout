@@ -11,6 +11,7 @@
     "db:migrate": "pnpm --filter @idf/db migrate",
     "db:company:create": "pnpm --filter @idf/db company:create",
     "db:thrivecart:import": "pnpm --filter @idf/db thrivecart:import",
-    "db:thrivecart:history": "pnpm --filter @idf/db thrivecart:history"
+    "db:thrivecart:history": "pnpm --filter @idf/db thrivecart:history",
+    "db:mail:send": "pnpm --filter @idf/db mail:send"
   }
 }

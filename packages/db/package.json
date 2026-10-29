@@ -7,7 +7,9 @@
     "./orders": "./src/orders.ts",
     "./invoicing": "./src/invoicing.ts",
     "./stripe": "./src/stripe.ts",
-    "./paypal": "./src/paypal.ts"
+    "./paypal": "./src/paypal.ts",
+    "./notices": "./src/notices.ts",
+    "./mail-outbox": "./src/mail-outbox.ts"
   },
   "scripts": {
     "migrate": "tsx src/cli.ts",
@@ -15,7 +17,8 @@
     "thrivecart:history": "tsx src/thrivecart-history-cli.ts",
     "company:create": "tsx src/company-cli.ts",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "node --import tsx --test --test-concurrency=1 test/*.test.ts"
+    "test": "node --import tsx --test --test-concurrency=1 test/*.test.ts",
+    "mail:send": "tsx src/mail-cli.ts"
   },
   "dependencies": {
     "@idf/core": "workspace:*",

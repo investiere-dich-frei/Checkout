@@ -55,3 +55,7 @@ button.order:disabled { opacity: 0.6; cursor: wait; }
 
 .pay-option { border-top: 1px solid var(--muted); padding-top: 16px; margin-top: 16px; }
 h3 { font-size: 16px; margin: 0 0 12px; }
+textarea { width: 100%; padding: 10px 12px; font-size: 16px; border: 1px solid #8a8a8a; border-radius: 6px; font-family: inherit; color: var(--text); }
+input[type="date"] { padding: 10px 12px; font-size: 16px; border: 1px solid #8a8a8a; border-radius: 6px; }
+pre.confirmation { white-space: pre-wrap; font-family: inherit; background: var(--muted); padding: 16px; border-radius: 6px; }
+@media print { .site-header, .site-footer, button { display: none; } body, :root { background: #fff; } }
