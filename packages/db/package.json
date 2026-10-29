@@ -1,0 +1,19 @@
+{
+  "name": "@idf/db",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "migrate": "tsx src/cli.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node --import tsx --test --test-concurrency=1 test/*.test.ts"
+  },
+  "dependencies": {
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

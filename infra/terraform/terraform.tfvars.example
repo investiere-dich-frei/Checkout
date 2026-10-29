@@ -1,0 +1,2 @@
+ssh_keys  = ["christian-macbook"]
+admin_ips = ["203.0.113.10/32"]

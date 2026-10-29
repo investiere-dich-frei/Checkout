@@ -1,0 +1,13 @@
+# /etc/cron.d/idf-backup auf db-nbg1. Zeiten in Europe/Berlin.
+# Vollsicherung sonntags, differenziell täglich, beide Ziele unabhängig voneinander.
+CRON_TZ=Europe/Berlin
+15 1 * * 0   postgres  pgbackrest --stanza=idf --repo=1 --type=full backup
+45 1 * * 0   postgres  pgbackrest --stanza=idf --repo=2 --type=full backup
+15 1 * * 1-6 postgres  pgbackrest --stanza=idf --repo=1 --type=diff backup
+45 1 * * 1-6 postgres  pgbackrest --stanza=idf --repo=2 --type=diff backup
+# Dateien (Konfiguration, hochgeladene Belege) per restic an beide Ziele
+30 2 * * *   root      /usr/local/bin/idf-restic-backup
+# Kopf der Audit-Kette in den WORM-Speicher schreiben
+50 23 * * *  postgres  /usr/local/bin/idf-audit-anchor
+# Monatlicher Wiederherstellungstest, abwechselnd aus A und B
+0 4 1 * *    root      /usr/local/bin/idf-restore-test

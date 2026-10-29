@@ -1,0 +1,22 @@
+- name: restic und AWS-CLI
+  ansible.builtin.apt:
+    name: [restic, awscli]
+
+- name: Skripte
+  ansible.builtin.copy:
+    src: "../../../backup/{{ item.src }}"
+    dest: "/usr/local/bin/{{ item.dest }}"
+    mode: "0755"
+  loop:
+    - { src: restic-backup.sh, dest: idf-restic-backup }
+    - { src: restore-test.sh, dest: idf-restore-test }
+    - { src: audit-anchor.sh, dest: idf-audit-anchor }
+
+- name: Zeitplan
+  ansible.builtin.copy:
+    src: ../../../backup/zeitplan.cron
+    dest: /etc/cron.d/idf-backup
+    mode: "0644"
+  when: pg_role == "primary"
+
+# pgbackrest.conf mit Geheimnissen wird aus SOPS gerendert, sobald die Konten bei Hetzner und IONOS bestehen.

@@ -1,0 +1,19 @@
+- name: Zeitzone Europe/Berlin
+  community.general.timezone:
+    name: Europe/Berlin
+
+- name: Pakete
+  ansible.builtin.apt:
+    name: [unattended-upgrades, fail2ban, chrony, curl, ufw]
+    update_cache: true
+
+- name: SSH nur mit Schlüssel
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config.d/10-idf.conf
+    line: "{{ item }}"
+    create: true
+    mode: "0644"
+  loop:
+    - PasswordAuthentication no
+    - PermitRootLogin prohibit-password
+  notify: restart ssh
