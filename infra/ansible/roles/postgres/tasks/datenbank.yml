@@ -1,0 +1,25 @@
+# Anwendungsdatenbank "idf". Sie gehört der Rolle idf_migrator, die nur die Migrationen
+# aus packages/db einspielt. Kein Superuser: Laut ADR 0001 arbeitet nichts außer der
+# Wartung als Superuser, weil der die GoBD-Trigger umgehen könnte.
+# Die spätere Anwendungsrolle bekommt nur Rechte, ist aber nie Eigentümerin der Tabellen.
+# Nur auf dem Primary; das Replikat erhält Datenbank und Schema über die Replikation.
+
+- name: Rolle für Migrationen
+  community.postgresql.postgresql_user:
+    name: idf_migrator
+    password: "{{ pg_migrator_password }}"
+    role_attr_flags: LOGIN,NOSUPERUSER,NOCREATEDB,NOCREATEROLE
+  become_user: postgres
+  no_log: true
+  when: pg_role == "primary"
+
+- name: Datenbank idf
+  community.postgresql.postgresql_db:
+    name: idf
+    owner: idf_migrator
+    encoding: UTF8
+    lc_collate: C.UTF-8
+    lc_ctype: C.UTF-8
+    template: template0
+  become_user: postgres
+  when: pg_role == "primary"

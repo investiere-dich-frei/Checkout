@@ -56,6 +56,15 @@ Zwei voneinander unabhängige Sicherungen, bei zwei Anbietern, an zwei Standorte
 - Eingerichtet am 29.10.2026: Replikat streamt (async), Testzeile kam sofort in Falkenstein an.
   Die alten Verzeichnisse `/var/lib/postgresql.vor-volume` (beide) und `17/main.vor-replikat` (db-fsn1) liegen noch daneben.
 
+## Überwachung
+
+- Prometheus, Alertmanager, Grafana und Uptime Kuma laufen auf app-nbg1 (`infra/monitoring`, Rolle `monitoring`).
+  Die Oberflächen sind nur per SSH-Tunnel erreichbar.
+- Messfühler: Node-Exporter auf allen Servern, PostgreSQL-Exporter auf beiden DB-Servern, dazu alle
+  10 Minuten Kennzahlen aus `pgbackrest info` (`infra/backup/backup-metrics.sh`).
+- Alarme per E-Mail: Server nicht erreichbar, WAL-Archivierung schlägt fehl, Replikat hinkt oder ist
+  getrennt, letzte Sicherung älter als 30 Stunden, Platte fast voll.
+
 ## Offen
 
 - Backup A (Storage Box) ist eingerichtet. Geheimnisse liegen SOPS-verschlüsselt in

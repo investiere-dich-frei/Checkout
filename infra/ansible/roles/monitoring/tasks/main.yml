@@ -1,0 +1,58 @@
+# Prometheus, Alertmanager, Grafana und Uptime Kuma auf app-nbg1 (Docker Compose).
+# Die Oberflächen lauschen nur auf 127.0.0.1 und sind per SSH-Tunnel erreichbar.
+
+- name: Docker
+  ansible.builtin.apt:
+    name: [docker.io, docker-cli, docker-compose]
+
+- name: Verzeichnisse
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0750"
+  loop: [/opt/idf-monitoring, /opt/idf-monitoring/alert-mail, /etc/idf]
+
+- name: Compose-Datei und Prometheus-Regeln
+  ansible.builtin.copy:
+    src: "../../../monitoring/{{ item }}"
+    dest: "/opt/idf-monitoring/{{ item }}"
+    mode: "0644"
+  loop: [docker-compose.yml, prometheus.yml, alerts.yml, alert-mail/alert_mail.py, alert-mail/Dockerfile]
+  notify: monitoring neu starten
+
+- name: Alertmanager (E-Mail-Versand)
+  ansible.builtin.template:
+    src: alertmanager.yml.j2
+    dest: /opt/idf-monitoring/alertmanager.yml
+    mode: "0644"
+  no_log: true
+  notify: monitoring neu starten
+
+- name: Grafana-Adminpasswort
+  ansible.builtin.copy:
+    dest: /etc/idf/grafana_admin
+    content: "{{ grafana_admin_password }}"
+    owner: "472"  # Nutzer grafana im Container
+    mode: "0400"
+  no_log: true
+
+- name: Zugang für den Mailversand (Microsoft Graph)
+  ansible.builtin.copy:
+    dest: /etc/idf/alert-mail.env
+    content: |
+      GRAPH_TENANT_ID={{ graph_tenant_id }}
+      GRAPH_CLIENT_ID={{ graph_client_id }}
+      GRAPH_CLIENT_SECRET={{ graph_client_secret }}
+      ALERT_FROM={{ alert_email_from }}
+      ALERT_TO={{ alert_email_to }}
+    mode: "0600"
+  no_log: true
+  when: alert_mail_ready | bool
+  notify: monitoring neu starten
+
+- name: Dienste starten
+  ansible.builtin.command: "docker-compose {{ '--profile mail' if alert_mail_ready | bool else '' }} up -d --build --remove-orphans"
+  args:
+    chdir: /opt/idf-monitoring
+  register: compose_up
+  changed_when: "'Creating' in compose_up.stderr or 'Recreat' in compose_up.stderr or 'Starting' in compose_up.stderr"

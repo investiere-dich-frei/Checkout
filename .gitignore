@@ -12,3 +12,4 @@ coverage/
 
 # Öffentliche Schlüssel, die Ansible zum Hinterlegen bei der Storage Box abholt
 .pgbackrest-keys/
+__pycache__/

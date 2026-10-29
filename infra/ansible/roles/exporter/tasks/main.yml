@@ -1,0 +1,64 @@
+# Messfühler für Prometheus. Sie lauschen nur auf der privaten Adresse;
+# von außen sperrt sie zusätzlich die Hetzner-Firewall.
+
+- name: Node-Exporter
+  ansible.builtin.apt:
+    name: [prometheus-node-exporter, jq]
+
+- name: Node-Exporter nur im privaten Netz
+  ansible.builtin.copy:
+    dest: /etc/default/prometheus-node-exporter
+    content: |
+      # Von Ansible verwaltet (roles/exporter), nicht von Hand ändern.
+      ARGS="--web.listen-address={{ private_ip }}:9100 --collector.textfile.directory=/var/lib/prometheus/node-exporter"
+    mode: "0644"
+  notify: restart node-exporter
+
+- name: PostgreSQL-Exporter
+  ansible.builtin.apt:
+    name: prometheus-postgres-exporter
+  when: "'db' in group_names"
+
+# Der Exporter läuft als Betriebssystem-Nutzer prometheus und meldet sich per
+# Unix-Socket (peer) als gleichnamige Datenbankrolle mit Leserechten an.
+- name: Datenbankrolle prometheus (nur Primary; das Replikat erhält sie per Replikation)
+  community.postgresql.postgresql_user:
+    name: prometheus
+    role_attr_flags: LOGIN
+  become_user: postgres
+  when: "'db' in group_names and pg_role == 'primary'"
+
+- name: Rolle prometheus darf Statistiken lesen
+  community.postgresql.postgresql_membership:
+    groups: [pg_monitor]
+    target_roles: [prometheus]
+  become_user: postgres
+  when: "'db' in group_names and pg_role == 'primary'"
+
+- name: PostgreSQL-Exporter konfigurieren
+  ansible.builtin.copy:
+    dest: /etc/default/prometheus-postgres-exporter
+    content: |
+      # Von Ansible verwaltet (roles/exporter), nicht von Hand ändern.
+      DATA_SOURCE_NAME='user=prometheus host=/var/run/postgresql dbname=postgres sslmode=disable'
+      ARGS="--web.listen-address={{ private_ip }}:9187"
+    mode: "0640"
+    group: prometheus
+  when: "'db' in group_names"
+  notify: restart postgres-exporter
+
+- name: Kennzahlen der Sicherung (Skript)
+  ansible.builtin.copy:
+    src: ../../../backup/backup-metrics.sh
+    dest: /usr/local/bin/idf-backup-metrics
+    mode: "0755"
+  when: "'db' in group_names and pg_role == 'primary'"
+
+- name: Kennzahlen der Sicherung alle 10 Minuten
+  ansible.builtin.copy:
+    dest: /etc/cron.d/idf-backup-metrics
+    content: |
+      # Von Ansible verwaltet (roles/exporter), nicht von Hand ändern.
+      */10 * * * * root /usr/local/bin/idf-backup-metrics
+    mode: "0644"
+  when: "'db' in group_names and pg_role == 'primary'"

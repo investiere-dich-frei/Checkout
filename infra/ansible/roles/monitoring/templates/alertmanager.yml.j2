@@ -1,0 +1,17 @@
+# {{ ansible_managed }}
+route:
+  receiver: email
+  group_by: [alertname]
+  group_wait: 1m
+  repeat_interval: 12h
+
+receivers:
+  - name: email
+{% if alert_mail_ready %}
+    # Versand über den Dienst alert-mail (Microsoft Graph), siehe infra/monitoring/alert-mail.
+    webhook_configs:
+      - url: http://alert-mail:8080/
+        send_resolved: true
+{% else %}
+    # Noch keine App-Registrierung für Microsoft Graph: Alarme erscheinen nur in Alertmanager und Grafana.
+{% endif %}
