@@ -1,0 +1,18 @@
+{
+  "name": "@idf/core",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./tax": "./src/tax.ts",
+    "./pricing": "./src/pricing.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node --import tsx --test test/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

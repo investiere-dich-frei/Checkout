@@ -13,6 +13,7 @@ Der Bauplan liegt im Projekt-Dokument „Eigene Thrivecart-Alternative: Funktion
 | Ordner | Inhalt |
 |---|---|
 | `packages/db` | Datenmodell, Migrationen und GoBD-Kern mit Tests |
+| `packages/core` | Preis-, Zahlplan- und Steuerberechnung ohne Datenbank |
 | `infra/terraform` | Server bei Hetzner (Nürnberg und Falkenstein) |
 | `infra/ansible` | Einrichtung der Server |
 | `infra/backup` | Backup A (Storage Box) und B (IONOS mit Object Lock), Wiederherstellungstest |
