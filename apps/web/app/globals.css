@@ -59,3 +59,18 @@ textarea { width: 100%; padding: 10px 12px; font-size: 16px; border: 1px solid #
 input[type="date"] { padding: 10px 12px; font-size: 16px; border: 1px solid #8a8a8a; border-radius: 6px; }
 pre.confirmation { white-space: pre-wrap; font-family: inherit; background: var(--muted); padding: 16px; border-radius: 6px; }
 @media print { .site-header, .site-footer, button { display: none; } body, :root { background: #fff; } }
+
+main:has(.admin) { max-width: 1100px; }
+.admin-nav { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-bottom: 16px; }
+.admin-nav form { margin-left: auto; }
+.link-button { background: none; border: 0; color: var(--accent-text); text-decoration: underline; cursor: pointer; font: inherit; padding: 0; }
+.admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.admin-table th, .admin-table td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--muted); vertical-align: top; }
+.table-scroll { overflow-x: auto; }
+.mono { font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+.break { word-break: break-all; }
+.work-item { border-top: 1px solid var(--muted); padding-top: 12px; margin-top: 12px; }
+.inline-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; margin: 8px 0 16px; }
+.inline-form label { flex-basis: 100%; }
+.inline-form input { flex: 1 1 220px; padding: 8px 10px; font-size: 15px; border: 1px solid #8a8a8a; border-radius: 6px; }
+.inline-form button { padding: 9px 14px; border: 0; border-radius: 6px; background: var(--accent); color: #fff; cursor: pointer; font-weight: 600; }

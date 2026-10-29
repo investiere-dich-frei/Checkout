@@ -12,7 +12,9 @@
     "./mail-outbox": "./src/mail-outbox.ts",
     "./customer-mails": "./src/customer-mails.ts",
     "./invoice-pdf": "./src/invoice-pdf.ts",
-    "./billing": "./src/billing.ts"
+    "./billing": "./src/billing.ts",
+    "./auth": "./src/auth.ts",
+    "./admin": "./src/admin.ts"
   },
   "scripts": {
     "migrate": "tsx src/cli.ts",
