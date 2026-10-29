@@ -23,6 +23,13 @@ secrets=infra/ansible/inventories/prod/group_vars/db/secrets.sops.yml
 
 password=$(sops -d --extract '["pg_migrator_password"]' "$secrets")
 
+# Lesezugang zum Supabase-Spiegel für den Altdaten-Import, falls hinterlegt.
+db_secrets=infra/db/secrets.sops.yml
+if [ -f "$db_secrets" ]; then
+  SOURCE_DATABASE_URL=$(sops -d --extract '["supabase_readonly_url"]' "$db_secrets")
+  export SOURCE_DATABASE_URL
+fi
+
 ssh -i "$key" -o ExitOnForwardFailure=yes -f -N -M -S "$socket" \
   -L "$local_port:localhost:5432" "$host"
 trap 'ssh -S "$socket" -O exit "$host" 2>/dev/null' EXIT

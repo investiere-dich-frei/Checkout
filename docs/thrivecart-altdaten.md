@@ -23,11 +23,13 @@ Löschen ist bei allen verboten. Jede Änderung steht mit altem und neuem Wert i
 ## Ablauf
 
 ```sh
-SOURCE_DATABASE_URL=… infra/db/run-prod.sh db:thrivecart:history --dry-run
-SOURCE_DATABASE_URL=… infra/db/run-prod.sh db:thrivecart:history
+infra/db/run-prod.sh db:thrivecart:history --dry-run
+infra/db/run-prod.sh db:thrivecart:history
 ```
 
-- `SOURCE_DATABASE_URL` ist die Verbindung zum Supabase-Spiegel. Das Programm liest ihn nur, die Sitzung ist auf Nur-Lesen gestellt.
+- Die Verbindung zum Supabase-Spiegel liegt verschlüsselt in `infra/db/secrets.sops.yml` (`supabase_readonly_url`, eine Nur-Lese-Rolle). `run-prod.sh` entschlüsselt sie selbst; niemand tippt sie ab.
+- Das Programm liest den Spiegel nur, die Sitzung ist zusätzlich auf Nur-Lesen gestellt.
+- Ausgaben enthalten nur Zählungen und Rechnungsnummern, keine Namen, E-Mails oder Adressen.
 - Kundendaten gehen direkt von Datenbank zu Datenbank und landen in keiner Zwischendatei.
 - Der Import ist wiederholbar und kann bis zur Abschaltung von Thrivecart regelmäßig laufen.
 - Am Ende meldet er, welche Rechnungsnummern zwischen 1 und der höchsten Nummer fehlen.
