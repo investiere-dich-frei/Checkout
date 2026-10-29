@@ -13,6 +13,7 @@
     "db:thrivecart:import": "pnpm --filter @idf/db thrivecart:import",
     "db:thrivecart:history": "pnpm --filter @idf/db thrivecart:history",
     "db:mail:send": "pnpm --filter @idf/db mail:send",
-    "einzug": "pnpm --filter @idf/web einzug"
+    "einzug": "pnpm --filter @idf/web einzug",
+    "db:webhooks:send": "pnpm --filter @idf/db webhooks:send"
   }
 }

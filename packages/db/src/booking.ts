@@ -1,6 +1,7 @@
 import type pg from "pg";
 import { enqueueInvoiceMail } from "./customer-mails.ts";
 import { storeInvoicePdf } from "./invoice-pdf.ts";
+import { enqueueWebhook } from "./webhooks.ts";
 import { PaymentError, recordInstallmentPayment, type PaymentInput } from "./invoicing.ts";
 
 /** Ergebnis einer Zahlungsmeldung, gleich für alle Zahlungsanbieter. */
@@ -42,6 +43,15 @@ export async function bookPayment(
     if (booked.created) {
       await storeInvoicePdf(client, booked.invoiceId);
       await enqueueInvoiceMail(client, booked.invoiceId);
+      const inst = (
+        await client.query<{ order_id: string; seq: number; gross_cents: string }>(
+          `select order_id, seq, gross_cents from app.order_installments where id = $1`,
+          [input.installmentId],
+        )
+      ).rows[0]!;
+      await enqueueWebhook(client, "zahlung.eingegangen", inst.order_id, {
+        payment: { provider: input.provider, seq: inst.seq, first: inst.seq === 1, gross_cents: Number(inst.gross_cents), invoice_number: booked.invoiceNumber },
+      });
     }
     await client.query("release savepoint payment_booking");
     return {

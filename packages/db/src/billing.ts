@@ -1,5 +1,6 @@
 import { paymentSchedule, splitAmount, type AmountBasis, type PricePlan } from "@idf/core/pricing";
 import type pg from "pg";
+import { enqueueWebhook } from "./webhooks.ts";
 
 /**
  * Wiederkehrende Zahlungen: Abos verlängern, fällige Raten zum Einzug auswählen,
@@ -151,6 +152,7 @@ export async function endSubscription(client: Db, orderId: string, endsOn: strin
     [orderId, endsOn, endedBy],
   );
   if (!r.rowCount) return false;
+  await enqueueWebhook(client as pg.ClientBase, "abo.beendet", orderId, { ends_on: endsOn });
   // Offene Fälligkeiten nach dem Vertragsende entfallen.
   await client.query(
     `update app.order_installments set status = 'storniert' where order_id = $1 and due_date > $2 and status in ('offen', 'fehlgeschlagen')`,

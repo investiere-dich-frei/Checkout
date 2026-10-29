@@ -15,7 +15,8 @@
     "./billing": "./src/billing.ts",
     "./auth": "./src/auth.ts",
     "./admin": "./src/admin.ts",
-    "./refunds": "./src/refunds.ts"
+    "./refunds": "./src/refunds.ts",
+    "./webhooks": "./src/webhooks.ts"
   },
   "scripts": {
     "migrate": "tsx src/cli.ts",
@@ -24,7 +25,8 @@
     "company:create": "tsx src/company-cli.ts",
     "typecheck": "tsc -p tsconfig.json",
     "test": "node --import tsx --test --test-concurrency=1 test/*.test.ts",
-    "mail:send": "tsx src/mail-cli.ts"
+    "mail:send": "tsx src/mail-cli.ts",
+    "webhooks:send": "tsx src/webhooks-cli.ts"
   },
   "dependencies": {
     "@idf/core": "workspace:*",

@@ -2,6 +2,7 @@ import type pg from "pg";
 import type { SessionUser } from "./auth.ts";
 import { enqueueInvoiceMail } from "./customer-mails.ts";
 import { storeInvoicePdf } from "./invoice-pdf.ts";
+import { enqueueWebhook } from "./webhooks.ts";
 
 /**
  * Erstattung einer bezahlten Rechnung: anfordern, beim Anbieter auslösen, dann
@@ -112,12 +113,16 @@ export async function completeRefund(client: pg.ClientBase, refundId: string, pr
   );
   await storeInvoicePdf(client, s.id);
   await enqueueInvoiceMail(client, s.id);
+  await enqueueWebhook(client, "zahlung.erstattet", s.order_id, {
+    refund: { provider: ref.provider, gross_cents: Number(ref.amount_cents), storno_number: s.invoice_number },
+  });
   return { stornoInvoiceId: s.id, stornoNumber: s.invoice_number };
 }
 
 /** Bestellung beenden: offene Raten entfallen, Abo endet heute. Bereits Bezahltes bleibt (Erstattung separat). */
 export async function cancelOrder(client: pg.ClientBase, user: SessionUser, orderId: string): Promise<void> {
   if (user.role !== "admin") throw new RefundError("Keine Berechtigung");
+  await enqueueWebhook(client, "bestellung.beendet", orderId, { ended_by: `user:${user.id}` });
   await client.query(`update app.order_installments set status = 'storniert' where order_id = $1 and status in ('offen', 'fehlgeschlagen')`, [orderId]);
   await client.query(
     `update app.subscription_terms set ends_on = (now() at time zone 'Europe/Berlin')::date, ended_by = $2 where order_id = $1 and ends_on is null`,
