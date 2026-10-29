@@ -32,6 +32,8 @@ Unveränderbarkeit, lückenlose Nummern und Audit-Trail sind in PostgreSQL selbs
 - `companies`: Verkäufergesellschaft. Jede Rechnung gehört genau einer Gesellschaft und läuft in deren Nummernkreis.
 - `users`: Nutzer mit Rolle `admin`, `vertrieb`, `freelancer` oder `pruefer`.
 - `customers`, `products`, `price_options`: Stammdaten.
+  - Preisoptionen beschreiben den ganzen Zahlplan: erste Zahlung, Folgezahlungen, Abstand, Probezeit.
+  - Produkte tragen ihre Thrivecart-ID und sind erst nach bestätigter Steuerkategorie verkaufbar, siehe [Thrivecart-Import](thrivecart-import.md).
 - `legal_text_versions`: AGB, Datenschutz und Widerruf, versioniert und unveränderbar.
 - `orders`, `order_items`:
   - Bestellung mit Verweis auf die zugestimmten Rechtstexte;
