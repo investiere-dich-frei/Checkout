@@ -14,6 +14,7 @@
     "db:thrivecart:history": "pnpm --filter @idf/db thrivecart:history",
     "db:mail:send": "pnpm --filter @idf/db mail:send",
     "einzug": "pnpm --filter @idf/web einzug",
-    "db:webhooks:send": "pnpm --filter @idf/db webhooks:send"
+    "db:webhooks:send": "pnpm --filter @idf/db webhooks:send",
+    "db:grants": "pnpm --filter @idf/db grants"
   }
 }

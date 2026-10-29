@@ -21,6 +21,13 @@
   become: true
   roles: [monitoring]
 
+- name: Checkout-Anwendung
+  hosts: app
+  become: true
+  roles:
+    - role: app
+      when: checkout_ready | bool
+
 # Zum Schluss, damit alle Dienste schon laufen, wenn die Firewall zugeht.
 - name: Firewall
   hosts: all

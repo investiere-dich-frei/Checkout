@@ -23,3 +23,27 @@
     template: template0
   become_user: postgres
   when: pg_role == "primary"
+
+# Anwendungsrolle: darf lesen und schreiben, aber nichts löschen und ist nie Eigentümerin
+# (Rechte setzt packages/db/grants.sql). Zugang nur vom App-Server über das private Netz.
+- name: Rolle für die Anwendung
+  community.postgresql.postgresql_user:
+    name: idf_app
+    password: "{{ pg_app_password }}"
+    role_attr_flags: LOGIN,NOSUPERUSER,NOCREATEDB,NOCREATEROLE,NOINHERIT
+  become_user: postgres
+  no_log: true
+  when: pg_role == "primary" and pg_app_password is defined
+
+- name: Zugang der Anwendung vom App-Server
+  ansible.builtin.lineinfile:
+    path: /etc/postgresql/17/main/pg_hba.conf
+    line: "hostssl idf idf_app {{ hostvars[groups['app'][0]].private_ip }}/32 scram-sha-256"
+  when: pg_role == "primary" and pg_app_password is defined
+  register: pg_app_hba
+
+- name: Zugang neu laden
+  ansible.builtin.service:
+    name: postgresql@17-main
+    state: reloaded
+  when: pg_role == "primary" and pg_app_hba.changed

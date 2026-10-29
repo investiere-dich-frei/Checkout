@@ -26,7 +26,8 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "node --import tsx --test --test-concurrency=1 test/*.test.ts",
     "mail:send": "tsx src/mail-cli.ts",
-    "webhooks:send": "tsx src/webhooks-cli.ts"
+    "webhooks:send": "tsx src/webhooks-cli.ts",
+    "grants": "tsx src/grants-cli.ts"
   },
   "dependencies": {
     "@idf/core": "workspace:*",

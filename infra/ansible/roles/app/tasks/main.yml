@@ -1,0 +1,108 @@
+# Checkout-Anwendung auf app-nbg1: Next.js hinter Caddy (TLS), dazu Zeitgeber für
+# Postausgang, Webhooks und den täglichen Einzug. Läuft als eigener Nutzer ohne Login.
+# Der Code kommt vom Mac mini (Ansible-Steuerrechner), nicht per Git-Zugang vom Server.
+
+- name: Paketquellen für Node.js 22 und Caddy
+  ansible.builtin.deb822_repository:
+    name: "{{ item.name }}"
+    types: [deb]
+    uris: "{{ item.uri }}"
+    suites: ["{{ item.suite }}"]
+    components: [main]
+    signed_by: "{{ item.key }}"
+  loop:
+    - { name: nodesource, uri: "https://deb.nodesource.com/node_22.x", suite: nodistro, key: "https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key" }
+    - { name: caddy, uri: "https://dl.cloudsmith.io/public/caddy/stable/deb/debian", suite: any-version, key: "https://dl.cloudsmith.io/public/caddy/stable/gpg.key" }
+
+- name: Pakete
+  ansible.builtin.apt:
+    name: [nodejs, caddy, rsync]
+    update_cache: true
+
+- name: pnpm über Corepack
+  ansible.builtin.command: corepack enable
+  args:
+    creates: /usr/bin/pnpm
+
+- name: Nutzer für die Anwendung
+  ansible.builtin.user:
+    name: idf-app
+    system: true
+    shell: /usr/sbin/nologin
+    home: /opt/idf-checkout
+    create_home: true
+
+- name: Code vom Steuerrechner übertragen
+  ansible.posix.synchronize:
+    src: "{{ playbook_dir }}/../../"
+    dest: /opt/idf-checkout/src/
+    delete: true
+    rsync_opts:
+      - "--exclude=.git"
+      - "--exclude=node_modules"
+      - "--exclude=.next"
+      - "--exclude=infra"
+      - "--exclude=*.sops.yml"
+  register: app_code
+
+- name: Eigentümer des Codes
+  ansible.builtin.file:
+    path: /opt/idf-checkout/src
+    owner: idf-app
+    group: idf-app
+    recurse: true
+  when: app_code.changed
+
+- name: Abhängigkeiten und Build
+  ansible.builtin.shell: |
+    set -euo pipefail
+    COREPACK_ENABLE_DOWNLOAD_PROMPT=0 pnpm install --frozen-lockfile
+    NEXT_TELEMETRY_DISABLED=1 pnpm --filter @idf/web build
+  args:
+    chdir: /opt/idf-checkout/src
+    executable: /bin/bash
+  become_user: idf-app
+  environment:
+    HOME: /opt/idf-checkout
+  when: app_code.changed
+  notify: checkout neu starten
+
+- name: Konfiguration mit Zugangsdaten
+  ansible.builtin.template:
+    src: checkout.env.j2
+    dest: /etc/idf/checkout.env
+    owner: root
+    group: idf-app
+    mode: "0640"
+  no_log: true
+  notify: checkout neu starten
+
+- name: Systemd-Dienste und Zeitgeber
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/etc/systemd/system/{{ item }}"
+    mode: "0644"
+  loop:
+    - idf-web.service
+    - idf-postausgang.service
+    - idf-postausgang.timer
+    - idf-webhooks.service
+    - idf-webhooks.timer
+    - idf-einzug.service
+    - idf-einzug.timer
+  notify: checkout neu starten
+
+- name: Caddy (TLS und Weiterleitung an die Anwendung)
+  ansible.builtin.template:
+    src: Caddyfile.j2
+    dest: /etc/caddy/Caddyfile
+    mode: "0644"
+  notify: caddy neu laden
+
+- name: Dienste an
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+    daemon_reload: true
+  loop: [idf-web.service, idf-postausgang.timer, idf-webhooks.timer, idf-einzug.timer, caddy.service]
