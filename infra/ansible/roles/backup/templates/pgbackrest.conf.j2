@@ -1,7 +1,8 @@
+# {{ ansible_managed }}
 # pgBackRest auf db-nbg1. Zwei voneinander unabhängige Ziele:
 #   repo1 = Backup A: Hetzner Storage Box in Falkenstein (SFTP), anderer Standort als der Live-Server
 #   repo2 = Backup B: IONOS S3 Frankfurt mit Object Lock (anderer Anbieter, anderes Rechenzentrum)
-# Beide Ziele sind verschlüsselt, mit getrennten Schlüsseln. Platzhalter <...> setzt Ansible aus SOPS.
+# Beide Ziele sind verschlüsselt, mit getrennten Schlüsseln. Die Schlüssel kommen aus SOPS.
 
 [global]
 process-max=2
@@ -10,25 +11,27 @@ log-level-console=info
 log-level-file=detail
 start-fast=y
 archive-async=y
-# WAL-Archiv spätestens alle 60 s schließen: Datenverlust im Ernstfall höchstens wenige Minuten (RPO ≤ 5 min).
+# Läuft die Warteschlange voll (Ziel länger nicht erreichbar), verwirft pgBackRest WAL,
+# statt die Platte des Datenbankservers zu füllen. Der nächste Check schlägt dann Alarm.
 archive-push-queue-max=4GiB
 
 # --- Backup A: Hetzner Storage Box (FSN1) ---
 repo1-type=sftp
-repo1-sftp-host=<storagebox>.your-storagebox.de
-repo1-sftp-host-port=23
-repo1-sftp-host-user=<storagebox-user>
-repo1-sftp-private-key-file=/etc/pgbackrest/storagebox_ed25519
+repo1-sftp-host={{ storagebox_host }}
+repo1-sftp-host-port={{ storagebox_port }}
+repo1-sftp-host-user={{ storagebox_user }}
+repo1-sftp-private-key-file={{ pgbackrest_storagebox_key }}
 repo1-sftp-host-key-check-type=fingerprint
 repo1-sftp-host-key-hash-type=sha256
-repo1-sftp-host-fingerprint=<fingerprint>
-repo1-path=/pgbackrest
+repo1-sftp-host-fingerprint={{ storagebox_fingerprint_hex }}
+repo1-path={{ pgbackrest_repo1_path }}
 repo1-cipher-type=aes-256-cbc
-repo1-cipher-pass=<repo1-cipher-pass>
+repo1-cipher-pass={{ pgbackrest_repo1_cipher_pass }}
 repo1-retention-full=8
 repo1-retention-diff=14
 repo1-bundle=y
 repo1-block=y
+{% if backup_b_enabled %}
 
 # --- Backup B: IONOS S3 Frankfurt, Bucket mit Object Lock (Compliance-Modus, 30 Tage) ---
 # Der Bucket ist versioniert; Löschungen durch expire erzeugen nur Löschmarker,
@@ -37,16 +40,17 @@ repo2-type=s3
 repo2-s3-endpoint=s3.eu-central-3.ionoscloud.com
 repo2-s3-region=eu-central-3
 repo2-s3-bucket=idf-checkout-backup-b
-repo2-s3-key=<ionos-access-key>
-repo2-s3-key-secret=<ionos-secret-key>
+repo2-s3-key={{ ionos_s3_key }}
+repo2-s3-key-secret={{ ionos_s3_secret }}
 repo2-s3-uri-style=path
 repo2-path=/pgbackrest
 repo2-cipher-type=aes-256-cbc
-repo2-cipher-pass=<repo2-cipher-pass>
+repo2-cipher-pass={{ pgbackrest_repo2_cipher_pass }}
 repo2-retention-full=8
 repo2-retention-diff=14
 repo2-bundle=y
 repo2-block=y
+{% endif %}
 
 [idf]
 pg1-path=/var/lib/postgresql/17/main

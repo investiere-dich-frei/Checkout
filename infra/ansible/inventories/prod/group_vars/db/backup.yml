@@ -1,0 +1,10 @@
+# Backup A: Hetzner Storage Box „idf-checkout-backup“ in Falkenstein (keine Geheimnisse).
+storagebox_host: u704739.your-storagebox.de
+storagebox_user: u704739
+storagebox_port: 23
+# SHA-256 des ED25519-Host-Keys (Port 23), hexadezimal, wie pgBackRest ihn erwartet.
+# Gleicher Wert wie SHA256:XqONwb1S0zuj5A1CDxpOSuD2hnAArV1A3wKY7Z3sdgM bei ssh-keygen -l.
+storagebox_fingerprint_hex: 5ea38dc1bd52d33ba3e40d420f1a4e4ae0f6867000ad5d40df0298ed9dec7603
+
+# Geheimnisse (pgbackrest_repo1_cipher_pass, später die IONOS-Zugangsdaten)
+# liegen verschlüsselt in secrets.sops.yml und werden über SOPS geladen.
