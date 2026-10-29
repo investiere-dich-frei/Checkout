@@ -3,4 +3,5 @@
 backup_b_enabled: false
 
 pgbackrest_storagebox_key: /etc/pgbackrest/storagebox_ed25519
-pgbackrest_repo1_path: /pgbackrest
+# Die Storage Box erlaubt per SFTP nur Schreiben unterhalb von /home.
+pgbackrest_repo1_path: /home/pgbackrest

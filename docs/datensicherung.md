@@ -38,6 +38,14 @@ Zwei voneinander unabhängige Sicherungen, bei zwei Anbietern, an zwei Standorte
   - Das Ergebnis geht an Uptime Kuma; fehlt die Meldung, kommt ein Alarm.
 - **Quartalsweise**: Notfallübung mit Neuaufbau auf frischen Servern, protokolliert.
 
+## Stand der echten Server
+
+- 29.10.2026: Backup A auf db-nbg1 eingerichtet. Erste Vollsicherung `20261029-161922F` an die Storage Box,
+  danach Wiederherstellung in ein Testverzeichnis auf db-nbg1: Die Zeile, die erst nach der Sicherung
+  geschrieben wurde und nur im WAL-Archiv stand, war vollständig da. Die Testdatenbank `idf_backup_probe` bleibt dafür bestehen.
+- Eigenheiten der Storage Box: SFTP schreibt nur unterhalb von `/home` (daher `/home/pgbackrest`),
+  und pgBackRest handelt den ECDSA-Host-Key aus, nicht ED25519 (Fingerabdruck in `group_vars/db/backup.yml`).
+
 ## Offen
 
 - Backup A (Storage Box) ist eingerichtet. Geheimnisse liegen SOPS-verschlüsselt in

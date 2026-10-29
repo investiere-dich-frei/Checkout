@@ -1,0 +1,3 @@
+creation_rules:
+  - path_regex: infra/ansible/.*\.sops\.yml$
+    age: age1vhknqr2t70ly4gqmzzegzvuju6eay3ykay0xekhypxwrlxde6e3qpnxtq3
