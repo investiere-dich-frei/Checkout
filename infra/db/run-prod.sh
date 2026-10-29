@@ -27,6 +27,14 @@ password=$(sops -d --extract '["pg_migrator_password"]' "$secrets")
 db_secrets=infra/db/secrets.sops.yml
 if [ -f "$db_secrets" ]; then
   SOURCE_DATABASE_URL=$(sops -d --extract '["supabase_readonly_url"]' "$db_secrets")
+  # Supabase signiert mit einer eigenen Root-CA, die nicht im System-Truststore liegt.
+  # Mit ihr wird das Zertifikat des Poolers vollständig geprüft (Kette und Hostname).
+  ca="$PWD/infra/db/supabase-prod-ca-2021.crt"
+  SOURCE_DATABASE_URL="${SOURCE_DATABASE_URL/sslmode=require/sslmode=verify-full}"
+  case "$SOURCE_DATABASE_URL" in
+    *\?*) SOURCE_DATABASE_URL="${SOURCE_DATABASE_URL}&sslrootcert=${ca}" ;;
+    *) SOURCE_DATABASE_URL="${SOURCE_DATABASE_URL}?sslmode=verify-full&sslrootcert=${ca}" ;;
+  esac
   export SOURCE_DATABASE_URL
 fi
 
