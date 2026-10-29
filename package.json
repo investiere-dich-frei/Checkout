@@ -2,10 +2,14 @@
   "name": "idf-checkout",
   "private": true,
   "packageManager": "pnpm@10.28.0",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "db:migrate": "pnpm --filter @idf/db migrate"
+    "db:migrate": "pnpm --filter @idf/db migrate",
+    "db:company:create": "pnpm --filter @idf/db company:create",
+    "db:thrivecart:import": "pnpm --filter @idf/db thrivecart:import"
   }
 }
