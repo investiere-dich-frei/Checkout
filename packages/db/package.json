@@ -5,7 +5,8 @@
   "exports": {
     "./catalog": "./src/catalog.ts",
     "./orders": "./src/orders.ts",
-    "./invoicing": "./src/invoicing.ts"
+    "./invoicing": "./src/invoicing.ts",
+    "./stripe": "./src/stripe.ts"
   },
   "scripts": {
     "migrate": "tsx src/cli.ts",

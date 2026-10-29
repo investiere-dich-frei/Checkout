@@ -12,10 +12,13 @@
   "dependencies": {
     "@idf/core": "workspace:*",
     "@idf/db": "workspace:*",
+    "@stripe/react-stripe-js": "7.0.0",
+    "@stripe/stripe-js": "10.1.0",
     "next": "16.4.1",
     "pg": "^8.23.1",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "stripe": "23.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",
