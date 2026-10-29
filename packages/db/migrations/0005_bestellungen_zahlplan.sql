@@ -58,18 +58,28 @@ create table app.order_installments (
   gross_cents   bigint not null check (gross_cents >= 0),
   status        text not null default 'offen' check (status in ('offen', 'bezahlt', 'fehlgeschlagen', 'erlassen', 'storniert')),
   payment_id    uuid references app.payments (id),
+  invoice_id    uuid references app.invoices (id),
   created_at    timestamptz not null default now(),
   unique (order_item_id, seq),
   check (net_cents + tax_cents = gross_cents),
-  check (status <> 'bezahlt' or payment_id is not null)
+  check (status <> 'bezahlt' or payment_id is not null),
+  check (invoice_id is null or payment_id is not null)
 );
+create unique index order_installments_invoice_idx on app.order_installments (invoice_id) where invoice_id is not null;
 create index order_installments_due_idx on app.order_installments (due_date) where status = 'offen';
 
--- Nur Status und Zahlungsverweis dürfen sich ändern; Betrag und Fälligkeit nie.
+-- Nur Status, Zahlung und Rechnung dürfen sich ändern; Betrag und Fälligkeit nie.
+-- Zahlung und Rechnung werden einmal gesetzt und dann nicht mehr umgehängt.
 create or replace function app.order_installments_guard() returns trigger
 language plpgsql as $$
 begin
-  if (to_jsonb(new) - 'status' - 'payment_id') is distinct from (to_jsonb(old) - 'status' - 'payment_id') then
+  if (old.payment_id is not null and new.payment_id is distinct from old.payment_id)
+     or (old.invoice_id is not null and new.invoice_id is distinct from old.invoice_id) then
+    raise exception 'GoBD: Zahlung und Rechnung der Fälligkeit % sind bereits zugeordnet', old.seq
+      using errcode = 'P0001';
+  end if;
+  if (to_jsonb(new) - 'status' - 'payment_id' - 'invoice_id')
+     is distinct from (to_jsonb(old) - 'status' - 'payment_id' - 'invoice_id') then
     raise exception 'GoBD: Fälligkeit % der Bestellung % ist festgeschrieben', old.seq, old.order_id
       using errcode = 'P0001';
   end if;
