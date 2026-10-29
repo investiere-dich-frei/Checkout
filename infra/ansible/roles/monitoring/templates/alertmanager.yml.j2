@@ -1,10 +1,13 @@
 # {{ ansible_managed }}
+{% set mail_ready = alert_smtp_host != 'TODO' and alert_smtp_password is defined %}
+{% if mail_ready %}
 global:
   smtp_smarthost: "{{ alert_smtp_host }}:{{ alert_smtp_port }}"
   smtp_from: "{{ alert_smtp_from }}"
   smtp_auth_username: "{{ alert_smtp_user }}"
   smtp_auth_password: "{{ alert_smtp_password }}"
   smtp_require_tls: true
+{% endif %}
 
 route:
   receiver: email
@@ -14,6 +17,10 @@ route:
 
 receivers:
   - name: email
+{% if mail_ready %}
     email_configs:
       - to: "{{ alert_email_to }}"
         send_resolved: true
+{% else %}
+    # Noch kein Postfach hinterlegt: Alarme erscheinen nur in Alertmanager und Grafana.
+{% endif %}
