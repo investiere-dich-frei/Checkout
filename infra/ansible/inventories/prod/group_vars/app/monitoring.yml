@@ -1,0 +1,6 @@
+# Alarm-E-Mails (keine Geheimnisse; Passwörter in secrets.sops.yml daneben).
+alert_email_to: TODO
+alert_smtp_from: TODO
+alert_smtp_host: TODO
+alert_smtp_port: 587
+alert_smtp_user: TODO

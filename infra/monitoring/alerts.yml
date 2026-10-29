@@ -4,13 +4,39 @@ groups:
       - alert: ServerNichtErreichbar
         expr: up == 0
         for: 3m
-      - alert: WalArchivierungHaengt
-        # Archivierung schlägt fehl oder steht länger als 10 Minuten: RPO in Gefahr.
-        expr: increase(pg_stat_archiver_failed_count[10m]) > 0 or pg_stat_archiver_last_archive_age > 600
+        annotations:
+          summary: "{{ $labels.instance }} ({{ $labels.job }}) antwortet nicht"
+      - alert: WalArchivierungFehler
+        # Archivierung ins Backup schlägt fehl: RPO in Gefahr. Bei ruhender Datenbank
+        # entsteht kein neues WAL; das Alter des letzten Archivs allein ist deshalb kein Alarm.
+        expr: increase(pg_stat_archiver_failed_count[10m]) > 0
         for: 5m
+        annotations:
+          summary: "WAL-Archivierung auf {{ $labels.instance }} schlägt fehl"
       - alert: ReplikatHinkt
         expr: pg_replication_lag_seconds > 300
         for: 5m
+        annotations:
+          summary: "Replikat {{ $labels.instance }} liegt {{ $value | humanizeDuration }} zurück"
+      - alert: ReplikatGetrennt
+        # Auf dem Primary muss genau ein Replikat verbunden sein.
+        expr: absent(pg_stat_replication_pg_wal_lsn_diff{instance="10.20.1.20:9187"})
+        for: 10m
+        annotations:
+          summary: "Kein Replikat mit db-nbg1 verbunden"
+      - alert: SicherungZuAlt
+        # Tägliche Sicherung um 01:15; nach 30 Stunden ohne neue Sicherung stimmt etwas nicht.
+        expr: time() - max by (repo) (idf_pgbackrest_last_backup_timestamp) > 30 * 3600
+        for: 15m
+        annotations:
+          summary: "Letzte Sicherung an Ziel {{ $labels.repo }} ist älter als 30 Stunden"
+      - alert: SicherungStatusUnbekannt
+        expr: idf_pgbackrest_info_ok == 0 or absent(idf_pgbackrest_info_ok)
+        for: 30m
+        annotations:
+          summary: "pgbackrest info auf db-nbg1 liefert keine Daten"
       - alert: PlatteFastVoll
         expr: (node_filesystem_avail_bytes{fstype=~"ext4|xfs"} / node_filesystem_size_bytes) < 0.15
         for: 10m
+        annotations:
+          summary: "Auf {{ $labels.instance }} ({{ $labels.mountpoint }}) sind weniger als 15 % frei"

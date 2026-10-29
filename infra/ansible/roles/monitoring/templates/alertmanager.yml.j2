@@ -1,0 +1,19 @@
+# {{ ansible_managed }}
+global:
+  smtp_smarthost: "{{ alert_smtp_host }}:{{ alert_smtp_port }}"
+  smtp_from: "{{ alert_smtp_from }}"
+  smtp_auth_username: "{{ alert_smtp_user }}"
+  smtp_auth_password: "{{ alert_smtp_password }}"
+  smtp_require_tls: true
+
+route:
+  receiver: email
+  group_by: [alertname]
+  group_wait: 1m
+  repeat_interval: 12h
+
+receivers:
+  - name: email
+    email_configs:
+      - to: "{{ alert_email_to }}"
+        send_resolved: true

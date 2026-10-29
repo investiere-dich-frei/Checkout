@@ -9,3 +9,14 @@
   hosts: db
   become: true
   roles: [postgres, backup]
+
+# Nach der Datenbank, weil der PostgreSQL-Exporter eine Datenbankrolle braucht.
+- name: Messfühler für die Überwachung
+  hosts: all
+  become: true
+  roles: [exporter]
+
+- name: Überwachung und Alarme
+  hosts: app
+  become: true
+  roles: [monitoring]

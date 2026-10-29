@@ -1,0 +1,43 @@
+# Prometheus, Alertmanager, Grafana und Uptime Kuma auf app-nbg1 (Docker Compose).
+# Die Oberflächen lauschen nur auf 127.0.0.1 und sind per SSH-Tunnel erreichbar.
+
+- name: Docker
+  ansible.builtin.apt:
+    name: [docker.io, docker-compose]
+
+- name: Verzeichnisse
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0750"
+  loop: [/opt/idf-monitoring, /etc/idf]
+
+- name: Compose-Datei und Prometheus-Regeln
+  ansible.builtin.copy:
+    src: "../../../monitoring/{{ item }}"
+    dest: "/opt/idf-monitoring/{{ item }}"
+    mode: "0644"
+  loop: [docker-compose.yml, prometheus.yml, alerts.yml]
+  notify: monitoring neu starten
+
+- name: Alertmanager (E-Mail-Versand)
+  ansible.builtin.template:
+    src: alertmanager.yml.j2
+    dest: /opt/idf-monitoring/alertmanager.yml
+    mode: "0644"
+  no_log: true
+  notify: monitoring neu starten
+
+- name: Grafana-Adminpasswort
+  ansible.builtin.copy:
+    dest: /etc/idf/grafana_admin
+    content: "{{ grafana_admin_password }}"
+    mode: "0644"
+  no_log: true
+
+- name: Dienste starten
+  ansible.builtin.command: docker-compose up -d --remove-orphans
+  args:
+    chdir: /opt/idf-monitoring
+  register: compose_up
+  changed_when: "'Creating' in compose_up.stderr or 'Recreat' in compose_up.stderr or 'Starting' in compose_up.stderr"

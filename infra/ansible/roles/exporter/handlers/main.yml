@@ -1,0 +1,9 @@
+- name: restart node-exporter
+  ansible.builtin.service:
+    name: prometheus-node-exporter
+    state: restarted
+
+- name: restart postgres-exporter
+  ansible.builtin.service:
+    name: prometheus-postgres-exporter
+    state: restarted
