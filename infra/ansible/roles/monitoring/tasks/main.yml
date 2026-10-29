@@ -3,7 +3,7 @@
 
 - name: Docker
   ansible.builtin.apt:
-    name: [docker.io, docker-compose]
+    name: [docker.io, docker-cli, docker-compose]
 
 - name: Verzeichnisse
   ansible.builtin.file:

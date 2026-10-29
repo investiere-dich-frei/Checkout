@@ -41,7 +41,7 @@
     content: |
       # Von Ansible verwaltet (roles/exporter), nicht von Hand ändern.
       DATA_SOURCE_NAME='user=prometheus host=/var/run/postgresql dbname=postgres sslmode=disable'
-      ARGS="--web.listen-address={{ private_ip }}:9187 --collector.stat_archiver"
+      ARGS="--web.listen-address={{ private_ip }}:9187"
     mode: "0640"
     group: prometheus
   when: "'db' in group_names"
