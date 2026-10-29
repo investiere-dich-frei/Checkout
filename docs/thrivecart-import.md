@@ -4,6 +4,11 @@ Stand 29.10.2026. Die Produkte und Preisoptionen werden 1:1 aus Thrivecart über
 
 ## Ablauf
 
+0. **Gesellschaft anlegen**, falls noch nicht geschehen:
+   ```sh
+   DATABASE_URL=… pnpm --filter @idf/db company:create gesellschaft.json --actor cli:<name> [--dry-run]
+   ```
+   Legt die Gesellschaft und ihren Rechnungsnummernkreis in einer Transaktion an. Die JSON-Datei liegt nicht im Repository.
 1. **Export** aus dem Supabase-Spiegel der Thrivecart-Daten, nur lesend:
    [`packages/db/thrivecart/export-katalog.sql`](../packages/db/thrivecart/export-katalog.sql).
    Ergebnis ist eine JSON-Datei. Sie enthält keine Kundendaten und liegt nicht im Repository, sondern in der Projektablage.

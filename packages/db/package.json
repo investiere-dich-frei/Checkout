@@ -5,6 +5,7 @@
   "scripts": {
     "migrate": "tsx src/cli.ts",
     "thrivecart:import": "tsx src/thrivecart-cli.ts",
+    "company:create": "tsx src/company-cli.ts",
     "typecheck": "tsc -p tsconfig.json",
     "test": "node --import tsx --test --test-concurrency=1 test/*.test.ts"
   },
