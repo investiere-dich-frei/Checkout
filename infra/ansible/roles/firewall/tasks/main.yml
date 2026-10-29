@@ -1,0 +1,63 @@
+# Firewall auf jedem Server (ufw). Ergänzt die Hetzner-Cloud-Firewall: Die filtert nur
+# das öffentliche Netz, das private Netz 10.20.1.0/24 lässt sie komplett durch.
+# Hier gilt deshalb: alles zu, nur was ein Dienst wirklich braucht, ist offen.
+#
+# SSH bleibt von überall offen. Wer von wo per SSH darf, entscheidet die Hetzner-Firewall
+# (nur der Mac mini); so sperrt eine neue Heim-IP nie zusätzlich auch ufw aus.
+# Die SSH-Regel wird vor dem Einschalten gesetzt, damit der laufende Ansible-Lauf nicht abreißt.
+
+- name: SSH erlauben
+  community.general.ufw:
+    rule: limit
+    port: "22"
+    proto: tcp
+    comment: SSH (Quelle begrenzt die Hetzner-Firewall)
+
+- name: Datenbank – PostgreSQL aus dem privaten Netz
+  community.general.ufw:
+    rule: allow
+    port: "5432"
+    proto: tcp
+    src: "{{ firewall_private_net }}"
+    comment: PostgreSQL privat
+  when: inventory_hostname in groups['db']
+
+# Messfühler lesen nur Prometheus auf dem App-Server.
+- name: Messfühler nur für den Überwachungsserver
+  community.general.ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+    src: "{{ hostvars[groups['app'][0]].private_ip }}"
+    comment: Prometheus
+  loop: ["9100", "9187"]
+  when: inventory_hostname in groups['db'] or item == "9100"
+
+# Prometheus läuft im Docker-Netz; seine Abfrage des eigenen Servers kommt deshalb
+# von einer Docker-Adresse (172.16.0.0/12), nicht von 10.20.1.10.
+- name: App – Messfühler für Prometheus aus dem Docker-Netz
+  community.general.ufw:
+    rule: allow
+    port: "9100"
+    proto: tcp
+    src: 172.16.0.0/12
+    comment: Prometheus (Docker)
+  when: inventory_hostname in groups['app']
+
+- name: App – HTTP und HTTPS
+  community.general.ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+    comment: Web
+  loop: ["80", "443"]
+  when: inventory_hostname in groups['app']
+
+- name: Ausgehend erlaubt, eingehend gesperrt, ufw an
+  community.general.ufw:
+    state: enabled
+    direction: "{{ item.direction }}"
+    policy: "{{ item.policy }}"
+  loop:
+    - { direction: outgoing, policy: allow }
+    - { direction: incoming, policy: deny }

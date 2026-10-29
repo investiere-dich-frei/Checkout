@@ -24,3 +24,6 @@
 
 - name: Streaming-Replikation nach FSN1
   ansible.builtin.import_tasks: replikation.yml
+
+- name: Anwendungsdatenbank
+  ansible.builtin.import_tasks: datenbank.yml

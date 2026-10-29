@@ -20,3 +20,9 @@
   hosts: app
   become: true
   roles: [monitoring]
+
+# Zum Schluss, damit alle Dienste schon laufen, wenn die Firewall zugeht.
+- name: Firewall
+  hosts: all
+  become: true
+  roles: [firewall]
