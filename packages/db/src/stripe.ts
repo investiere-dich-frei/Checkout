@@ -1,4 +1,5 @@
 import type pg from "pg";
+import { rememberPaymentMethod } from "./billing.ts";
 import { bookPayment, NO_INVOICE, type BookingOutcome, type Decision, type HandledEvent } from "./booking.ts";
 
 export type { HandledEvent } from "./booking.ts";
@@ -103,6 +104,9 @@ export interface StripeEventInput {
     amountReceived: number;
     currency: string;
     metadata: Record<string, string>;
+    /** Gespeicherte Zahlungsmethode (pm_…), wenn sie für spätere Einzüge freigegeben ist. */
+    savedPaymentMethod?: string | null;
+    stripeCustomer?: string | null;
   };
 }
 
@@ -144,8 +148,15 @@ async function decide(
   if (event.type !== "payment_intent.succeeded" || !pi) return { outcome: "ignoriert", note: null, ...none };
   if (pi.status !== "succeeded") return { outcome: "pruefen", note: `Status ${pi.status}`, ...none };
 
-  const known = await client.query<{ installment_id: string; amount_cents: string; currency: string; gross_cents: string; order_currency: string }>(
-    `select p.installment_id, p.amount_cents, p.currency, i.gross_cents, o.currency order_currency
+  const known = await client.query<{
+    installment_id: string;
+    amount_cents: string;
+    currency: string;
+    gross_cents: string;
+    order_currency: string;
+    customer_id: string;
+  }>(
+    `select p.installment_id, p.amount_cents, p.currency, i.gross_cents, o.currency order_currency, o.customer_id
        from app.stripe_payment_intents p
        join app.order_installments i on i.id = p.installment_id
        join app.orders o on o.id = i.order_id
@@ -171,10 +182,19 @@ async function decide(
     };
   }
 
-  return bookPayment(client, {
+  const booked = await bookPayment(client, {
     installmentId: k.installment_id,
     provider: "stripe",
     providerRef: pi.id,
     paidAt: new Date(event.created * 1000),
   });
+  if (booked.outcome === "gebucht" && pi.savedPaymentMethod) {
+    await rememberPaymentMethod(client, {
+      customerId: k.customer_id,
+      provider: "stripe",
+      ref: pi.savedPaymentMethod,
+      providerCustomer: pi.stripeCustomer ?? null,
+    });
+  }
+  return booked;
 }

@@ -1,4 +1,5 @@
 import type pg from "pg";
+import { rememberPaymentMethod } from "./billing.ts";
 import { bookPayment, NO_INVOICE, type BookingOutcome, type Decision, type HandledEvent } from "./booking.ts";
 
 /**
@@ -33,6 +34,8 @@ export interface PaypalCaptureInput {
     /** Zeitpunkt der Zahlung laut PayPal. */
     createdAt: Date;
   } | null;
+  /** Gespeichertes PayPal-Konto (Vault-ID) für spätere Einzüge, falls PayPal es angelegt hat. */
+  vaultId?: string | null;
   payload: unknown;
 }
 
@@ -81,8 +84,8 @@ async function decide(client: pg.ClientBase, input: PaypalCaptureInput): Promise
 
   const known = input.paypalOrderId
     ? (
-        await client.query<{ installment_id: string; gross_cents: string; order_currency: string }>(
-          `select p.installment_id, i.gross_cents, o.currency order_currency
+        await client.query<{ installment_id: string; gross_cents: string; order_currency: string; customer_id: string }>(
+          `select p.installment_id, i.gross_cents, o.currency order_currency, o.customer_id
              from app.paypal_orders p
              join app.order_installments i on i.id = p.installment_id
              join app.orders o on o.id = i.order_id
@@ -109,12 +112,16 @@ async function decide(client: pg.ClientBase, input: PaypalCaptureInput): Promise
       ...none,
     };
   }
-  return bookPayment(client, {
+  const booked = await bookPayment(client, {
     installmentId: known.installment_id,
     provider: "paypal",
     providerRef: cap.id,
     paidAt: cap.createdAt,
   });
+  if (booked.outcome === "gebucht" && input.vaultId) {
+    await rememberPaymentMethod(client, { customerId: known.customer_id, provider: "paypal", ref: input.vaultId });
+  }
+  return booked;
 }
 
 /** PayPal-Betrag („1665.67“) in Cent. Nur Währungen mit zwei Nachkommastellen (EUR, CHF). */

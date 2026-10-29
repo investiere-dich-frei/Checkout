@@ -43,8 +43,20 @@ describe("Stripe-Meldungen", () => {
       amountReceived: 59500,
       currency: "eur",
       metadata: { installment_id: "00000000-0000-0000-0000-000000000001" },
+      savedPaymentMethod: null,
+      stripeCustomer: null,
     });
     assert.equal(input.created, 1793660000);
+  });
+
+  it("übernimmt die Zahlungsmethode nur, wenn sie für spätere Einzüge freigegeben ist", () => {
+    const withFuture = JSON.parse(payload);
+    Object.assign(withFuture.data.object, { setup_future_usage: "off_session", payment_method: "pm_1", customer: "cus_1" });
+    const body = JSON.stringify(withFuture);
+    const header = api.webhooks.generateTestHeaderString({ payload: body, secret });
+    const input = toEventInput(api.webhooks.constructEvent(body, header, secret));
+    assert.equal(input.paymentIntent?.savedPaymentMethod, "pm_1");
+    assert.equal(input.paymentIntent?.stripeCustomer, "cus_1");
   });
 
   it("lässt andere Ereignisse ohne Zahlungsabsicht durch", () => {

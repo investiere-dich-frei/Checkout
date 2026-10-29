@@ -1,4 +1,4 @@
--- 0008 Bezahlung über PayPal, als eigene Zahlungsart neben Stripe.
+-- 0009 Bezahlung über PayPal, als eigene Zahlungsart neben Stripe.
 --
 --  * Zu jeder Fälligkeit merkt sich das System die PayPal-Bestellung, die es
 --    angelegt hat. Nur solche Bestellungen werden verbucht.

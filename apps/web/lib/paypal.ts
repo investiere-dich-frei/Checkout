@@ -120,6 +120,33 @@ export class PaypalApi {
     return this.call(`/v2/checkout/orders/${paypalOrderId}/capture`, {}, `einzug-${paypalOrderId}`);
   }
 
+  /** Weitere Zahlung über ein gespeichertes PayPal-Konto (Vault), ohne Zutun der Kundin. */
+  chargeVault(input: {
+    vaultId: string;
+    installmentId: string;
+    amountCents: number;
+    currency: string;
+    description: string;
+    requestId: string;
+  }): Promise<PaypalOrderResponse> {
+    return this.call(
+      "/v2/checkout/orders",
+      {
+        intent: "CAPTURE",
+        purchase_units: [
+          {
+            reference_id: input.installmentId,
+            custom_id: input.installmentId,
+            description: input.description.slice(0, 127),
+            amount: { currency_code: input.currency.toUpperCase(), value: centsToPaypalAmount(input.amountCents) },
+          },
+        ],
+        payment_source: { paypal: { vault_id: input.vaultId } },
+      },
+      input.requestId,
+    );
+  }
+
   /** Signatur einer Webhook-Meldung bei PayPal prüfen lassen. */
   async verifyWebhook(headers: Headers, event: unknown): Promise<boolean> {
     if (!this.config.webhookId) return false;
@@ -149,6 +176,7 @@ export interface PaypalCapture {
 export interface PaypalOrderResponse {
   id: string;
   status: string;
+  payment_source?: { paypal?: { attributes?: { vault?: { id?: string; status?: string } } } };
   purchase_units?: { payments?: { captures?: PaypalCapture[] } }[];
 }
 
@@ -171,6 +199,7 @@ export function captureFromOrder(order: PaypalOrderResponse): PaypalCaptureInput
     type: "capture",
     paypalOrderId: order.id,
     capture: c ? toCapture(c) : null,
+    vaultId: order.payment_source?.paypal?.attributes?.vault?.status === "VAULTED" ? (order.payment_source.paypal.attributes.vault.id ?? null) : null,
     payload: order,
   };
 }

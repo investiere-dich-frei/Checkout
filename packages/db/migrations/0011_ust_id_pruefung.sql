@@ -1,4 +1,4 @@
--- 0010 Nachweis der USt-IdNr.-Prüfung (VIES) für Reverse Charge.
+-- 0011 Nachweis der USt-IdNr.-Prüfung (VIES) für Reverse Charge.
 --
 -- Reverse Charge gilt nur mit gültiger USt-IdNr. der Kundin. Jede Abfrage beim
 -- VIES-System der EU wird mit Ergebnis und Abfragenummer festgehalten und der

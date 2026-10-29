@@ -1,4 +1,4 @@
--- 0011 Rechnungs-PDF, unveränderbar in der Datenbank abgelegt.
+-- 0012 Rechnungs-PDF, unveränderbar in der Datenbank abgelegt.
 --
 -- Das PDF entsteht in derselben Transaktion wie die Rechnung und ist genau das
 -- Dokument, das die Kundin per E-Mail bekommt. Die Rechnung verweist über

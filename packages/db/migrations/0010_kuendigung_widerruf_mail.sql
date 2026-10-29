@@ -1,4 +1,4 @@
--- 0009 Kündigungsbutton (§ 312k BGB), Widerrufsbutton (§ 356a BGB) und Postausgang.
+-- 0010 Kündigungsbutton (§ 312k BGB), Widerrufsbutton (§ 356a BGB) und Postausgang.
 --
 --  * Jede Kündigung und jeder Widerruf über die Website wird mit allen Angaben und
 --    dem Zeitpunkt des Eingangs festgehalten und danach nie mehr geändert. Das ist

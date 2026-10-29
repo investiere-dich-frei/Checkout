@@ -1,4 +1,4 @@
--- 0007 Bezahlung über Stripe.
+-- 0008 Bezahlung über Stripe.
 --
 --  * Zu jeder Fälligkeit merkt sich das System die Stripe-Zahlungsabsicht
 --    (PaymentIntent), die der Kundin angezeigt wurde. Lädt sie die Seite neu,

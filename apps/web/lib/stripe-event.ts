@@ -14,6 +14,14 @@ export function toEventInput(event: Stripe.Event): StripeEventInput {
       amountReceived: pi.amount_received,
       currency: pi.currency,
       metadata: pi.metadata ?? {},
+      // Nur Zahlungsmethoden, die die Kundin für spätere Einzüge freigegeben hat.
+      savedPaymentMethod: pi.setup_future_usage === "off_session" ? idOf(pi.payment_method) : null,
+      stripeCustomer: idOf(pi.customer),
     },
   };
+}
+
+function idOf(v: string | { id: string } | null | undefined): string | null {
+  if (!v) return null;
+  return typeof v === "string" ? v : v.id;
 }

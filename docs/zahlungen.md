@@ -83,3 +83,24 @@ select id, received_at, paypal_order, outcome_note from app.paypal_events where 
 
 - Erst mit Sandbox-Zugang testen.
 - Im Stripe-Konto PayPal als Zahlungsart ausgeschaltet lassen, damit PayPal nicht doppelt erscheint.
+
+# Wiederkehrende Zahlungen
+
+## Abos verlängern
+
+- Bei einer Abo-Bestellung werden Plan, Kauftag und Steuersatz festgeschrieben (`app.subscription_terms`).
+- Der tägliche Lauf legt die nächsten Fälligkeiten an, immer vom ursprünglichen Stichtag aus (der 31. wandert nicht über kurze Monate).
+- Nach einer Kündigung wird das Vertragsende einmal gesetzt (`endSubscription`). Danach entstehen keine Fälligkeiten mehr; offene spätere Raten werden storniert.
+
+## Einzug
+
+- Die erste Zahlung leistet die Kundin selbst auf der Bestellseite. Dabei gibt sie die Zahlungsart für spätere Einzüge frei:
+  - Stripe: Zahlungsmethode (`pm_…`);
+  - PayPal: gespeichertes Konto (Vault).
+- Ab der zweiten Rate zieht der tägliche Lauf `pnpm einzug` automatisch ein.
+  - Stripe: Zahlung wird angelegt, gemerkt und erst dann bestätigt. Gebucht wird beim Webhook.
+  - PayPal: Zahlung über das gespeicherte Konto, sofort gebucht.
+- Abgelehnt: Die Rate wird „fehlgeschlagen“. Neuer Versuch nach 3, dann nach 4 Tagen. Nach 3 Versuchen übernimmt das Mahnwesen.
+- Jeder Versuch steht unveränderbar in `app.charge_attempts`.
+- Ohne gespeicherte Zahlungsart zahlt die Kundin über die Bestellseite; die Seite zeigt fällige Raten automatisch an.
+- Der Lauf soll täglich am Morgen laufen (Timer auf dem App-Server) und gibt nur Zahlen aus.
