@@ -46,4 +46,20 @@ jobs:
       - run: terraform init -backend=false -input=false && terraform validate
         working-directory: infra/terraform
       - name: Shell-Skripte
-        run: shellcheck infra/backup/*.sh
+        run: shellcheck infra/backup/*.sh infra/backup/probe/*.sh
+
+  backup-probe:
+    name: Generalprobe Datensicherung (Backup A und B)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Sicherungsziele einrichten
+        run: infra/backup/probe/ci-setup.sh
+      - name: Sichern, Server löschen, aus A und B wiederherstellen, prüfen
+        run: infra/backup/probe/run.sh
