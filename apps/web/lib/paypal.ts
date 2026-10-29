@@ -1,0 +1,206 @@
+import { centsToPaypalAmount, paypalAmountToCents, type PaypalCaptureInput } from "@idf/db/paypal";
+
+/**
+ * Schmaler Zugang zur PayPal-REST-Schnittstelle (Orders v2). Zugangsdaten kommen aus
+ * der Umgebung (auf dem Server aus SOPS), nie aus dem Code.
+ */
+
+export interface PaypalConfig {
+  clientId: string;
+  clientSecret: string;
+  baseUrl: string;
+  webhookId: string | null;
+}
+
+export function paypalConfig(env: Record<string, string | undefined> = process.env): PaypalConfig | null {
+  if (!env.PAYPAL_CLIENT_ID || !env.PAYPAL_CLIENT_SECRET) return null;
+  return {
+    clientId: env.PAYPAL_CLIENT_ID,
+    clientSecret: env.PAYPAL_CLIENT_SECRET,
+    // Ohne ausdrückliches „live“ immer die Testumgebung.
+    baseUrl: env.PAYPAL_ENV === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com",
+    webhookId: env.PAYPAL_WEBHOOK_ID || null,
+  };
+}
+
+export class PaypalError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+}
+
+type Fetch = typeof fetch;
+
+export class PaypalApi {
+  private token: { value: string; expiresAt: number } | null = null;
+
+  constructor(
+    private readonly config: PaypalConfig,
+    private readonly fetchFn: Fetch = fetch,
+  ) {}
+
+  private async accessToken(): Promise<string> {
+    if (this.token && this.token.expiresAt > Date.now() + 60_000) return this.token.value;
+    const res = await this.fetchFn(`${this.config.baseUrl}/v1/oauth2/token`, {
+      method: "POST",
+      headers: {
+        authorization: `Basic ${Buffer.from(`${this.config.clientId}:${this.config.clientSecret}`).toString("base64")}`,
+        "content-type": "application/x-www-form-urlencoded",
+      },
+      body: "grant_type=client_credentials",
+    });
+    if (!res.ok) throw new PaypalError("PayPal-Anmeldung fehlgeschlagen", res.status);
+    const body = (await res.json()) as { access_token: string; expires_in: number };
+    this.token = { value: body.access_token, expiresAt: Date.now() + body.expires_in * 1000 };
+    return body.access_token;
+  }
+
+  private async call<T>(path: string, body: unknown, requestId?: string): Promise<T> {
+    const res = await this.fetchFn(`${this.config.baseUrl}${path}`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${await this.accessToken()}`,
+        "content-type": "application/json",
+        ...(requestId ? { "paypal-request-id": requestId } : {}),
+      },
+      body: JSON.stringify(body),
+    });
+    // Fehlertexte von PayPal nicht weiterreichen: Sie können Kundendaten enthalten.
+    if (!res.ok) throw new PaypalError(`PayPal antwortet mit ${res.status} auf ${path}`, res.status);
+    return (await res.json()) as T;
+  }
+
+  /** PayPal-Bestellung für eine Fälligkeit anlegen. */
+  createOrder(input: {
+    installmentId: string;
+    amountCents: number;
+    currency: string;
+    description: string;
+    brandName: string;
+    /** Raten und Abos: PayPal-Konto für spätere Einzüge speichern. */
+    vault: boolean;
+    requestId: string;
+  }): Promise<{ id: string; status: string }> {
+    return this.call(
+      "/v2/checkout/orders",
+      {
+        intent: "CAPTURE",
+        purchase_units: [
+          {
+            reference_id: input.installmentId,
+            custom_id: input.installmentId,
+            description: input.description.slice(0, 127),
+            amount: { currency_code: input.currency.toUpperCase(), value: centsToPaypalAmount(input.amountCents) },
+          },
+        ],
+        payment_source: {
+          paypal: {
+            experience_context: {
+              brand_name: input.brandName.slice(0, 127),
+              locale: "de-DE",
+              shipping_preference: "NO_SHIPPING",
+              user_action: "PAY_NOW",
+            },
+            ...(input.vault
+              ? { attributes: { vault: { store_in_vault: "ON_SUCCESS", usage_type: "MERCHANT", customer_type: "CONSUMER" } } }
+              : {}),
+          },
+        },
+      },
+      input.requestId,
+    );
+  }
+
+  /** Von der Kundin freigegebene Bestellung einziehen. */
+  async captureOrder(paypalOrderId: string): Promise<PaypalOrderResponse> {
+    if (!/^[A-Z0-9]{5,40}$/.test(paypalOrderId)) throw new PaypalError("Ungültige PayPal-Bestellnummer", 400);
+    return this.call(`/v2/checkout/orders/${paypalOrderId}/capture`, {}, `einzug-${paypalOrderId}`);
+  }
+
+  /** Signatur einer Webhook-Meldung bei PayPal prüfen lassen. */
+  async verifyWebhook(headers: Headers, event: unknown): Promise<boolean> {
+    if (!this.config.webhookId) return false;
+    const h = (name: string) => headers.get(name) ?? "";
+    const res = await this.call<{ verification_status: string }>("/v1/notifications/verify-webhook-signature", {
+      auth_algo: h("paypal-auth-algo"),
+      cert_url: h("paypal-cert-url"),
+      transmission_id: h("paypal-transmission-id"),
+      transmission_sig: h("paypal-transmission-sig"),
+      transmission_time: h("paypal-transmission-time"),
+      webhook_id: this.config.webhookId,
+      webhook_event: event,
+    });
+    return res.verification_status === "SUCCESS";
+  }
+}
+
+export interface PaypalCapture {
+  id: string;
+  status: string;
+  amount: { currency_code: string; value: string };
+  custom_id?: string;
+  create_time?: string;
+  supplementary_data?: { related_ids?: { order_id?: string } };
+}
+
+export interface PaypalOrderResponse {
+  id: string;
+  status: string;
+  purchase_units?: { payments?: { captures?: PaypalCapture[] } }[];
+}
+
+function toCapture(c: PaypalCapture): NonNullable<PaypalCaptureInput["capture"]> {
+  return {
+    id: c.id,
+    status: c.status,
+    amountCents: paypalAmountToCents(c.amount.value),
+    currency: c.amount.currency_code,
+    customId: c.custom_id ?? null,
+    createdAt: c.create_time ? new Date(c.create_time) : new Date(),
+  };
+}
+
+/** Antwort auf den Einzug in die Werte für die Verbuchung übersetzen. */
+export function captureFromOrder(order: PaypalOrderResponse): PaypalCaptureInput {
+  const c = order.purchase_units?.[0]?.payments?.captures?.[0];
+  return {
+    eventId: c ? `capture:${c.id}` : `bestellung:${order.id}:${order.status}`,
+    type: "capture",
+    paypalOrderId: order.id,
+    capture: c ? toCapture(c) : null,
+    payload: order,
+  };
+}
+
+export interface PaypalWebhookEvent {
+  id: string;
+  event_type: string;
+  resource_type?: string;
+  resource?: unknown;
+}
+
+/** Webhook-Meldung in die Werte für die Verbuchung übersetzen. Nur Zahlungs-Ereignisse tragen eine Zahlung. */
+export function captureFromWebhook(event: PaypalWebhookEvent): PaypalCaptureInput {
+  const isCapture = event.event_type.startsWith("PAYMENT.CAPTURE.") && event.resource_type === "capture";
+  const c = isCapture ? (event.resource as PaypalCapture) : null;
+  return {
+    eventId: event.id,
+    type: event.event_type,
+    paypalOrderId: c?.supplementary_data?.related_ids?.order_id ?? null,
+    capture: c ? toCapture(c) : null,
+    payload: event,
+  };
+}
+
+const globalForPaypal = globalThis as unknown as { idfPaypal?: PaypalApi };
+
+/** PayPal-Zugang, oder null, solange keine Zugangsdaten hinterlegt sind. */
+export function paypal(): PaypalApi | null {
+  const config = paypalConfig();
+  if (!config) return null;
+  globalForPaypal.idfPaypal ??= new PaypalApi(config);
+  return globalForPaypal.idfPaypal;
+}

@@ -6,7 +6,8 @@
     "./catalog": "./src/catalog.ts",
     "./orders": "./src/orders.ts",
     "./invoicing": "./src/invoicing.ts",
-    "./stripe": "./src/stripe.ts"
+    "./stripe": "./src/stripe.ts",
+    "./paypal": "./src/paypal.ts"
   },
   "scripts": {
     "migrate": "tsx src/cli.ts",

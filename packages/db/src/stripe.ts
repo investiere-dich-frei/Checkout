@@ -1,5 +1,7 @@
 import type pg from "pg";
-import { PaymentError, recordInstallmentPayment } from "./invoicing.ts";
+import { bookPayment, NO_INVOICE, type BookingOutcome, type Decision, type HandledEvent } from "./booking.ts";
+
+export type { HandledEvent } from "./booking.ts";
 
 /**
  * Datenbankseite der Stripe-Bezahlung. Kennt das Stripe-SDK nicht: Die Web-App
@@ -104,18 +106,6 @@ export interface StripeEventInput {
   };
 }
 
-export type StripeOutcome = "gebucht" | "schon_gebucht" | "ignoriert" | "pruefen";
-
-export interface HandledEvent {
-  outcome: StripeOutcome;
-  note: string | null;
-  invoiceNumber: string | null;
-  /** false, wenn dieses Ereignis schon einmal ankam. */
-  firstDelivery: boolean;
-}
-
-const berlinDay = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Berlin" });
-
 /**
  * Stripe-Ereignis verbuchen. Läuft in der Transaktion des Aufrufers.
  *
@@ -125,7 +115,7 @@ const berlinDay = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Berlin" }
  * als „pruefen“ abgelegt: Das Geld ist dann bei Stripe, aber ohne Rechnung.
  */
 export async function handleStripeEvent(client: pg.ClientBase, event: StripeEventInput): Promise<HandledEvent> {
-  const seen = await client.query<{ outcome: StripeOutcome; outcome_note: string | null; invoice_number: string | null }>(
+  const seen = await client.query<{ outcome: BookingOutcome; outcome_note: string | null; invoice_number: string | null }>(
     `select e.outcome, e.outcome_note, i.invoice_number
        from app.stripe_events e left join app.invoices i on i.id = e.invoice_id
       where e.id = $1`,
@@ -148,8 +138,8 @@ export async function handleStripeEvent(client: pg.ClientBase, event: StripeEven
 async function decide(
   client: pg.ClientBase,
   event: StripeEventInput,
-): Promise<{ outcome: StripeOutcome; note: string | null; invoiceId: string | null; invoiceNumber: string | null }> {
-  const none = { invoiceId: null, invoiceNumber: null };
+): Promise<Decision> {
+  const none = NO_INVOICE;
   const pi = event.paymentIntent;
   if (event.type !== "payment_intent.succeeded" || !pi) return { outcome: "ignoriert", note: null, ...none };
   if (pi.status !== "succeeded") return { outcome: "pruefen", note: `Status ${pi.status}`, ...none };
@@ -181,27 +171,10 @@ async function decide(
     };
   }
 
-  const paidAt = new Date(event.created * 1000);
-  // Savepoint: Scheitert die Verbuchung, bleibt die Ablage des Ereignisses trotzdem möglich.
-  await client.query("savepoint stripe_booking");
-  try {
-    const booked = await recordInstallmentPayment(client, {
-      installmentId: k.installment_id,
-      provider: "stripe",
-      providerRef: pi.id,
-      paidAt,
-      issueDay: berlinDay.format(paidAt),
-    });
-    await client.query("release savepoint stripe_booking");
-    return {
-      outcome: booked.created ? "gebucht" : "schon_gebucht",
-      note: null,
-      invoiceId: booked.invoiceId,
-      invoiceNumber: booked.invoiceNumber,
-    };
-  } catch (err) {
-    await client.query("rollback to savepoint stripe_booking");
-    if (err instanceof PaymentError) return { outcome: "pruefen", note: err.message, ...none };
-    throw err;
-  }
+  return bookPayment(client, {
+    installmentId: k.installment_id,
+    provider: "stripe",
+    providerRef: pi.id,
+    paidAt: new Date(event.created * 1000),
+  });
 }

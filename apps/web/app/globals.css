@@ -52,3 +52,6 @@ button.order {
   background: var(--accent); color: #fff; cursor: pointer;
 }
 button.order:disabled { opacity: 0.6; cursor: wait; }
+
+.pay-option { border-top: 1px solid var(--muted); padding-top: 16px; margin-top: 16px; }
+h3 { font-size: 16px; margin: 0 0 12px; }

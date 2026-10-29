@@ -4,6 +4,7 @@ import { formatCents, formatDay } from "../../../lib/format";
 import { preparePayment } from "../../../lib/payment";
 import { publishableKey, stripe } from "../../../lib/stripe";
 import { PaymentForm } from "./payment-form";
+import { PaypalButton } from "./paypal-button";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,7 @@ export default async function OrderPage(props: {
   if (!rows.length) notFound();
   const first = rows[0];
   const key = publishableKey();
+  const paypalClientId = process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET ? process.env.PAYPAL_CLIENT_ID : null;
   let payment: Awaited<ReturnType<typeof preparePayment>> | null = null;
   try {
     payment = await preparePayment(key ? stripe() : null, id);
@@ -61,20 +63,33 @@ export default async function OrderPage(props: {
         <p className="error" role="alert">
           Bezahlen ist gerade nicht möglich. Bitte lade die Seite in ein paar Minuten neu.
         </p>
-      ) : payment.state === "bereit" && key ? (
+      ) : (payment.state === "bereit" || payment.state === "nicht_eingerichtet") &&
+        redirect_status !== "succeeded" &&
+        (payment.state === "bereit" || paypalClientId) ? (
         <>
-          <h2 style={{ marginTop: 24 }}>Bezahlen</h2>
+          <h2 style={{ marginTop: 24 }}>Bezahlen: {formatCents(payment.target.grossCents, payment.target.currency)}</h2>
           {redirect_status === "failed" && (
             <p className="error" role="alert">
               Die Zahlung hat nicht geklappt. Bitte versuche es noch einmal oder wähle eine andere Zahlungsart.
             </p>
           )}
-          <PaymentForm
-            publishableKey={key}
-            clientSecret={payment.clientSecret}
-            orderId={id}
-            amountLabel={formatCents(payment.target.grossCents, payment.target.currency)}
-          />
+          {payment.state === "bereit" && key && (
+            <div className="pay-option">
+              <h3>Mit Karte und weiteren Zahlungsarten</h3>
+              <PaymentForm
+                publishableKey={key}
+                clientSecret={payment.clientSecret}
+                orderId={id}
+                amountLabel={formatCents(payment.target.grossCents, payment.target.currency)}
+              />
+            </div>
+          )}
+          {paypalClientId && (
+            <div className="pay-option">
+              <h3>{payment.state === "bereit" ? "Oder mit PayPal" : "Mit PayPal"}</h3>
+              <PaypalButton clientId={paypalClientId} currency={payment.target.currency} orderId={id} />
+            </div>
+          )}
           {payment.target.recurring && (
             <p className="note">Die folgenden Zahlungen werden zum Fälligkeitstag mit derselben Zahlungsart eingezogen.</p>
           )}
