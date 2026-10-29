@@ -7,6 +7,7 @@ Das System ist ein modularer Monolith in TypeScript. Ein Repository, ein Deploym
 | Teil | Technik | Ab Phase |
 |---|---|---|
 | Datenbank, GoBD-Kern | PostgreSQL 17, `packages/db` | 0 |
+| Preise, Zahlpläne, Umsatzsteuer | TypeScript, `packages/core` | 1 |
 | Backend und API | NestJS, `apps/api` | 1 |
 | Checkout und Verwaltung | Next.js, `apps/web` | 1 |
 | Hintergrundjobs (Raten, Mahnungen, Webhooks) | Redis und BullMQ | 2 |
