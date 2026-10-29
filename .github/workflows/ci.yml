@@ -32,6 +32,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm test
+      - name: Checkout-Seiten bauen
+        run: pnpm --filter @idf/web build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
 
   infra:
     name: Infrastruktur prüfen

@@ -2,14 +2,21 @@
   "name": "@idf/db",
   "private": true,
   "type": "module",
+  "exports": {
+    "./catalog": "./src/catalog.ts",
+    "./orders": "./src/orders.ts",
+    "./invoicing": "./src/invoicing.ts"
+  },
   "scripts": {
     "migrate": "tsx src/cli.ts",
     "thrivecart:import": "tsx src/thrivecart-cli.ts",
+    "thrivecart:history": "tsx src/thrivecart-history-cli.ts",
     "company:create": "tsx src/company-cli.ts",
     "typecheck": "tsc -p tsconfig.json",
     "test": "node --import tsx --test --test-concurrency=1 test/*.test.ts"
   },
   "dependencies": {
+    "@idf/core": "workspace:*",
     "pg": "^8.23.1"
   },
   "devDependencies": {
