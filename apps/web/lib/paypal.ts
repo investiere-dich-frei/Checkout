@@ -147,6 +147,12 @@ export class PaypalApi {
     );
   }
 
+  /** Zahlung (Capture) voll erstatten. */
+  async refundCapture(captureId: string, requestId: string): Promise<{ id: string; status: string }> {
+    if (!/^[A-Z0-9]{5,40}$/.test(captureId)) throw new PaypalError("Ungültige PayPal-Zahlungsnummer", 400);
+    return this.call(`/v2/payments/captures/${captureId}/refund`, {}, requestId);
+  }
+
   /** Signatur einer Webhook-Meldung bei PayPal prüfen lassen. */
   async verifyWebhook(headers: Headers, event: unknown): Promise<boolean> {
     if (!this.config.webhookId) return false;

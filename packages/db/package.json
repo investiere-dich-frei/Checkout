@@ -14,7 +14,8 @@
     "./invoice-pdf": "./src/invoice-pdf.ts",
     "./billing": "./src/billing.ts",
     "./auth": "./src/auth.ts",
-    "./admin": "./src/admin.ts"
+    "./admin": "./src/admin.ts",
+    "./refunds": "./src/refunds.ts"
   },
   "scripts": {
     "migrate": "tsx src/cli.ts",

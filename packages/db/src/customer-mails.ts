@@ -104,9 +104,9 @@ export async function enqueueOrderConfirmation(client: pg.ClientBase, orderId: s
 /** Rechnung per E-Mail. Das PDF hängt der Postausgang über related_id an, sobald es erzeugt ist. */
 export async function enqueueInvoiceMail(client: pg.ClientBase, invoiceId: string): Promise<string> {
   const { rows } = await client.query(
-    `select i.invoice_number, i.issue_date::text, i.currency, i.net_cents, i.tax_cents, i.gross_cents,
-            i.customer_snapshot, i.company_snapshot
-       from app.invoices i where i.id = $1`,
+    `select i.invoice_number, i.kind, c.invoice_number corrects_number, i.issue_date::text, i.currency, i.net_cents,
+            i.tax_cents, i.gross_cents, i.customer_snapshot, i.company_snapshot
+       from app.invoices i left join app.invoices c on c.id = i.corrects_invoice_id where i.id = $1`,
     [invoiceId],
   );
   const inv = rows[0];
@@ -119,7 +119,9 @@ export async function enqueueInvoiceMail(client: pg.ClientBase, invoiceId: strin
   const lines = [
     salutation(cu),
     "",
-    `danke für deine Zahlung. Anbei deine Rechnung ${inv.invoice_number} vom ${day(inv.issue_date)}.`,
+    inv.kind === "storno"
+      ? `wir haben dir den Betrag der Rechnung ${inv.corrects_number} erstattet. Anbei die Stornorechnung ${inv.invoice_number} vom ${day(inv.issue_date)}.`
+      : `danke für deine Zahlung. Anbei deine Rechnung ${inv.invoice_number} vom ${day(inv.issue_date)}.`,
     "",
     ...items.rows.map((i) => `- ${i.description}: ${euro(Number(i.gross_cents), inv.currency)}`),
     "",
@@ -128,13 +130,18 @@ export async function enqueueInvoiceMail(client: pg.ClientBase, invoiceId: strin
     `Gesamt: ${euro(Number(inv.gross_cents), inv.currency)}`,
     ...items.rows.filter((i) => i.tax_exemption_note).map((i) => i.tax_exemption_note!),
     "",
-    "Der Betrag ist bereits bezahlt.",
+    inv.kind === "storno" ? "Die Erstattung erfolgt über die Zahlungsart, mit der du bezahlt hast." : "Der Betrag ist bereits bezahlt.",
     "",
     companyFooter(inv.company_snapshot),
   ];
   const mail = await client.query<{ id: string }>(
     `insert into app.mail_outbox (purpose, to_address, subject, body_text, related_id) values ('rechnung', $1, $2, $3, $4) returning id`,
-    [String(cu.email).trim().toLowerCase(), `Deine Rechnung ${inv.invoice_number}`, lines.join("\n"), invoiceId],
+    [
+      String(cu.email).trim().toLowerCase(),
+      `${inv.kind === "storno" ? "Deine Stornorechnung" : "Deine Rechnung"} ${inv.invoice_number}`,
+      lines.join("\n"),
+      invoiceId,
+    ],
   );
   return mail.rows[0]!.id;
 }

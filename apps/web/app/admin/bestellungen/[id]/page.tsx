@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { pool } from "../../../../lib/db";
 import { formatCents, formatDay, formatRate, todayBerlin } from "../../../../lib/format";
 import { requireUser } from "../../../../lib/session";
-import { endSubscriptionAction } from "../../actions";
+import { cancelOrderAction, endSubscriptionAction } from "../../actions";
+import { RefundForm } from "./refund-form";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const dateTime = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", dateStyle: "medium", timeStyle: "short" });
@@ -62,6 +63,12 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
             ))}
           </tbody>
         </table>
+        {canChange(user) && d.installments.some((i) => i.status === "offen" || i.status === "fehlgeschlagen") && (
+          <form action={cancelOrderAction} className="inline-form">
+            <input type="hidden" name="order_id" value={id} />
+            <button type="submit">Offene Raten entfallen lassen (Bestellung beenden)</button>
+          </form>
+        )}
         {h.is_abo && (
           <p>
             {h.ends_on ? (
@@ -98,6 +105,10 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
             </tbody>
           </table>
         )}
+        {canChange(user) &&
+          d.invoices
+            .filter((i) => i.kind === "rechnung" && !d.invoices.some((s) => s.corrects_invoice_id === i.id))
+            .map((i) => <RefundForm key={i.id} orderId={id} invoiceId={i.id} invoiceNumber={i.invoice_number} />)}
       </section>
 
       {(d.notices.length > 0 || d.attempts.length > 0) && (

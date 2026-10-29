@@ -80,7 +80,8 @@ export async function orderDetail(db: Db, user: SessionUser, orderId: string) {
   const [installments, invoices, notices, attempts] = await Promise.all([
     db.query(`select id, seq, due_date::text, gross_cents, status from app.order_installments where order_id = $1 order by seq`, [orderId]),
     db.query(
-      `select id, invoice_number, kind, issue_date::text, gross_cents, pdf_sha256 is not null has_pdf from app.invoices where order_id = $1 order by number_seq`,
+      `select id, invoice_number, kind, corrects_invoice_id, issue_date::text, gross_cents, pdf_sha256 is not null has_pdf
+         from app.invoices where order_id = $1 order by number_seq`,
       [orderId],
     ),
     db.query(
