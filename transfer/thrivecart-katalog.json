@@ -1,0 +1,4374 @@
+{
+ "format": "idf-thrivecart-katalog/1",
+ "exported_at": "2026-10-29T21:38:44.099891+00:00",
+ "source": "supabase:tc_products,kl_tc_rohdaten,kl_tc_optionen_ist,manual_order_tax",
+ "products": [
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - Investiere Dich Frei",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 1
+  },
+  {
+   "tax": null,
+   "name": "Aktiencoaching Masterclass - Investiere Dich Frei Testversion",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 2
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Fast Lane - Investiere Dich Frei",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 3
+  },
+  {
+   "tax": null,
+   "name": "Excellence - Investiere Dich Frei - D",
+   "refs": {
+    "access_months_course": 99,
+    "access_months_recordings": 6
+   },
+   "slug": "aktienmentoring-excellence-d",
+   "label": "Excellence D",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 4
+  },
+  {
+   "tax": null,
+   "name": "Vermögensaufbau mit ETFs - Investiere Dich Frei",
+   "refs": {
+    "hubspot_product": "ETF",
+    "access_months_course": 12,
+    "access_months_recordings": 6
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 5
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 6
+  },
+  {
+   "tax": null,
+   "name": "Finance Fitness Club - Investiere dich frei - D",
+   "refs": {
+    "hubspot_product": "Finance Fitness Club",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGhreDR3bTVpbDF1bmEwaTk5cHRmazU=",
+    "access_months_recordings": 99,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGg3bWd2NTBrYmU2eHR3ZG91aDkwajk="
+   },
+   "slug": "finance-fitness-club",
+   "label": "Female Finance Club (Öst.-Deu.)",
+   "status": "live",
+   "options": [
+    {
+     "mode": "sub_year",
+     "name": "Abonnement - 999€ jährlich",
+     "rebills": 0,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "72826",
+     "trial_days": null,
+     "first_payment": 999,
+     "recurring_payment": 999
+    },
+    {
+     "mode": "sub_month",
+     "name": "Abonnement - 99€ monatlich",
+     "rebills": 0,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "98921",
+     "trial_days": null,
+     "first_payment": 99,
+     "recurring_payment": 99
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 7
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 8
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - Investiere Dich Frei",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 9
+  },
+  {
+   "tax": [
+    {
+     "rate": 0.2,
+     "source": "ThriveCart-Bestellungen AT, Stand 09.09.2026",
+     "country": "AT",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.081,
+     "source": "ThriveCart-Bestellungen CH, Stand 09.09.2026",
+     "country": "CH",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.19,
+     "source": "ThriveCart-Bestellungen DE mit Satz 0,19, Stand 09.09.2026",
+     "country": "DE",
+     "exempt_reason": null
+    }
+   ],
+   "name": "Fast Lane - Investiere Dich Frei - D",
+   "refs": {
+    "hubspot_product": "Fastlane",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGdybGh5ODAwdjZlNGVsZDBrOW1wNW4=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGhreGQzZjA5cTR1OXpwY2YwZTh0MGw=",
+    "access_months_recordings": 3
+   },
+   "slug": "aktienmentoring-fast-lane-d",
+   "label": "FL D",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "FastLane 3997 €",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "98921",
+     "trial_days": null,
+     "first_payment": 3997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 10
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - Investiere Dich Frei",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 9,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 11
+  },
+  {
+   "tax": null,
+   "name": "Vermögensaufbau mit ETFs - Investiere Dich Frei",
+   "refs": {
+    "hubspot_product": "ETF",
+    "access_months_course": 12,
+    "access_months_recordings": 6
+   },
+   "slug": "vermoegensaufbau-mit-etfs",
+   "label": "ETF - Evergreen",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 12
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 13
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 14
+  },
+  {
+   "tax": null,
+   "name": "Trackingtest",
+   "refs": {
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 15
+  },
+  {
+   "tax": null,
+   "name": "1:1 Beratungssession Aktien - Dauer: 60 Minuten",
+   "refs": {
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": "beratungemilia",
+   "label": "1:1 Beratungsgespräch Aktien - 60 Minuten",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 16
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass + ETF Online Kurs",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 17
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 18
+  },
+  {
+   "tax": null,
+   "name": "Depotscan mit 1:1 Beratung - Dauer: 90 Min.",
+   "refs": {
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 19
+  },
+  {
+   "tax": null,
+   "name": "Dein Finanz-Kompass",
+   "refs": {
+    "hubspot_product": "Finanzkompass",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGZ1M2VjZTAwMTZua3psb2RzMTg1cTk=",
+    "access_months_recordings": 0
+   },
+   "slug": "finanz-kompass",
+   "label": "Finanz-Kompass",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung - 37€",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "98921",
+     "trial_days": null,
+     "first_payment": 31.09,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 20
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass + Scan deines Aktiendepots",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 21
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - Investiere Dich Frei",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 22
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 23
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - Investiere Dich Frei - CH",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 24
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 25
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Fast Lane - Investiere Dich Frei - CH",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 26
+  },
+  {
+   "tax": null,
+   "name": "Vermögensaufbau mit ETFs - Investiere Dich Frei - Web",
+   "refs": {
+    "hubspot_product": "ETF",
+    "access_months_course": 12,
+    "access_months_recordings": 6
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 27
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - Investiere Dich Frei - G",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 28
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 29
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 30
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - Investiere Dich Frei (Copy 3)",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 31
+  },
+  {
+   "tax": null,
+   "name": "Inner Circle - Investiere Dich Frei - D",
+   "refs": {
+    "access_months_course": 12,
+    "access_months_recordings": 12
+   },
+   "slug": "inner-circle-investiere-dich-frei",
+   "label": "Inner Circle (Öst.-Deu.)",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 32
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass + ETF Online Kurs - CH",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 33
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 34
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass + ETF Online Kurs - D",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 35
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 36
+  },
+  {
+   "tax": null,
+   "name": "Vermögensaufbau mit ETFs - Investiere Dich Frei - Page",
+   "refs": {
+    "hubspot_product": "ETF",
+    "access_months_course": 12,
+    "access_months_recordings": 6
+   },
+   "slug": "vermoegensaufbau-mit-etfs2",
+   "label": "ETF - Homepage - 1499€",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 37
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - Investiere Dich Frei - G -",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 0,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 38
+  },
+  {
+   "tax": null,
+   "name": "ETF Express - Investiere Dich Frei",
+   "refs": {
+    "hubspot_product": "ETF",
+    "access_months_course": 99,
+    "access_months_recordings": 6
+   },
+   "slug": "vermgensaufbau-mit-etfs-express",
+   "label": "ETF - Express",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 39
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - D -",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 40
+  },
+  {
+   "tax": null,
+   "name": "Masterclass Investiere Dich Frei - CH",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 41
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - D - R",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 42
+  },
+  {
+   "tax": null,
+   "name": "Masterclass - Investiere Dich Frei - DG",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "aktienmentoring-dg",
+   "label": "MC (D) - Garantie",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 43
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass Webinar - CH",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 44
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 45
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - Investiere Dich Frei",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 46
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 47
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - D",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 48
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Greator - Investiere Dich Frei",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 49
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - Investiere Dich Frei (Copy 2)",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 50
+  },
+  {
+   "tax": null,
+   "name": "Dein Finanz-Kompass Greator",
+   "refs": {
+    "access_months_course": 99,
+    "access_months_recordings": 0,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGZ1M2VjZTAwMTZua3psb2RzMTg1cTk="
+   },
+   "slug": "dein-finanz-kompass-copy-greator",
+   "label": "Finanz-Kompass Greator",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 51
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 52
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 53
+  },
+  {
+   "tax": null,
+   "name": "ETF Express - Weltkindertag - Investiere Dich Frei",
+   "refs": {
+    "hubspot_product": "ETF",
+    "access_months_course": 12,
+    "access_months_recordings": 6
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 54
+  },
+  {
+   "tax": [
+    {
+     "rate": 0.2,
+     "source": "ThriveCart-Bestellungen AT, Stand 09.09.2026",
+     "country": "AT",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.081,
+     "source": "ThriveCart-Bestellungen CH, Stand 09.09.2026",
+     "country": "CH",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0,
+     "source": "ThriveCart-Bestellungen DE mit Satz 0, Stand 09.09.2026",
+     "country": "DE",
+     "exempt_reason": "Die Leistung ist umsatzsteuerfrei nach § 4 Nr. 21 a) bb) UStG."
+    }
+   ],
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar LZ - D",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "masterclass-web-deu",
+   "label": "MC Webinar D",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Masterclass Einmalzahlung",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "84746",
+     "trial_days": null,
+     "first_payment": 4997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 55
+  },
+  {
+   "tax": null,
+   "name": "Dein Finanz-Kompass - Gutschein",
+   "refs": {
+    "access_months_course": 99,
+    "access_months_recordings": 0
+   },
+   "slug": "dein-finanz-kompass-gutschein",
+   "label": "Finanz-Kompass Gutschein",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 56
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 57
+  },
+  {
+   "tax": null,
+   "name": "ETF Wohlstandsplan - Investiere Dich Reich",
+   "refs": {
+    "hubspot_product": "ETF",
+    "access_months_course": 99,
+    "access_months_recordings": 0
+   },
+   "slug": "etf-wohlstandsplan",
+   "label": "ETF - Wohlstandsplan",
+   "status": "disabled",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 58
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 59
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 60
+  },
+  {
+   "tax": null,
+   "name": "Dein Finanz-Kompass",
+   "refs": {
+    "access_months_course": 99,
+    "access_months_recordings": 0
+   },
+   "slug": "dein-finanz-kompass-copy-2",
+   "label": "Finanz-Kompass embed",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 61
+  },
+  {
+   "tax": [
+    {
+     "rate": 0.2,
+     "source": "ThriveCart-Bestellungen AT, Stand 09.09.2026",
+     "country": "AT",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.081,
+     "source": "ThriveCart-Bestellungen CH, Stand 09.09.2026",
+     "country": "CH",
+     "exempt_reason": null
+    }
+   ],
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar LZ - OE/CH",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "masterclass-web-oe",
+   "label": "MC Webinar Öst- / Schweiz",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Masterclass Einmalzahlung 4997€",
+     "rebills": null,
+     "seen_at": "2026-10-18T14:03:50.954387+00:00",
+     "option_id": "27177",
+     "trial_days": null,
+     "first_payment": 4997,
+     "recurring_payment": null
+    },
+    {
+     "mode": "single",
+     "name": "Restzahlung 1997€ Eva im November",
+     "rebills": null,
+     "seen_at": "2026-10-18T14:03:50.954387+00:00",
+     "option_id": "33263",
+     "trial_days": 19,
+     "first_payment": 1997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 62
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar LZ - Greator",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "masterclass-web-s",
+   "label": "MC Webinar Greator Ausland",
+   "status": "disabled",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 63
+  },
+  {
+   "tax": [
+    {
+     "rate": 0.2,
+     "source": "ThriveCart-Bestellungen AT, Stand 09.09.2026",
+     "country": "AT",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.081,
+     "source": "ThriveCart-Bestellungen CH, Stand 09.09.2026",
+     "country": "CH",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0,
+     "source": "ThriveCart-Bestellungen DE mit Satz 0, Stand 09.09.2026",
+     "country": "DE",
+     "exempt_reason": "Die Leistung ist umsatzsteuerfrei nach § 4 Nr. 21 a) bb) UStG."
+    }
+   ],
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "masterclass-d",
+   "label": "Masterclass",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Masterclass 4997€",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 4997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 64
+  },
+  {
+   "tax": [
+    {
+     "rate": 0.2,
+     "source": "ThriveCart-Bestellungen AT, Stand 09.09.2026",
+     "country": "AT",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.081,
+     "source": "ThriveCart-Bestellungen CH, Stand 09.09.2026",
+     "country": "CH",
+     "exempt_reason": null
+    }
+   ],
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien -OE",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "masterclass-oe",
+   "label": "MC Ö",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 4997 €",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 4997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 65
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Aff - A",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "masterclass-s",
+   "label": "MC Affiliate Ausland",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 4997 €",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 4997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 66
+  },
+  {
+   "tax": null,
+   "name": "Masterclass Investiere Dich Frei - D (Copy 2)",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": null,
+   "label": null,
+   "status": "unbekannt",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 67
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 68
+  },
+  {
+   "tax": [
+    {
+     "rate": 0.2,
+     "source": "ThriveCart-Bestellungen AT, Stand 09.09.2026",
+     "country": "AT",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.081,
+     "source": "ThriveCart-Bestellungen CH, Stand 09.09.2026",
+     "country": "CH",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.19,
+     "source": "ThriveCart-Bestellungen DE mit Satz 0,19, Stand 09.09.2026",
+     "country": "DE",
+     "exempt_reason": null
+    }
+   ],
+   "name": "Fast Lane - Investiere Dich Frei - OE",
+   "refs": {
+    "hubspot_product": "Fastlane",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGdybGh5ODAwdjZlNGVsZDBrOW1wNW4=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGhreGQzZjA5cTR1OXpwY2YwZTh0MGw=",
+    "access_months_recordings": 3
+   },
+   "slug": "fast-lane-investiere-dich-frei-oe",
+   "label": "FL Ö",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 3997€",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "98921",
+     "trial_days": null,
+     "first_payment": 3997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 69
+  },
+  {
+   "tax": null,
+   "name": "Fast Lane - Investiere Dich Frei - S",
+   "refs": {
+    "hubspot_product": "Fastlane",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGdybGh5ODAwdjZlNGVsZDBrOW1wNW4=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGhreGQzZjA5cTR1OXpwY2YwZTh0MGw=",
+    "access_months_recordings": 3
+   },
+   "slug": "fast-lane-investiere-dich-frei-s",
+   "label": "FL S",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 3997€",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "98921",
+     "trial_days": null,
+     "first_payment": 3997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 70
+  },
+  {
+   "tax": null,
+   "name": "Excellence - Investiere Dich Frei - Ö",
+   "refs": {
+    "access_months_course": 99,
+    "access_months_recordings": 6
+   },
+   "slug": "excellence-investiere-dich-frei-oe",
+   "label": "Excellence Ö",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 71
+  },
+  {
+   "tax": null,
+   "name": "Excellence - Investiere Dich Frei - S",
+   "refs": {
+    "access_months_course": 99,
+    "access_months_recordings": 6
+   },
+   "slug": "excellence-investiere-dich-frei-s",
+   "label": "Excellence S",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 72
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 73
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 74
+  },
+  {
+   "tax": null,
+   "name": "Masterclass Investiere Dich Frei - Ö",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "masterclass-investiere-dich-frei-copy-1",
+   "label": "MC Ö",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 75
+  },
+  {
+   "tax": null,
+   "name": "Masterclass Investiere Dich Frei - DR",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "masterclass-investiere-dich-frei-dr",
+   "label": "MC D Ratenzahlung",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 76
+  },
+  {
+   "tax": null,
+   "name": "Masterclass Investiere Dich Frei - DANZ",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "masterclass-investiere-dich-frei-danz",
+   "label": "MC D Anzahlung",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 77
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 78
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar - D3R",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "masterclass-idf-webinar-d3r",
+   "label": "MC Webinar D 3 Raten",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Restraten 3500€",
+     "rebills": null,
+     "seen_at": "2026-10-18T14:03:50.954387+00:00",
+     "option_id": "44012",
+     "trial_days": null,
+     "first_payment": 3500,
+     "recurring_payment": null
+    },
+    {
+     "mode": "single",
+     "name": "Restzahlung 4497€",
+     "rebills": null,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "71280",
+     "trial_days": null,
+     "first_payment": 4497,
+     "recurring_payment": null
+    },
+    {
+     "mode": "single",
+     "name": "Masterclass Einmalzahlung",
+     "rebills": null,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "72459",
+     "trial_days": null,
+     "first_payment": 4997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 79
+  },
+  {
+   "tax": null,
+   "name": "Masterclass Investiere Dich Frei -Web - D Rechnung",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "masterclass-investiere-dich-frei-dr-rech",
+   "label": "MC D Web Rechnung",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 80
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 81
+  },
+  {
+   "tax": null,
+   "name": "kein Produkt",
+   "refs": {
+    "hubspot_product": "kein Produkt",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": null,
+   "label": "kein Produkt",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 82
+  },
+  {
+   "tax": null,
+   "name": "Dein Finanz-Kompass - A",
+   "refs": {
+    "hubspot_product": "Finanzkompass",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGZ1M2VjZTAwMTZua3psb2RzMTg1cTk=",
+    "access_months_recordings": 0
+   },
+   "slug": "dein-finanz-kompass-a",
+   "label": "Finanz-Kompass - Aerzte",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung - 399€",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "98921",
+     "trial_days": null,
+     "first_payment": 335.29,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 83
+  },
+  {
+   "tax": null,
+   "name": "Masterclass Investiere Dich Frei - D F.Summit",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "masterclass-investiere-dich-frei-d-fs",
+   "label": "MC D Founder Summit -10%",
+   "status": "disabled",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 84
+  },
+  {
+   "tax": null,
+   "name": "Masterclass Investiere Dich Frei - Webinar - D12R",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "masterclass-idf-web-d12r",
+   "label": "MC Webinar D 12 Raten",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 85
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Affiliate",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "masterclass-idf-webinar-d6r",
+   "label": "MC Webinar D Affliate",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 4997 €",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 4997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 86
+  },
+  {
+   "tax": [
+    {
+     "rate": 0.2,
+     "source": "ThriveCart-Bestellungen AT, Stand 09.09.2026",
+     "country": "AT",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.081,
+     "source": "ThriveCart-Bestellungen CH, Stand 09.09.2026",
+     "country": "CH",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0,
+     "source": "ThriveCart-Bestellungen DE mit Satz 0, Stand 09.09.2026",
+     "country": "DE",
+     "exempt_reason": "Die Leistung ist umsatzsteuerfrei nach § 4 Nr. 21 a) bb) UStG."
+    }
+   ],
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto - und Blockchain - Kompetenz - D",
+   "refs": {
+    "hubspot_product": "Blockchain",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhreHZ4dTVsYjR1bmEwa3pmYno5MWE=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTJmODAxdDFjZ2dyZW4ycTVvdDY=",
+    "access_months_recordings": 4,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdxbWs1dTBidHYxMWh4d3lpNmNqZHo="
+   },
+   "slug": "blockchain-ladies-idf-d",
+   "label": "BL D",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "3497€",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "87466",
+     "trial_days": null,
+     "first_payment": 3497,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 87
+  },
+  {
+   "tax": [
+    {
+     "rate": 0.2,
+     "source": "ThriveCart-Bestellungen AT, Stand 09.09.2026",
+     "country": "AT",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.081,
+     "source": "ThriveCart-Bestellungen CH, Stand 09.09.2026",
+     "country": "CH",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0,
+     "source": "ThriveCart-Bestellungen DE mit Satz 0, Stand 09.09.2026",
+     "country": "DE",
+     "exempt_reason": "Die Leistung ist umsatzsteuerfrei nach § 4 Nr. 21 a) bb) UStG."
+    }
+   ],
+   "name": "She Trades - Professioneller Boersenhandel - D",
+   "refs": {
+    "hubspot_product": "She Trades",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGYxdmQ1aDAwN3l1OXpwMHA3c2wzOGw=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTQ2czAyYjkxMXliYzExdmZ1dTk=",
+    "access_months_recordings": 7,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdzZTFjbzAyOXM1cnF2M2kwZ3JkZWc="
+   },
+   "slug": "she-trades-d",
+   "label": "ST D",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 6997 €",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 6997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 88
+  },
+  {
+   "tax": null,
+   "name": "She Trades - Professioneller Börsenhandel - Summit",
+   "refs": {
+    "hubspot_product": "She Trades",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGYxdmQ1aDAwN3l1OXpwMHA3c2wzOGw=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTQ2czAyYjkxMXliYzExdmZ1dTk=",
+    "access_months_recordings": 7,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdzZTFjbzAyOXM1cnF2M2kwZ3JkZWc="
+   },
+   "slug": "she-trades-prof-brsenhandel-summit-d",
+   "label": "ST D Summit",
+   "status": "disabled",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 89
+  },
+  {
+   "tax": null,
+   "name": "She Trades - Professioneller Börsenhandel - DResJan",
+   "refs": {
+    "hubspot_product": "She Trades",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGYxdmQ1aDAwN3l1OXpwMHA3c2wzOGw=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTQ2czAyYjkxMXliYzExdmZ1dTk=",
+    "access_months_recordings": 7,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdzZTFjbzAyOXM1cnF2M2kwZ3JkZWc="
+   },
+   "slug": "she-trades-prof-brsenhandel",
+   "label": "ST D Reservierung Januar",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 90
+  },
+  {
+   "tax": null,
+   "name": "Bundle Masterclass und She Trades - D",
+   "refs": {
+    "access_months_course": 12,
+    "access_months_recordings": 6
+   },
+   "slug": "bundle-mc-st-d",
+   "label": "MC + ST",
+   "status": "live",
+   "options": [
+    {
+     "mode": "sub_month",
+     "name": "Ratenzahlung (3x €3665,66)",
+     "rebills": 2,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "3844",
+     "trial_days": null,
+     "first_payment": 3665.66,
+     "recurring_payment": 3665.66
+    },
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 10997 €",
+     "rebills": null,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 10997,
+     "recurring_payment": null
+    },
+    {
+     "mode": "sub_month",
+     "name": "Ratenzahlung (6x €1832,83)",
+     "rebills": 5,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "90149",
+     "trial_days": null,
+     "first_payment": 1832.83,
+     "recurring_payment": 1832.83
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 91
+  },
+  {
+   "tax": null,
+   "name": "Greator Stammtisch 2025 Titanticket",
+   "refs": {
+    "access_months_course": 12,
+    "access_months_recordings": 6
+   },
+   "slug": "greator-stammtisch",
+   "label": "Greator - Stammtisch",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 92
+  },
+  {
+   "tax": null,
+   "name": "Masterclass Investiere Dich Frei - D 2,5",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "masterclass-investiere-dich-frei-d-25",
+   "label": "MC D 2 x 2,5k",
+   "status": "test",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 93
+  },
+  {
+   "tax": null,
+   "name": "Blockchain Ladies Investiere Dich Frei - D Summit",
+   "refs": {
+    "hubspot_product": "Blockchain",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGhreHZ4dTVsYjR1bmEwa3pmYno5MWE=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTJmODAxdDFjZ2dyZW4ycTVvdDY=",
+    "access_months_recordings": 4,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdxbWs1dTBidHYxMWh4d3lpNmNqZHo="
+   },
+   "slug": "blockchain-ladies",
+   "label": "BL D Webinar 27.07.2025",
+   "status": "disabled",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 94
+  },
+  {
+   "tax": null,
+   "name": "Investiere.Dich.Frei-Summit – Glow Ticket",
+   "refs": {
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": "investieredichfreisummit-glow-ticket",
+   "label": "Investiere.Dich.Frei-Summit",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 96
+  },
+  {
+   "tax": null,
+   "name": "Investiere.Dich.Frei-Summit – Glow plus Ticket",
+   "refs": {
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": "investieredichfreisummit-glow-plus",
+   "label": "Investiere.Dich.Frei-Summit Glow plus",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 97
+  },
+  {
+   "tax": null,
+   "name": "Masterclass Investiere Dich Frei - Summit ETF - D",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "masterclass-idf-summit-etf-d",
+   "label": "MC Summit D",
+   "status": "disabled",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 98
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien- Webinar Mein Geld",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "masterclass-idf-webinar-etf-oe",
+   "label": "MC Webinar Mein Geld Öst / Schweiz",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 4997 €",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 4997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 99
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar ETF - S",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "masterclass-idf-webinar-etf-s",
+   "label": "MC Webinar S",
+   "status": "disabled",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 100
+  },
+  {
+   "tax": [
+    {
+     "rate": 0.2,
+     "source": "ThriveCart-Bestellungen AT, Stand 09.09.2026",
+     "country": "AT",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.081,
+     "source": "ThriveCart-Bestellungen CH, Stand 09.09.2026",
+     "country": "CH",
+     "exempt_reason": null
+    }
+   ],
+   "name": "She Trades - Professioneller Boersenhandel - OE",
+   "refs": {
+    "hubspot_product": "She Trades",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGYxdmQ1aDAwN3l1OXpwMHA3c2wzOGw=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTQ2czAyYjkxMXliYzExdmZ1dTk=",
+    "access_months_recordings": 7,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdzZTFjbzAyOXM1cnF2M2kwZ3JkZWc="
+   },
+   "slug": "she-trades-oe",
+   "label": "ST Ö",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 6997 €",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 5830.83,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 101
+  },
+  {
+   "tax": null,
+   "name": "She Trades - Professioneller Boersenhandel - S",
+   "refs": {
+    "hubspot_product": "She Trades",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGYxdmQ1aDAwN3l1OXpwMHA3c2wzOGw=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTQ2czAyYjkxMXliYzExdmZ1dTk=",
+    "access_months_recordings": 7,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdzZTFjbzAyOXM1cnF2M2kwZ3JkZWc="
+   },
+   "slug": "she-trades-professioneller-brsenhandel-s",
+   "label": "ST S",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 6997 €",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 6472.71,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 102
+  },
+  {
+   "tax": null,
+   "name": "Vermögensaufbau mit ETFs - Investiere Dich Frei (Copy 2)",
+   "refs": {},
+   "slug": "vermgensaufbau-mit-etfs-investiere-dich-frei-copy-2",
+   "label": "ETF - Evergreen",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 103
+  },
+  {
+   "tax": null,
+   "name": "Summit Checkout",
+   "refs": {},
+   "slug": "summit-checkout",
+   "label": "MC D",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 104
+  },
+  {
+   "tax": null,
+   "name": "Dein Finanz-Kompass",
+   "refs": {
+    "hubspot_product": "Finanzkompass",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGZ1M2VjZTAwMTZua3psb2RzMTg1cTk=",
+    "access_months_recordings": 0
+   },
+   "slug": "dein-finanz-kompass-gutschein-workshop",
+   "label": "Finanz-Kompass Gutschein",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Eine Rate 37€",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "98921",
+     "trial_days": null,
+     "first_payment": 97,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 105
+  },
+  {
+   "tax": null,
+   "name": "Untitled product",
+   "refs": {},
+   "slug": "untitled-product",
+   "label": null,
+   "status": "test",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 106
+  },
+  {
+   "tax": null,
+   "name": "She Trades - Professioneller Boersenhandel - Webinar OE",
+   "refs": {
+    "hubspot_product": "She Trades",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGYxdmQ1aDAwN3l1OXpwMHA3c2wzOGw=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTQ2czAyYjkxMXliYzExdmZ1dTk=",
+    "access_months_recordings": 7,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdzZTFjbzAyOXM1cnF2M2kwZ3JkZWc="
+   },
+   "slug": "she-trades-professionell-trading-web-oe",
+   "label": "ST Webinar Ö",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 6997 €",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 5879.84,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 108
+  },
+  {
+   "tax": null,
+   "name": "She Trades - Professioneller Boersenhandel - Webinar S",
+   "refs": {
+    "hubspot_product": "She Trades",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGYxdmQ1aDAwN3l1OXpwMHA3c2wzOGw=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTQ2czAyYjkxMXliYzExdmZ1dTk=",
+    "access_months_recordings": 7,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdzZTFjbzAyOXM1cnF2M2kwZ3JkZWc="
+   },
+   "slug": "she-trades-professionelles-trading-web-s",
+   "label": "ST Webinar S",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 6297 €",
+     "rebills": null,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 6297,
+     "recurring_payment": null
+    },
+    {
+     "mode": "sub_month",
+     "name": "3 x Raten (3x2099,00€)",
+     "rebills": 2,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "6725",
+     "trial_days": null,
+     "first_payment": 2099,
+     "recurring_payment": 2099
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 109
+  },
+  {
+   "tax": null,
+   "name": "She Trades - Professioneller Boersenhandel - Webinar- lz- D",
+   "refs": {
+    "hubspot_product": "She Trades",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGYxdmQ1aDAwN3l1OXpwMHA3c2wzOGw=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTQ2czAyYjkxMXliYzExdmZ1dTk=",
+    "access_months_recordings": 7,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdzZTFjbzAyOXM1cnF2M2kwZ3JkZWc="
+   },
+   "slug": "she-trades-p-t-web-d-lz",
+   "label": "ST Webinar D",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 5797 €",
+     "rebills": null,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 5797,
+     "recurring_payment": null
+    },
+    {
+     "mode": "sub_month",
+     "name": "6497€ in 5 Tagen",
+     "rebills": 1,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "6353",
+     "trial_days": 5,
+     "first_payment": 0,
+     "recurring_payment": 6497
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 110
+  },
+  {
+   "tax": [
+    {
+     "rate": 0.2,
+     "source": "ThriveCart-Bestellungen AT, Stand 09.09.2026",
+     "country": "AT",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.081,
+     "source": "ThriveCart-Bestellungen CH, Stand 09.09.2026",
+     "country": "CH",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0,
+     "source": "ThriveCart-Bestellungen DE mit Satz 0, Stand 09.09.2026",
+     "country": "DE",
+     "exempt_reason": "Die Leistung ist umsatzsteuerfrei nach § 4 Nr. 21 a) bb) UStG."
+    }
+   ],
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto- und Blockchain - Kompetenz - D-Webinar",
+   "refs": {
+    "hubspot_product": "Blockchain",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGhreHZ4dTVsYjR1bmEwa3pmYno5MWE=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTJmODAxdDFjZ2dyZW4ycTVvdDY=",
+    "access_months_recordings": 4,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdxbWs1dTBidHYxMWh4d3lpNmNqZHo="
+   },
+   "slug": "blockchain-ladies-idf-d-webinar",
+   "label": "BL D Web",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Blockchain Kurs 2997€",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "59974",
+     "trial_days": null,
+     "first_payment": 2997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 111
+  },
+  {
+   "tax": [
+    {
+     "rate": 0.2,
+     "source": "ThriveCart-Bestellungen AT, Stand 09.09.2026",
+     "country": "AT",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.081,
+     "source": "ThriveCart-Bestellungen CH, Stand 09.09.2026",
+     "country": "CH",
+     "exempt_reason": null
+    }
+   ],
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto- und Blockchain - Kompetenz- OE/CH - Webianr",
+   "refs": {
+    "hubspot_product": "Blockchain",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGhreHZ4dTVsYjR1bmEwa3pmYno5MWE=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTJmODAxdDFjZ2dyZW4ycTVvdDY=",
+    "access_months_recordings": 4,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdxbWs1dTBidHYxMWh4d3lpNmNqZHo="
+   },
+   "slug": "blockchain-ladies-idf-oe-webianr",
+   "label": "BL OE/CH Web",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "2997€",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "87466",
+     "trial_days": null,
+     "first_payment": 2997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 112
+  },
+  {
+   "tax": null,
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto - und Blockchain - Kompetenz - S - Webinar",
+   "refs": {
+    "hubspot_product": "Blockchain",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGhreHZ4dTVsYjR1bmEwa3pmYno5MWE=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTJmODAxdDFjZ2dyZW4ycTVvdDY=",
+    "access_months_recordings": 4,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdxbWs1dTBidHYxMWh4d3lpNmNqZHo="
+   },
+   "slug": "blockchain-ladies-s-webinar",
+   "label": "BL S Web",
+   "status": "disabled",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 113
+  },
+  {
+   "tax": [
+    {
+     "rate": 0.2,
+     "source": "ThriveCart-Bestellungen AT, Stand 09.09.2026",
+     "country": "AT",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.081,
+     "source": "ThriveCart-Bestellungen CH, Stand 09.09.2026",
+     "country": "CH",
+     "exempt_reason": null
+    }
+   ],
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto - und Blockchain - Kompetenz - OE",
+   "refs": {
+    "hubspot_product": "Blockchain",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhreHZ4dTVsYjR1bmEwa3pmYno5MWE=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTJmODAxdDFjZ2dyZW4ycTVvdDY=",
+    "access_months_recordings": 4,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdxbWs1dTBidHYxMWh4d3lpNmNqZHo="
+   },
+   "slug": "blockchain-ladies-i-d-f-oe",
+   "label": "BL OE",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "3497€",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "87466",
+     "trial_days": null,
+     "first_payment": 2914.16,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 114
+  },
+  {
+   "tax": null,
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto - und Blockchain - Kompetenz  - S",
+   "refs": {
+    "hubspot_product": "Blockchain",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhreHZ4dTVsYjR1bmEwa3pmYno5MWE=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTJmODAxdDFjZ2dyZW4ycTVvdDY=",
+    "access_months_recordings": 4,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdxbWs1dTBidHYxMWh4d3lpNmNqZHo="
+   },
+   "slug": "blockchain-ladies-investiere-dich-frei-s",
+   "label": "BL S",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "3497€",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "87466",
+     "trial_days": null,
+     "first_payment": 3234.96,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 115
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar Mein Geld - D",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "learningsuite_extra": "QnVuZGxlOmNtbXZ2bWdtejF1djNiZTAxNTJsdmxvYmU=",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "masterclass-idf-web-etf-d",
+   "label": "MC Webinar D",
+   "status": "live",
+   "options": [
+    {
+     "mode": "sub_3month",
+     "name": "2x 2498,50 EUR",
+     "rebills": 2,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "42565",
+     "trial_days": 42,
+     "first_payment": 0,
+     "recurring_payment": 2498.5
+    },
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 4997 €",
+     "rebills": null,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 4997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 116
+  },
+  {
+   "tax": null,
+   "name": "Blockchain Ladies Inner Circle",
+   "refs": {
+    "hubspot_product": "Blockchain",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGhreG5oNTVqcDd1bmEwbjl2eDJpOW4=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbHhsYTAzZmV6bm8waHB2cWNpNzI=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdwdW80ZDA5ZWt1OXpwbjRxNzZxMTM="
+   },
+   "slug": "blockchain-ladies-inner-circel",
+   "label": "BL IC",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "1497€",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "87466",
+     "trial_days": null,
+     "first_payment": 1257.98,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 117
+  },
+  {
+   "tax": null,
+   "name": "She Trades - Inner Circle Monats Abo D",
+   "refs": {
+    "hubspot_product": "She Trades",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGdveGVrbDAwMnRzaGx2MGd5cWs3bGc=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTQ2czAyYjkxMXliYzExdmZ1dTk=",
+    "access_months_recordings": 99,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdzZTFjbzAyOXM1cnF2M2kwZ3JkZWc="
+   },
+   "slug": "she-trades-inner-circel-monats-abo-d",
+   "label": "ST IC Mo Abo D",
+   "status": "live",
+   "options": [
+    {
+     "mode": "sub_month",
+     "name": "Abonnement - 300 € monatlich",
+     "rebills": 0,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 300,
+     "recurring_payment": 300
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 119
+  },
+  {
+   "tax": null,
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto - und Blockchain - Kompetenz  Inner Circle 6 Monate D",
+   "refs": {
+    "hubspot_product": "Blockchain",
+    "access_months_course": 6,
+    "learningsuite_course": "QnVuZGxlOmNtbGhreG5oNTVqcDd1bmEwbjl2eDJpOW4=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbHhsYTAzZmV6bm8waHB2cWNpNzI=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdwdW80ZDA5ZWt1OXpwbjRxNzZxMTM="
+   },
+   "slug": "blockchain-ladies-idf-ic-6-m-d",
+   "label": "BL IC D",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung €1.245",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "87466",
+     "trial_days": null,
+     "first_payment": 1245,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 120
+  },
+  {
+   "tax": null,
+   "name": "She Trades - Inner Circel S",
+   "refs": {
+    "hubspot_product": "She Trades",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGdveGVrbDAwMnRzaGx2MGd5cWs3bGc=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTQ2czAyYjkxMXliYzExdmZ1dTk=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdzZTFjbzAyOXM1cnF2M2kwZ3JkZWc="
+   },
+   "slug": "she-trades-inner-s",
+   "label": "ST IC S",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 121
+  },
+  {
+   "tax": null,
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto - und Blockchain - Kompetenz Inner Circle Monats Abo D",
+   "refs": {
+    "hubspot_product": "Blockchain",
+    "access_months_course": 64,
+    "learningsuite_course": "QnVuZGxlOmNtbGhreG5oNTVqcDd1bmEwbjl2eDJpOW4=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbHhsYTAzZmV6bm8waHB2cWNpNzI=",
+    "access_months_recordings": 99,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdwdW80ZDA5ZWt1OXpwbjRxNzZxMTM="
+   },
+   "slug": "blockchain-ladies-idf-ic-abo-d",
+   "label": "BL IC MA D",
+   "status": "live",
+   "options": [
+    {
+     "mode": "sub_month",
+     "name": "Abonnement - 249 € monatlich",
+     "rebills": 0,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "87466",
+     "trial_days": null,
+     "first_payment": 249,
+     "recurring_payment": 249
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 122
+  },
+  {
+   "tax": null,
+   "name": "Blockchain Ladies Inner Circle 6 Monate S",
+   "refs": {
+    "hubspot_product": "Blockchain",
+    "access_months_course": 6,
+    "learningsuite_course": "QnVuZGxlOmNtbGhreG5oNTVqcDd1bmEwbjl2eDJpOW4=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbHhsYTAzZmV6bm8waHB2cWNpNzI=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdwdW80ZDA5ZWt1OXpwbjRxNzZxMTM="
+   },
+   "slug": "blockchain-ladies-inner-circle-6-m-s",
+   "label": "BL IC D",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung €1.245",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "87466",
+     "trial_days": null,
+     "first_payment": 1151.71,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 125
+  },
+  {
+   "tax": null,
+   "name": "Blockchain Ladies Inner Circle Monats Abo S",
+   "refs": {
+    "hubspot_product": "Blockchain",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGhreG5oNTVqcDd1bmEwbjl2eDJpOW4=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbHhsYTAzZmV6bm8waHB2cWNpNzI=",
+    "access_months_recordings": 99,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdwdW80ZDA5ZWt1OXpwbjRxNzZxMTM="
+   },
+   "slug": "blockchain-ladies-inner-circle-m-abo-s",
+   "label": "BL IC MA S",
+   "status": "live",
+   "options": [
+    {
+     "mode": "sub_month",
+     "name": "Abonnement - 249 € monatlich",
+     "rebills": 0,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "87466",
+     "trial_days": null,
+     "first_payment": 230.34,
+     "recurring_payment": 230.34
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 126
+  },
+  {
+   "tax": null,
+   "name": "Blockchain Ladies Inner Circle 6 Monate Ö",
+   "refs": {
+    "hubspot_product": "Blockchain",
+    "access_months_course": 6,
+    "learningsuite_course": "QnVuZGxlOmNtbGhreG5oNTVqcDd1bmEwbjl2eDJpOW4=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbHhsYTAzZmV6bm8waHB2cWNpNzI=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdwdW80ZDA5ZWt1OXpwbjRxNzZxMTM="
+   },
+   "slug": "blockchain-ladies-inner-circle-6-m-oe",
+   "label": "BL IC Ö",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung €1.245",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "87466",
+     "trial_days": null,
+     "first_payment": 1037.5,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 127
+  },
+  {
+   "tax": null,
+   "name": "Blockchain Ladies Inner Circle Monats Abo Ö",
+   "refs": {
+    "hubspot_product": "Blockchain",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGhreG5oNTVqcDd1bmEwbjl2eDJpOW4=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbHhsYTAzZmV6bm8waHB2cWNpNzI=",
+    "access_months_recordings": 99,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdwdW80ZDA5ZWt1OXpwbjRxNzZxMTM="
+   },
+   "slug": "blockchain-ladies-ic-monats-abo-oe",
+   "label": "BL IC MA Ö",
+   "status": "live",
+   "options": [
+    {
+     "mode": "sub_month",
+     "name": "Abonnement - 249 € monatlich",
+     "rebills": 0,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "87466",
+     "trial_days": null,
+     "first_payment": 207.5,
+     "recurring_payment": 207.5
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 128
+  },
+  {
+   "tax": [
+    {
+     "rate": 0.2,
+     "source": "ThriveCart-Bestellungen AT, Stand 09.09.2026",
+     "country": "AT",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.081,
+     "source": "ThriveCart-Bestellungen CH, Stand 09.09.2026",
+     "country": "CH",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0,
+     "source": "ThriveCart-Bestellungen DE mit Satz 0, Stand 09.09.2026",
+     "country": "DE",
+     "exempt_reason": "Die Leistung ist umsatzsteuerfrei nach § 4 Nr. 21 a) bb) UStG."
+    }
+   ],
+   "name": "She Trades - Professioneller Boersenhandel - Webinar D Rabatt- LZ",
+   "refs": {
+    "hubspot_product": "She Trades",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGYxdmQ1aDAwN3l1OXpwMHA3c2wzOGw=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTQ2czAyYjkxMXliYzExdmZ1dTk=",
+    "access_months_recordings": 7,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdzZTFjbzAyOXM1cnF2M2kwZ3JkZWc="
+   },
+   "slug": "she-trades-p-b-webinar-d-r-lz",
+   "label": "ST Webinar Rabatt- LZ D",
+   "status": "live",
+   "options": [
+    {
+     "mode": "sub_month",
+     "name": "3 Raten (3x €1932.33)",
+     "rebills": 2,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "39426",
+     "trial_days": null,
+     "first_payment": 1932.33,
+     "recurring_payment": 1932.33
+    },
+    {
+     "mode": "single",
+     "name": "Einmalzahlung € 5797",
+     "rebills": null,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 5797,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 129
+  },
+  {
+   "tax": null,
+   "name": "She Trades - Professioneller Boersenhandel - Webinar Rabatt - LZ-S (",
+   "refs": {
+    "hubspot_product": "She Trades",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGYxdmQ1aDAwN3l1OXpwMHA3c2wzOGw=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTQ2czAyYjkxMXliYzExdmZ1dTk=",
+    "access_months_recordings": 7,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdzZTFjbzAyOXM1cnF2M2kwZ3JkZWc="
+   },
+   "slug": "she-trades-p-b-webinar-s-r-lz",
+   "label": "ST Webinar Rabatt- LZ- S",
+   "status": "disabled",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 130
+  },
+  {
+   "tax": [
+    {
+     "rate": 0.2,
+     "source": "ThriveCart-Bestellungen AT, Stand 09.09.2026",
+     "country": "AT",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.081,
+     "source": "ThriveCart-Bestellungen CH, Stand 09.09.2026",
+     "country": "CH",
+     "exempt_reason": null
+    }
+   ],
+   "name": "She Trades - Professioneller Boersenhandel - Webinar Rabatt - LZ- OE",
+   "refs": {
+    "hubspot_product": "She Trades",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGYxdmQ1aDAwN3l1OXpwMHA3c2wzOGw=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTQ2czAyYjkxMXliYzExdmZ1dTk=",
+    "access_months_recordings": 7,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdzZTFjbzAyOXM1cnF2M2kwZ3JkZWc="
+   },
+   "slug": "she-trades-p-b-webinar-r-lz-oe",
+   "label": "ST Webinar R-LZ Ö",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 6497 €",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 6497,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 131
+  },
+  {
+   "tax": null,
+   "name": "She Trades - Inner Circle Monats Abo Ö",
+   "refs": {
+    "hubspot_product": "She Trades",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGdveGVrbDAwMnRzaGx2MGd5cWs3bGc=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTQ2czAyYjkxMXliYzExdmZ1dTk=",
+    "access_months_recordings": 99,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdzZTFjbzAyOXM1cnF2M2kwZ3JkZWc="
+   },
+   "slug": "she-trades-inner-circel-monats-abo-oe",
+   "label": "ST IC Mo Abo Ö",
+   "status": "live",
+   "options": [
+    {
+     "mode": "sub_month",
+     "name": "Abonnement - 300 € monatlich",
+     "rebills": 0,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 250,
+     "recurring_payment": 250
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 133
+  },
+  {
+   "tax": null,
+   "name": "She Trades - Inner Circle Jahres Abo D",
+   "refs": {
+    "hubspot_product": "She Trades",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGdvdDZmcjAxY2h1a2xmNnkyNWQycDM=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTQ2czAyYjkxMXliYzExdmZ1dTk=",
+    "access_months_recordings": 12,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGhrenllZTBhZm51OXpwd2ZvdnkyMGM="
+   },
+   "slug": "she-trades-inner-circel-jahres-abo-d",
+   "label": "ST IC Jahres Abo D",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Abonnement -3.300 € Jährlich",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 3300,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 134
+  },
+  {
+   "tax": null,
+   "name": "She Trades - Inner Circle Jahres Abo - Ö",
+   "refs": {
+    "hubspot_product": "She Trades",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGdvdDZmcjAxY2h1a2xmNnkyNWQycDM=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTQ2czAyYjkxMXliYzExdmZ1dTk=",
+    "access_months_recordings": 12,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdzZTFjbzAyOXM1cnF2M2kwZ3JkZWc="
+   },
+   "slug": "she-trades-inner-circel-jahres-abo-oe",
+   "label": "ST IC Jahres Abo Ö",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Abonnement -2.750 € Jährlich",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 2291.66,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 135
+  },
+  {
+   "tax": null,
+   "name": "She Trades - Inner Circle Jahres Abo Ö (Test)",
+   "refs": {},
+   "slug": "she-trades-jahres-abo-copy-1",
+   "label": "ST IC Jahres Abo Ö",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Abonnement -2.750 € Jährlich",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 2291.66,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 136
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Lebenslanger Zugang Videokurs",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 300,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 0,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "aktienmentoring-masterclass-lz-videokurs",
+   "label": "MC LZ Videokurs",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Lebenslanger Zugang zu den Videomodulen 500 €",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "85345",
+     "trial_days": null,
+     "first_payment": 500,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 137
+  },
+  {
+   "tax": null,
+   "name": "She Trades - Inner Circle Jahres Abo S",
+   "refs": {
+    "hubspot_product": "She Trades",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGdvdDZmcjAxY2h1a2xmNnkyNWQycDM=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTQ2czAyYjkxMXliYzExdmZ1dTk=",
+    "access_months_recordings": 12,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdzZTFjbzAyOXM1cnF2M2kwZ3JkZWc="
+   },
+   "slug": "she-trades-inner-circle-jahres-abo-s",
+   "label": "ST IC Jahres Abo S",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Abonnement -3.300 € Jährlich",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 3052.73,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 138
+  },
+  {
+   "tax": null,
+   "name": "She Trades - Inner Circle Monats Abo S",
+   "refs": {
+    "hubspot_product": "She Trades",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGdveGVrbDAwMnRzaGx2MGd5cWs3bGc=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTQ2czAyYjkxMXliYzExdmZ1dTk=",
+    "access_months_recordings": 99,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdzZTFjbzAyOXM1cnF2M2kwZ3JkZWc="
+   },
+   "slug": "she-trades-inner-circle-monats-abo-s",
+   "label": "ST IC Mo Abo  S",
+   "status": "live",
+   "options": [
+    {
+     "mode": "sub_month",
+     "name": "Abonnement - 300 € monatlich",
+     "rebills": 0,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 277.52,
+     "recurring_payment": 277.52
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 140
+  },
+  {
+   "tax": [
+    {
+     "rate": 0.2,
+     "source": "ThriveCart-Bestellungen AT, Stand 09.09.2026",
+     "country": "AT",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.081,
+     "source": "ThriveCart-Bestellungen CH, Stand 09.09.2026",
+     "country": "CH",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.19,
+     "source": "ThriveCart-Bestellungen DE mit Satz 0,19, Stand 09.09.2026",
+     "country": "DE",
+     "exempt_reason": null
+    }
+   ],
+   "name": "Mein Geld & Ich",
+   "refs": {
+    "hubspot_product": "ETF",
+    "access_months_course": 6,
+    "learningsuite_course": "QnVuZGxlOmNtbXZ2bWdtejF1djNiZTAxNTJsdmxvYmU=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbngwMW04ZzB3cmJoNTAxOHA1M2xjdW4=",
+    "access_months_recordings": 6
+   },
+   "slug": "mein-geld-und-ich-d",
+   "label": "Mein Geld & Ich Aktion 649",
+   "status": "live",
+   "options": [
+    {
+     "mode": "sub_month",
+     "name": "Abo für 12 Monate a 59 € / Monat (Gesamtpreis: 708 €)",
+     "rebills": 11,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "45786",
+     "trial_days": null,
+     "first_payment": 59,
+     "recurring_payment": 59
+    },
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 649 €",
+     "rebills": null,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "85345",
+     "trial_days": null,
+     "first_payment": 649,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 141
+  },
+  {
+   "tax": null,
+   "name": "Mein Geld & Ich S",
+   "refs": {
+    "hubspot_product": "ETF",
+    "access_months_course": 6,
+    "learningsuite_course": "QnVuZGxlOmNtbXZ2bWdtejF1djNiZTAxNTJsdmxvYmU=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbngwMW04ZzB3cmJoNTAxOHA1M2xjdW4=",
+    "access_months_recordings": 6
+   },
+   "slug": null,
+   "label": "MG&I S",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 142
+  },
+  {
+   "tax": null,
+   "name": "Mein Geld & Ich OE",
+   "refs": {
+    "hubspot_product": "ETF",
+    "access_months_course": 6,
+    "learningsuite_course": "QnVuZGxlOmNtbXZ2bWdtejF1djNiZTAxNTJsdmxvYmU=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbngwMW04ZzB3cmJoNTAxOHA1M2xjdW4=",
+    "access_months_recordings": 6
+   },
+   "slug": null,
+   "label": "MG&I Ö",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 143
+  },
+  {
+   "tax": null,
+   "name": "Mein Geld & Ich Website",
+   "refs": {
+    "hubspot_product": "Mein Geld & Ich",
+    "access_months_course": 6,
+    "learningsuite_course": "QnVuZGxlOmNtbXZ2bWdtejF1djNiZTAxNTJsdmxvYmU=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbngwMW04ZzB3cmJoNTAxOHA1M2xjdW4=",
+    "access_months_recordings": 6
+   },
+   "slug": "mein-geld-ich-web-d",
+   "label": "MG&I Web D",
+   "status": "live",
+   "options": [
+    {
+     "mode": "sub_month",
+     "name": "Abo 12x99€",
+     "rebills": 11,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "48421",
+     "trial_days": null,
+     "first_payment": 99,
+     "recurring_payment": 99
+    },
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 999 €",
+     "rebills": null,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "85345",
+     "trial_days": null,
+     "first_payment": 999,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 144
+  },
+  {
+   "tax": null,
+   "name": "Mein Geld & Ich Website S",
+   "refs": {
+    "hubspot_product": "ETF",
+    "access_months_course": 6,
+    "learningsuite_course": "QnVuZGxlOmNtbXZ2bWdtejF1djNiZTAxNTJsdmxvYmU=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbngwMW04ZzB3cmJoNTAxOHA1M2xjdW4=",
+    "access_months_recordings": 6
+   },
+   "slug": null,
+   "label": "MG&I Web S",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 145
+  },
+  {
+   "tax": null,
+   "name": "Mein Geld & Ich Website OE",
+   "refs": {
+    "hubspot_product": "ETF",
+    "access_months_course": 6,
+    "learningsuite_course": "QnVuZGxlOmNtbXZ2bWdtejF1djNiZTAxNTJsdmxvYmU=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbngwMW04ZzB3cmJoNTAxOHA1M2xjdW4=",
+    "access_months_recordings": 6
+   },
+   "slug": null,
+   "label": "MG&I Web OE",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 146
+  },
+  {
+   "tax": null,
+   "name": "She Trades Trading Camp-online",
+   "refs": {},
+   "slug": "she-trades-live-online-d",
+   "label": "ST Tradingcamp -online",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 148
+  },
+  {
+   "tax": null,
+   "name": "She Trades - Inner Circle Jahres Abo S (Copy 2)",
+   "refs": {},
+   "slug": null,
+   "label": "ST IC Jahres Abo S",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 149
+  },
+  {
+   "tax": null,
+   "name": "She Trades - Inner Circle Jahres Abo - Ö (Copy 1)",
+   "refs": {},
+   "slug": null,
+   "label": "ST IC Jahres Abo Ö",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 150
+  },
+  {
+   "tax": null,
+   "name": "She Trades Trading Camp-online -  Ö",
+   "refs": {},
+   "slug": null,
+   "label": "ST Live-online- Ö",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 151
+  },
+  {
+   "tax": null,
+   "name": "She Trades Trading Camp-online -  S",
+   "refs": {},
+   "slug": null,
+   "label": "ST Live-online- S",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 152
+  },
+  {
+   "tax": null,
+   "name": "She Trades Live",
+   "refs": {},
+   "slug": "she-trades-live-d",
+   "label": "ST Live",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "3697",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 3697,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 153
+  },
+  {
+   "tax": null,
+   "name": "She Trades Live -  Ö",
+   "refs": {},
+   "slug": "she-trades-live-oe",
+   "label": "ST Live- Ö",
+   "status": "disabled",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 154
+  },
+  {
+   "tax": null,
+   "name": "She Trades Live -  S",
+   "refs": {},
+   "slug": "she-trades-live-s",
+   "label": "ST Live- S",
+   "status": "disabled",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 155
+  },
+  {
+   "tax": null,
+   "name": "Mein Geld & Ich",
+   "refs": {
+    "hubspot_product": "ETF",
+    "learningsuite_extra": "QnVuZGxlOmNtcHBzM2J6dDA3bmRlejAxM2JncnI2bmM=",
+    "access_months_course": 6,
+    "learningsuite_course": "QnVuZGxlOmNtbXZ2bWdtejF1djNiZTAxNTJsdmxvYmU=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbngwMW04ZzB3cmJoNTAxOHA1M2xjdW4=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbngwMW04ZzB3cmJoNTAxOHA1M2xjdW4="
+   },
+   "slug": "mein-geld-ich-website-copy-1",
+   "label": "MG&I Affiliate",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 999 €",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "85345",
+     "trial_days": null,
+     "first_payment": 999,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 157
+  },
+  {
+   "tax": [
+    {
+     "rate": 0.2,
+     "source": "ThriveCart-Bestellungen AT, Stand 09.09.2026",
+     "country": "AT",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.081,
+     "source": "ThriveCart-Bestellungen CH, Stand 09.09.2026",
+     "country": "CH",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.19,
+     "source": "ThriveCart-Bestellungen DE mit Satz 0,19, Stand 09.09.2026",
+     "country": "DE",
+     "exempt_reason": null
+    }
+   ],
+   "name": "Bundle Her Options und She Trades",
+   "refs": {
+    "hubspot_product": "Her Options",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbzFhcHowZjBqMmtmdjAxM2R5bGx6OXg=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtcWYyMGl4dzBnNTZhMjAxanBrYnM4Mno=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtcWYya3V5ajAwNTBiajAxZXVyeG05dnk="
+   },
+   "slug": "her-options",
+   "label": "Her Options Webinar",
+   "status": "live",
+   "options": [
+    {
+     "mode": "sub_month",
+     "name": "Restsumme der 5 ausstehenden Raten à € 1000",
+     "rebills": 4,
+     "seen_at": "2026-10-18T14:03:50.954387+00:00",
+     "option_id": "19772",
+     "trial_days": null,
+     "first_payment": 1000,
+     "recurring_payment": 1000
+    },
+    {
+     "mode": "sub_month",
+     "name": "Restzahlung 4x 1000€",
+     "rebills": 3,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "6130",
+     "trial_days": null,
+     "first_payment": 1000,
+     "recurring_payment": 1000
+    },
+    {
+     "mode": "single",
+     "name": "HerOptions Einmalzahlung 6997€",
+     "rebills": null,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "99388",
+     "trial_days": null,
+     "first_payment": 6997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 158
+  },
+  {
+   "tax": null,
+   "name": "Bundle Her Options und She Trades",
+   "refs": {},
+   "slug": "bundleshetradesheroptions",
+   "label": "",
+   "status": "live",
+   "options": [
+    {
+     "mode": "sub_month",
+     "name": "Ratenzahlung (3x €3665,66)",
+     "rebills": 2,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "3844",
+     "trial_days": null,
+     "first_payment": 3665.66,
+     "recurring_payment": 3665.66
+    },
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 10997 €",
+     "rebills": null,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 10997,
+     "recurring_payment": null
+    },
+    {
+     "mode": "sub_month",
+     "name": "Ratenzahlung (6x €1832,83)",
+     "rebills": 5,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "90149",
+     "trial_days": null,
+     "first_payment": 1832.83,
+     "recurring_payment": 1832.83
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 159
+  },
+  {
+   "tax": null,
+   "name": "Her Options - Investiere Dich Frei_",
+   "refs": {},
+   "slug": "heroptions",
+   "label": "",
+   "status": "disabled",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 160
+  },
+  {
+   "tax": null,
+   "name": "Blockchain Ladies - Lebenslanger Zugang Videokurs",
+   "refs": {
+    "hubspot_product": "Blockchain",
+    "access_months_course": 72,
+    "access_months_recordings": 1
+   },
+   "slug": "blockchainlebenslang",
+   "label": "Blockchain LZ",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Lebenslanger Zugang zu den Videomodulen 500 €",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "85345",
+     "trial_days": null,
+     "first_payment": 500,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 161
+  },
+  {
+   "tax": null,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "masterclass-2-0",
+   "label": "Masterclass",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung(€4997.00)",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "75642",
+     "trial_days": null,
+     "first_payment": 4997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "USD",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 162
+  },
+  {
+   "tax": [
+    {
+     "rate": 0.2,
+     "source": "ThriveCart-Bestellungen AT, Stand 09.09.2026",
+     "country": "AT",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.081,
+     "source": "ThriveCart-Bestellungen CH, Stand 09.09.2026",
+     "country": "CH",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.19,
+     "source": "ThriveCart-Bestellungen DE mit Satz 0,19, Stand 09.09.2026",
+     "country": "DE",
+     "exempt_reason": null
+    }
+   ],
+   "name": "Mein Geld und Ich",
+   "refs": {
+    "hubspot_product": "ETF",
+    "learningsuite_extra": "QnVuZGxlOmNtcHBzM2J6dDA3bmRlejAxM2JncnI2bmM=",
+    "access_months_course": 6,
+    "learningsuite_course": "QnVuZGxlOmNtbXZ2bWdtejF1djNiZTAxNTJsdmxvYmU=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbngwMW04ZzB3cmJoNTAxOHA1M2xjdW4=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbngwMW04ZzB3cmJoNTAxOHA1M2xjdW4="
+   },
+   "slug": "meingeldundich",
+   "label": "MGI Neues Design",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 997 €",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "75642",
+     "trial_days": null,
+     "first_payment": 997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 163
+  },
+  {
+   "tax": null,
+   "name": "Mein Geld und Ich",
+   "refs": {
+    "hubspot_product": "ETF",
+    "learningsuite_extra": "QnVuZGxlOmNtcHBzM2J6dDA3bmRlejAxM2JncnI2bmM=",
+    "access_months_course": 6,
+    "learningsuite_course": "QnVuZGxlOmNtbXZ2bWdtejF1djNiZTAxNTJsdmxvYmU=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbngwMW04ZzB3cmJoNTAxOHA1M2xjdW4=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbngwMW04ZzB3cmJoNTAxOHA1M2xjdW4="
+   },
+   "slug": "mein-geld-und-ich",
+   "label": "MGI Embed",
+   "status": "live",
+   "options": [
+    {
+     "mode": "sub_month",
+     "name": "12 Raten à 59€",
+     "rebills": 11,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "66760",
+     "trial_days": null,
+     "first_payment": 59,
+     "recurring_payment": 59
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 164
+  },
+  {
+   "tax": null,
+   "name": "Mein Geld und Ich -",
+   "refs": {
+    "hubspot_product": "ETF",
+    "learningsuite_extra": "QnVuZGxlOmNtcHBzM2J6dDA3bmRlejAxM2JncnI2bmM=",
+    "access_months_course": 6,
+    "learningsuite_course": "QnVuZGxlOmNtbXZ2bWdtejF1djNiZTAxNTJsdmxvYmU=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbngwMW04ZzB3cmJoNTAxOHA1M2xjdW4=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbngwMW04ZzB3cmJoNTAxOHA1M2xjdW4="
+   },
+   "slug": "mgi",
+   "label": "MGI Embed Einmalzahlung",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "66760",
+     "trial_days": null,
+     "first_payment": 647,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 165
+  },
+  {
+   "tax": [
+    {
+     "rate": 0.2,
+     "source": "Uebernommen von Masterclass-Produkten (55/62/64/65), Stand 27.09.2026",
+     "country": "AT",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.081,
+     "source": "Uebernommen von Masterclass-Produkten (55/62/64/65), Stand 27.09.2026",
+     "country": "CH",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.19,
+     "source": "Korrektur 27.09.2026: MC Essential ist wie Mein Geld & Ich / Fast Lane immer mit MwSt, keine Befreiung nach §4 UStG",
+     "country": "DE",
+     "exempt_reason": null
+    }
+   ],
+   "name": "Aktienmentoring Masterclass Essential - Professionelle Aktienanalyse & Portfoliostrategien",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "access_months_recordings": 0
+   },
+   "slug": "masterclass-kompakt",
+   "label": "",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung(€2997.00)",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "75642",
+     "trial_days": null,
+     "first_payment": 2997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 166
+  },
+  {
+   "tax": null,
+   "name": "She Trades - LiveCall Verlängerung 90 Days",
+   "refs": {
+    "hubspot_product": "She Trades",
+    "access_months_course": 0,
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTQ2czAyYjkxMXliYzExdmZ1dTk=",
+    "access_months_recordings": 3,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdzZTFjbzAyOXM1cnF2M2kwZ3JkZWc="
+   },
+   "slug": "shetradeslivecall",
+   "label": "",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "999€",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 999,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 167
+  },
+  {
+   "tax": null,
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto- und Blockchain - Kompetenz - D-Web_pr",
+   "refs": {
+    "hubspot_product": "Blockchain",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhreHZ4dTVsYjR1bmEwa3pmYno5MWE=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTJmODAxdDFjZ2dyZW4ycTVvdDY=",
+    "access_months_recordings": 4,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdxbWs1dTBidHYxMWh4d3lpNmNqZHo="
+   },
+   "slug": "bc-webinar",
+   "label": "Blockchain Webinar nur Preisreduzierung",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Blockchain Kurs 2997€",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "59974",
+     "trial_days": null,
+     "first_payment": 2997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 168
+  },
+  {
+   "tax": null,
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto- und Blockchain - Kompetenz- OE/CH - Web_pr)",
+   "refs": {
+    "hubspot_product": "Blockchain",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbGhreHZ4dTVsYjR1bmEwa3pmYno5MWE=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwbTJmODAxdDFjZ2dyZW4ycTVvdDY=",
+    "access_months_recordings": 4,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGdxbWs1dTBidHYxMWh4d3lpNmNqZHo="
+   },
+   "slug": "bc-webinar-oech",
+   "label": "Webinar Blockchain nur Preis",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "2997€",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "87466",
+     "trial_days": null,
+     "first_payment": 2997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 169
+  },
+  {
+   "tax": null,
+   "name": "Masterclass Inner Circle",
+   "refs": {
+    "hubspot_product": "Masterclass Inner Circle",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": "mic",
+   "label": "",
+   "status": "live",
+   "options": [
+    {
+     "mode": "sub_year",
+     "name": "Jährlich 1.190 € – 2 Monate geschenkt",
+     "rebills": 0,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "38895",
+     "trial_days": null,
+     "first_payment": 1190,
+     "recurring_payment": 1190
+    },
+    {
+     "mode": "sub_month",
+     "name": "Monatlich 119 €",
+     "rebills": 0,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "75642",
+     "trial_days": null,
+     "first_payment": 119,
+     "recurring_payment": 119
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 170
+  },
+  {
+   "tax": null,
+   "name": "IDF - Börsencockpit",
+   "refs": {
+    "hubspot_product": "Börsencockpit",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": "boersencockpit",
+   "label": "IDF Börsencockpit solo",
+   "status": "live",
+   "options": [
+    {
+     "mode": "sub_year",
+     "name": "Jährlich 690 € – 2 Monate geschenkt",
+     "rebills": 0,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "38895",
+     "trial_days": null,
+     "first_payment": 690,
+     "recurring_payment": 690
+    },
+    {
+     "mode": "sub_month",
+     "name": "Monatlich 69 €",
+     "rebills": 0,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "75642",
+     "trial_days": null,
+     "first_payment": 69,
+     "recurring_payment": 69
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 171
+  },
+  {
+   "tax": null,
+   "name": "Mein Geld und Ich - Verlängerung 6 Monate",
+   "refs": {
+    "hubspot_product": "ETF",
+    "access_months_course": 6,
+    "learningsuite_course": "QnVuZGxlOmNtbXZ2bWdtejF1djNiZTAxNTJsdmxvYmU="
+   },
+   "slug": "mgi-verlaengerung",
+   "label": "MGI Verlängerung 6 Monate 399",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 997 €",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "75642",
+     "trial_days": null,
+     "first_payment": 997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 173
+  },
+  {
+   "tax": [
+    {
+     "rate": 0.2,
+     "source": "Uebernommen von Masterclass-Produkten (55/62/64/65), Stand 27.09.2026",
+     "country": "AT",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.081,
+     "source": "Uebernommen von Masterclass-Produkten (55/62/64/65), Stand 27.09.2026",
+     "country": "CH",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0,
+     "source": "Uebernommen von Masterclass-Produkten (55/62/64/65), Stand 27.09.2026",
+     "country": "DE",
+     "exempt_reason": "Die Leistung ist umsatzsteuerfrei nach § 4 Nr. 21 a) bb) UStG."
+    }
+   ],
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar Mein Geld - D",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "learningsuite_extra": "QnVuZGxlOmNtbXZ2bWdtejF1djNiZTAxNTJsdmxvYmU=",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "aktienmentoring-masterclass-professionelle-aktienanalyse-portfoliostrategien-webinar-mein-geld-d",
+   "label": "",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 4997 €",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 4997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 174
+  },
+  {
+   "tax": [
+    {
+     "rate": 0.2,
+     "source": "Uebernommen von Masterclass-Produkten (55/62/64/65), Stand 27.09.2026",
+     "country": "AT",
+     "exempt_reason": null
+    },
+    {
+     "rate": 0.081,
+     "source": "Uebernommen von Masterclass-Produkten (55/62/64/65), Stand 27.09.2026",
+     "country": "CH",
+     "exempt_reason": null
+    }
+   ],
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar Mein Geld - A",
+   "refs": {
+    "hubspot_product": "Masterclass",
+    "learningsuite_extra": "QnVuZGxlOmNtbXZ2bWdtejF1djNiZTAxNTJsdmxvYmU=",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtbGhsMGF3NTBhdWl1OXpwdWV4YWhvZ3Y=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtbGYwcm8ycDA2dmZ1bmEwcWh6MHZtcHM=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtbGk5YWU4OTAwNW5hbTAxd2ZvZjF3eDg="
+   },
+   "slug": "aktienmentoring-masterclass-professionelle-aktienanalyse-portfoliostrategien-webinar-mein-geld-copy-1",
+   "label": "",
+   "status": "live",
+   "options": [
+    {
+     "mode": "sub_month",
+     "name": "Anzahlung 1.000 EUR + 4 x 999,30 EUR",
+     "rebills": 4,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "60418",
+     "trial_days": 30,
+     "first_payment": 1000,
+     "recurring_payment": 999.3
+    },
+    {
+     "mode": "single",
+     "name": "Einmalzahlung 4997 €",
+     "rebills": null,
+     "seen_at": "2026-10-25T15:03:51.755138+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 4997,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 175
+  },
+  {
+   "tax": null,
+   "name": "She Trades Trading Camp - Aufzeichnung",
+   "refs": {
+    "hubspot_product": "She Trades",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtdWp2Y3htejBva2xkMTAxYzRwcmpkZWY=",
+    "access_months_recordings": 99
+   },
+   "slug": "she-trades-trading-camp-aufzeichnung",
+   "label": "",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "999 € Sichere dir deinen Platz",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "62215",
+     "trial_days": null,
+     "first_payment": 999,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 176
+  },
+  {
+   "tax": null,
+   "name": "Her Options - Investiere Dich Frei_",
+   "refs": {
+    "hubspot_product": "Her Options",
+    "access_months_course": 12,
+    "learningsuite_course": "QnVuZGxlOmNtbzFhcHowZjBqMmtmdjAxM2R5bGx6OXg=",
+    "learningsuite_livecalls": "QnVuZGxlOmNtcWYyMGl4dzBnNTZhMjAxanBrYnM4Mno=",
+    "access_months_recordings": 6,
+    "learningsuite_recordings": "QnVuZGxlOmNtcWYya3V5ajAwNTBiajAxZXVyeG05dnk="
+   },
+   "slug": "her",
+   "label": "Her Options voller Preis",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 177
+  },
+  {
+   "tax": null,
+   "name": "Longevity Workshop für Frauen",
+   "refs": {
+    "hubspot_product": "Longevity Workshop",
+    "access_months_course": 0,
+    "access_months_recordings": 0
+   },
+   "slug": "longevity-workshop-frauen",
+   "label": "Longevity Workshop 08.11.2026 (15 Plätze)",
+   "status": "live",
+   "options": [
+    {
+     "mode": "single",
+     "name": "Einmalzahlung (299 €)",
+     "rebills": null,
+     "seen_at": "2026-10-11T14:03:51.791067+00:00",
+     "option_id": "68273",
+     "trial_days": null,
+     "first_payment": 299,
+     "recurring_payment": null
+    }
+   ],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 178
+  },
+  {
+   "tax": null,
+   "name": "Dein Altersvorsorge-Fahrplan (kostenlos)",
+   "refs": {
+    "hubspot_product": "AV-Fahrplan Videokurs",
+    "access_months_course": 99,
+    "learningsuite_course": "QnVuZGxlOmNtdmR2YWtkbTJuZ3pmbTAxenhrYnFtZjQ="
+   },
+   "slug": null,
+   "label": "Kostenloser Videokurs, Anmeldung über Landingpage (kein ThriveCart-Produkt)",
+   "status": "live",
+   "options": [],
+   "currency": "EUR",
+   "upsell_ids": [],
+   "downsell_ids": [],
+   "thrivecart_product_id": 9001
+  }
+ ]
+}

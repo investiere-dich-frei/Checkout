@@ -1,0 +1,12 @@
+{
+  "legal_name": "Investiere Dich Frei GmbH",
+  "street": "Hauptstraße 28",
+  "postal_code": "30982",
+  "city": "Pattensen",
+  "country": "DE",
+  "vat_id": "DE456528973",
+  "tax_number": null,
+  "register_info": "Amtsgericht Hannover HRB 229157",
+  "invoice_prefix": "IDF-",
+  "invoice_next_value": 1
+}
