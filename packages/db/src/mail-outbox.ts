@@ -1,4 +1,5 @@
 import type pg from "pg";
+import { invoicePdf } from "./invoice-pdf.ts";
 
 /**
  * Postausgang: E-Mails werden in der Datenbank angelegt und von einem eigenen Lauf
@@ -10,6 +11,7 @@ export interface OutgoingMail {
   to: string;
   subject: string;
   body: string;
+  attachments: { name: string; contentType: string; content: Buffer }[];
 }
 
 export type SendMail = (mail: OutgoingMail) => Promise<{ messageId: string | null }>;
@@ -32,8 +34,16 @@ export async function sendPendingMails(pool: pg.Pool, send: SendMail, limit = 20
     try {
       await c.query("begin");
       await c.query(`select set_config('app.actor', 'system:postausgang', true)`);
-      const { rows } = await c.query<{ id: string; to_address: string; subject: string; body_text: string; attempts: number }>(
-        `select id, to_address, subject, body_text, attempts from app.mail_outbox
+      const { rows } = await c.query<{
+        id: string;
+        purpose: string;
+        related_id: string | null;
+        to_address: string;
+        subject: string;
+        body_text: string;
+        attempts: number;
+      }>(
+        `select id, purpose, related_id, to_address, subject, body_text, attempts from app.mail_outbox
           where sent_at is null and next_attempt_at <= now()
           order by next_attempt_at limit 1 for update skip locked`,
       );
@@ -43,7 +53,14 @@ export async function sendPendingMails(pool: pg.Pool, send: SendMail, limit = 20
         break;
       }
       try {
-        const r = await send({ id: m.id, to: m.to_address, subject: m.subject, body: m.body_text });
+        const attachments: OutgoingMail["attachments"] = [];
+        if (m.purpose === "rechnung" && m.related_id) {
+          // Ohne PDF keine Rechnungsmail: lieber später erneut versuchen.
+          const doc = await invoicePdf(c, m.related_id);
+          if (!doc) throw new Error("Rechnungs-PDF fehlt");
+          attachments.push({ name: doc.filename, contentType: "application/pdf", content: doc.pdf });
+        }
+        const r = await send({ id: m.id, to: m.to_address, subject: m.subject, body: m.body_text, attachments });
         await c.query(`update app.mail_outbox set sent_at = now(), attempts = attempts + 1, last_error = null, provider_message_id = $2 where id = $1`, [
           m.id,
           r.messageId,

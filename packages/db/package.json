@@ -10,7 +10,8 @@
     "./paypal": "./src/paypal.ts",
     "./notices": "./src/notices.ts",
     "./mail-outbox": "./src/mail-outbox.ts",
-    "./customer-mails": "./src/customer-mails.ts"
+    "./customer-mails": "./src/customer-mails.ts",
+    "./invoice-pdf": "./src/invoice-pdf.ts"
   },
   "scripts": {
     "migrate": "tsx src/cli.ts",
@@ -23,6 +24,7 @@
   },
   "dependencies": {
     "@idf/core": "workspace:*",
+    "pdf-lib": "1.17.1",
     "pg": "^8.23.1"
   },
   "devDependencies": {

@@ -1,5 +1,6 @@
 import type pg from "pg";
 import { enqueueInvoiceMail } from "./customer-mails.ts";
+import { storeInvoicePdf } from "./invoice-pdf.ts";
 import { PaymentError, recordInstallmentPayment, type PaymentInput } from "./invoicing.ts";
 
 /** Ergebnis einer Zahlungsmeldung, gleich für alle Zahlungsanbieter. */
@@ -37,8 +38,11 @@ export async function bookPayment(
   await client.query("savepoint payment_booking");
   try {
     const booked = await recordInstallmentPayment(client, { ...input, issueDay: berlinDay.format(input.paidAt) });
-    // Die Rechnung geht mit derselben Transaktion in den Postausgang, genau einmal.
-    if (booked.created) await enqueueInvoiceMail(client, booked.invoiceId);
+    // PDF und E-Mail entstehen in derselben Transaktion wie die Rechnung, genau einmal.
+    if (booked.created) {
+      await storeInvoicePdf(client, booked.invoiceId);
+      await enqueueInvoiceMail(client, booked.invoiceId);
+    }
     await client.query("release savepoint payment_booking");
     return {
       outcome: booked.created ? "gebucht" : "schon_gebucht",

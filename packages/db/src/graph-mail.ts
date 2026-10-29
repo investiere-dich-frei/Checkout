@@ -50,6 +50,12 @@ export function graphSender(config: GraphConfig, fetchFn: typeof fetch = fetch):
           body: { contentType: "Text", content: mail.body },
           toRecipients: [{ emailAddress: { address: mail.to } }],
           internetMessageHeaders: [{ name: "X-IDF-Mail-Id", value: mail.id }],
+          attachments: mail.attachments.map((a) => ({
+            "@odata.type": "#microsoft.graph.fileAttachment",
+            name: a.name,
+            contentType: a.contentType,
+            contentBytes: a.content.toString("base64"),
+          })),
         },
         // Im Postfach als Nachweis des Versands.
         saveToSentItems: true,

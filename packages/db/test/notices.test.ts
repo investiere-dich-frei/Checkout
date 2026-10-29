@@ -143,11 +143,13 @@ describe("Kündigung, Widerruf und Postausgang", () => {
       return new Response(null, { status: 202, headers: { "request-id": "req-9" } });
     }) as unknown as typeof fetch;
     const send = graphSender({ tenantId: "ten", clientId: "c", clientSecret: "s", from: "service@example.org" }, fakeFetch);
-    const r = await send({ id: "m1", to: "erika@example.org", subject: "Betreff", body: "Text" });
+    const r = await send({ id: "m1", to: "erika@example.org", subject: "Betreff", body: "Text", attachments: [{ name: "a.pdf", contentType: "application/pdf", content: Buffer.from("%PDF") }] });
     assert.equal(r.messageId, "req-9");
-    await send({ id: "m2", to: "erika@example.org", subject: "Betreff", body: "Text" });
+    await send({ id: "m2", to: "erika@example.org", subject: "Betreff", body: "Text", attachments: [] });
     assert.equal(calls.filter((c) => c.url.includes("login")).length, 1);
     const mail = calls.find((c) => c.url.includes("/users/service%40example.org/sendMail"))!;
-    assert.equal(JSON.parse(mail.body).message.toRecipients[0].emailAddress.address, "erika@example.org");
+    const msg = JSON.parse(mail.body).message;
+    assert.equal(msg.toRecipients[0].emailAddress.address, "erika@example.org");
+    assert.equal(msg.attachments[0].contentBytes, Buffer.from("%PDF").toString("base64"));
   });
 });

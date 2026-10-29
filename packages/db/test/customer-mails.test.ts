@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
 import { enqueueOrderConfirmation } from "../src/customer-mails.ts";
+import { invoicePdf, renderInvoicePdf } from "../src/invoice-pdf.ts";
+import { sendPendingMails, type OutgoingMail } from "../src/mail-outbox.ts";
 import { placeOrder, type PlaceOrderInput } from "../src/orders.ts";
 import { handleStripeEvent, nextPaymentTarget, rememberPaymentIntent } from "../src/stripe.ts";
 import { createTestDb, tx, type TestDb } from "./helpers.ts";
@@ -91,5 +93,46 @@ describe("E-Mails an Kundinnen", () => {
     assert.equal(mails[0].subject, `Deine Rechnung ${r.invoiceNumber}`);
     assert.match(mails[0].body_text, /vom 31\.01\.2026/);
     assert.match(mails[0].body_text, /Test GmbH/);
+
+    // Das PDF liegt unveränderbar ab, die Rechnung verweist mit Hash darauf.
+    const inv = (await db.pool.query(`select id, encode(pdf_sha256, 'hex') h, pdf_storage_key k from app.invoices where invoice_number = $1`, [r.invoiceNumber])).rows[0];
+    const doc = (await db.pool.query(`select id, encode(sha256(pdf), 'hex') h from app.invoice_documents where invoice_id = $1`, [inv.id])).rows[0];
+    assert.equal(inv.h, doc.h);
+    assert.equal(inv.k, `db:${doc.id}`);
+    await assert.rejects(db.pool.query(`update app.invoice_documents set pdf = '\\x00'`), /GoBD/);
+    await assert.rejects(db.pool.query(`update app.invoices set pdf_storage_key = 'x' where id = $1`, [inv.id]), /GoBD/);
+
+    // Die Rechnungsmail trägt genau dieses PDF als Anhang.
+    const out: OutgoingMail[] = [];
+    await sendPendingMails(db.pool, async (m) => (out.push(m), { messageId: null }));
+    const withPdf = out.find((m) => m.subject.startsWith("Deine Rechnung"))!;
+    const stored = (await invoicePdf(db.pool, inv.id))!;
+    assert.equal(withPdf.attachments[0]!.name, `Rechnung-${r.invoiceNumber}.pdf`);
+    assert.ok(withPdf.attachments[0]!.content.equals(stored.pdf));
+    assert.equal(stored.pdf.subarray(0, 5).toString(), "%PDF-");
+    assert.deepEqual((await db.pool.query(`select * from app.audit_verify()`)).rows, []);
+  });
+
+  it("erzeugt für dieselbe Rechnung immer dasselbe PDF", async () => {
+    const data = {
+      invoiceNumber: "IDF-1",
+      kind: "rechnung" as const,
+      correctsNumber: null,
+      issueDate: "2026-11-03",
+      serviceFrom: "2026-11-03",
+      serviceTo: "2026-12-02",
+      currency: "EUR",
+      netCents: 10000,
+      taxCents: 1900,
+      grossCents: 11900,
+      note: null,
+      company: { legal_name: "Test GmbH", street: "Teststr. 1", postal_code: "10115", city: "Berlin", country: "DE", vat_id: "DE000000000", tax_number: null, register_info: "Amtsgericht Musterstadt HRB 1" },
+      customer: { kind: "privat", first_name: "Erika", last_name: "Muster", company_name: null, street: "Weg 1", postal_code: "12345", city: "Ort", country: "DE", vat_id: null, email: "erika@example.org" },
+      items: [{ position: 1, description: "Coaching – Monatlich", quantity: 1, unitNetCents: 10000, netCents: 10000, taxRateBp: 1900, taxCents: 1900, grossCents: 11900, note: null }],
+      paid: true,
+    };
+    const a = Buffer.from(await renderInvoicePdf(data));
+    const b = Buffer.from(await renderInvoicePdf(data));
+    assert.ok(a.equals(b));
   });
 });

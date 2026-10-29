@@ -57,3 +57,12 @@ select received_at, kind, full_name, contract_reference from app.contract_notice
 - Gültig: Reverse Charge, ohne Umsatzsteuer. Die Abfrage steht mit Abfragenummer in `app.vat_id_checks`.
 - Ungültig: Hinweis im Formular; ohne USt-IdNr. wird Umsatzsteuer berechnet.
 - VIES nicht erreichbar: Bestellung mit Umsatzsteuer, die Abfrage wird trotzdem festgehalten.
+
+## Rechnung als PDF
+
+- Das PDF entsteht in derselben Transaktion wie die Rechnung, aus den Schnappschüssen von Kundin und Gesellschaft.
+- Es liegt unveränderbar in `app.invoice_documents`. Die Rechnung verweist mit SHA-256 und `pdf_storage_key = db:<id>` darauf.
+- Dieselbe Rechnung ergibt Byte für Byte dasselbe PDF (feste Metadaten).
+- Die Rechnungsmail hängt genau dieses PDF an. Ohne PDF wird die Mail nicht verschickt, sondern später erneut versucht.
+- Auf der Bestellseite steht je bezahlter Rate ein Link zum Herunterladen.
+- Sobald der WORM-Speicher (IONOS, Backup B) bereitsteht, werden die PDFs zusätzlich dorthin kopiert.

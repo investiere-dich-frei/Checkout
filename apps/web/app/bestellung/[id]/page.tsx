@@ -18,12 +18,14 @@ export default async function OrderPage(props: {
   const { redirect_status } = await props.searchParams;
   if (!UUID.test(id)) notFound();
   const { rows } = await pool().query(
-    `select o.status, o.currency, p.name, po.label, i.seq, i.due_date::text, i.gross_cents, i.status installment_status
+    `select o.status, o.currency, p.name, po.label, i.seq, i.due_date::text, i.gross_cents, i.status installment_status,
+            inv.id invoice_id, inv.invoice_number
        from app.orders o
        join app.order_items it on it.order_id = o.id
        join app.price_options po on po.id = it.price_option_id
        join app.products p on p.id = po.product_id
        join app.order_installments i on i.order_item_id = it.id
+       left join app.invoices inv on inv.id = i.invoice_id and inv.pdf_sha256 is not null
       where o.id = $1
       order by i.seq`,
     [id],
@@ -53,6 +55,12 @@ export default async function OrderPage(props: {
               <td>
                 Fällig am {formatDay(r.due_date)}
                 {r.installment_status !== "offen" && <span className="note"> · {r.installment_status}</span>}
+                {r.invoice_id && (
+                  <>
+                    {" · "}
+                    <a href={`/bestellung/${id}/rechnung/${r.invoice_id}`}>Rechnung {r.invoice_number}</a>
+                  </>
+                )}
               </td>
               <td>{formatCents(Number(r.gross_cents), first.currency)}</td>
             </tr>
