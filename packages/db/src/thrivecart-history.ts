@@ -28,6 +28,10 @@ export interface HistoryStats {
   events: number;
   /** Rechnungsnummern zwischen 1 und der höchsten Nummer, die im Spiegel fehlen. */
   missingInvoiceNumbers: number[];
+  /** Abo-Rechnungen, deren Datum ersetzt werden musste, weil das Startdatum fehlt. */
+  replacedInvoiceDates: number;
+  /** Abos ohne jedes Datum: Rechnungsnummer nicht archivierbar, am Abo nicht verknüpft. */
+  subscriptionsWithoutInvoice: number[];
 }
 
 type Row = Record<string, unknown>;
@@ -180,7 +184,20 @@ export async function importHistory(target: pg.ClientBase, data: SourceData): Pr
   }));
 
   // Rechnungen: eine je Nummer, aus Einmalkäufen und Abos zusammengeführt.
-  const invoices = new Map<number, { invoice_number: number; issuer_name: string; issued_at: string; currency: string; gross_cents: number | null; net_cents: number | null; tax_cents: number | null; source_kind: string }>();
+  const invoices = new Map<
+    number,
+    {
+      invoice_number: number;
+      issuer_name: string;
+      issued_at: string;
+      issued_at_source: string;
+      currency: string;
+      gross_cents: number | null;
+      net_cents: number | null;
+      tax_cents: number | null;
+      source_kind: string;
+    }
+  >();
   for (const p of purchases) {
     const known = invoices.get(p.invoice_number);
     if (known) {
@@ -195,6 +212,7 @@ export async function importHistory(target: pg.ClientBase, data: SourceData): Pr
       invoice_number: p.invoice_number,
       issuer_name: issuerFor(p.ordered_at),
       issued_at: p.ordered_at,
+      issued_at_source: "kauf",
       currency: "EUR",
       gross_cents: p.gross_cents,
       net_cents: p.net_cents,
@@ -202,12 +220,46 @@ export async function importHistory(target: pg.ClientBase, data: SourceData): Pr
       source_kind: "kauf",
     });
   }
+  // Ersatzdaten für Abos ohne Startdatum: frühestes Ereignis, sonst Kaufdatum der Bestellung, sonst letzte Zahlung.
+  const earliestEvent = new Map<string, string>();
+  for (const e of data.events) {
+    const at = toUtc(e.date);
+    if (!at) continue;
+    for (const key of [`abo:${toInt(e.subscription_id)}`, `bestellung:${toInt(e.order_id)}`, `rechnung:${toInt(e.invoice_id)}`]) {
+      const known = earliestEvent.get(key);
+      if (!known || at < known) earliestEvent.set(key, at);
+    }
+  }
+  const orderedAt = new Map(purchases.map((p) => [p.order_id, p.ordered_at]));
+  let replacedInvoiceDates = 0;
+  const subscriptionsWithoutInvoice: number[] = [];
   for (const x of subscriptions) {
-    if (x.invoice_number === null || x.started_at === null || invoices.has(x.invoice_number)) continue;
+    if (x.invoice_number === null || invoices.has(x.invoice_number)) continue;
+    const candidates: [string | null | undefined, string][] = [
+      [x.started_at, "abo_start"],
+      [
+        [earliestEvent.get(`abo:${x.subscription_id}`), earliestEvent.get(`bestellung:${x.order_id}`), earliestEvent.get(`rechnung:${x.invoice_number}`)]
+          .filter((d): d is string => !!d)
+          .sort()[0],
+        "ersatz_ereignis",
+      ],
+      [x.order_id === null ? null : orderedAt.get(x.order_id), "ersatz_kauf"],
+      [x.last_payment_at, "ersatz_zahlung"],
+    ];
+    const found = candidates.find(([at]) => !!at);
+    if (!found) {
+      // Ohne Datum keine Rechnung; das Abo bleibt erhalten, aber ohne Verweis darauf.
+      subscriptionsWithoutInvoice.push(x.subscription_id);
+      x.invoice_number = null;
+      continue;
+    }
+    const [issuedAt, source] = found as [string, string];
+    if (source !== "abo_start") replacedInvoiceDates++;
     invoices.set(x.invoice_number, {
       invoice_number: x.invoice_number,
-      issuer_name: issuerFor(x.started_at),
-      issued_at: x.started_at,
+      issuer_name: issuerFor(issuedAt),
+      issued_at: issuedAt,
+      issued_at_source: source,
       currency: x.currency,
       gross_cents: firstCharge.get(x.subscription_id) ?? null,
       net_cents: null,
@@ -217,9 +269,10 @@ export async function importHistory(target: pg.ClientBase, data: SourceData): Pr
   }
 
   const invoiceRes = await target.query(
-    `insert into legacy.thrivecart_invoices (invoice_number, issuer_name, issued_at, currency, gross_cents, net_cents, tax_cents, source_kind)
+    `insert into legacy.thrivecart_invoices (invoice_number, issuer_name, issued_at, issued_at_source, currency, gross_cents,
+       net_cents, tax_cents, source_kind)
      select * from jsonb_to_recordset($1::jsonb) as r(invoice_number bigint, issuer_name text, issued_at timestamptz,
-            currency text, gross_cents bigint, net_cents bigint, tax_cents bigint, source_kind text)
+            issued_at_source text, currency text, gross_cents bigint, net_cents bigint, tax_cents bigint, source_kind text)
      on conflict (invoice_number) do nothing`,
     [JSON.stringify([...invoices.values()])],
   );
@@ -303,5 +356,7 @@ export async function importHistory(target: pg.ClientBase, data: SourceData): Pr
     subscriptions: subRes.rowCount ?? 0,
     events: eventRes.rowCount ?? 0,
     missingInvoiceNumbers: gaps.map((g) => Number(g.n)),
+    replacedInvoiceDates,
+    subscriptionsWithoutInvoice,
   };
 }
