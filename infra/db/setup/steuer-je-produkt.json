@@ -8,7 +8,8 @@
    "status": "live",
    "options": 2,
    "tax_category": "standard",
-   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-10-22: 19 %"
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-10-22: 19 %; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 10,
@@ -16,7 +17,8 @@
    "status": "live",
    "options": 1,
    "tax_category": "standard",
-   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 20,
@@ -33,7 +35,8 @@
    "status": "live",
    "options": 1,
    "tax_category": "steuerfrei_4_21",
-   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+   "amount_basis": "netto",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 62,
@@ -41,7 +44,8 @@
    "status": "live",
    "options": 2,
    "tax_category": "standard",
-   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-06-24: 19 %"
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-06-24: 19 %; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 64,
@@ -49,7 +53,8 @@
    "status": "live",
    "options": 1,
    "tax_category": "steuerfrei_4_21",
-   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+   "amount_basis": "netto",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 65,
@@ -75,7 +80,8 @@
    "status": "live",
    "options": 1,
    "tax_category": "standard",
-   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 70,
@@ -92,7 +98,8 @@
    "status": "live",
    "options": 3,
    "tax_category": "steuerfrei_4_21",
-   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-10-22: 0 %"
+   "amount_basis": "netto",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-10-22: 0 %; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 83,
@@ -109,7 +116,8 @@
    "status": "live",
    "options": 1,
    "tax_category": "steuerfrei_4_21",
-   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-04-17: 0 %"
+   "amount_basis": "netto",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-04-17: 0 %; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 87,
@@ -117,7 +125,8 @@
    "status": "live",
    "options": 1,
    "tax_category": "steuerfrei_4_21",
-   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+   "amount_basis": "netto",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 88,
@@ -125,7 +134,8 @@
    "status": "live",
    "options": 1,
    "tax_category": "steuerfrei_4_21",
-   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+   "amount_basis": "netto",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 91,
@@ -142,7 +152,8 @@
    "status": "disabled",
    "options": 0,
    "tax_category": "steuerfrei_4_21",
-   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-07-14: 0 %"
+   "amount_basis": "netto",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-07-14: 0 %; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 99,
@@ -204,7 +215,8 @@
    "status": "live",
    "options": 2,
    "tax_category": "steuerfrei_4_21",
-   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-06-04: 0 %"
+   "amount_basis": "netto",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-06-04: 0 %; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 111,
@@ -212,7 +224,8 @@
    "status": "live",
    "options": 1,
    "tax_category": "steuerfrei_4_21",
-   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+   "amount_basis": "netto",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 112,
@@ -220,7 +233,8 @@
    "status": "live",
    "options": 1,
    "tax_category": "standard",
-   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-05-19: 19 %"
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-05-19: 19 %; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 114,
@@ -246,7 +260,8 @@
    "status": "live",
    "options": 2,
    "tax_category": "steuerfrei_4_21",
-   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-04-15: 0 %"
+   "amount_basis": "netto",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-04-15: 0 %; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 117,
@@ -263,7 +278,8 @@
    "status": "live",
    "options": 1,
    "tax_category": "steuerfrei_4_21",
-   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-09-25: 0 %"
+   "amount_basis": "netto",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-09-25: 0 %; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 120,
@@ -280,7 +296,8 @@
    "status": "live",
    "options": 1,
    "tax_category": "steuerfrei_4_21",
-   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-08-06: 0 %"
+   "amount_basis": "netto",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-08-06: 0 %; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 125,
@@ -324,15 +341,17 @@
    "status": "live",
    "options": 2,
    "tax_category": "steuerfrei_4_21",
-   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+   "amount_basis": "netto",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 130,
    "name": "She Trades - Professioneller Boersenhandel - Webinar Rabatt - LZ-S (",
    "status": "disabled",
    "options": 0,
-   "tax_category": "steuerfrei_4_21",
-   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2025-12-10: 0 %"
+   "tax_category": "standard",
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Include in price“; vorher abweichend: Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2025-12-10: 0 %"
   },
   {
    "thrivecart_product_id": 131,
@@ -358,7 +377,8 @@
    "status": "live",
    "options": 1,
    "tax_category": "steuerfrei_4_21",
-   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-05-13: 0 %"
+   "amount_basis": "netto",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-05-13: 0 %; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 135,
@@ -384,7 +404,8 @@
    "status": "live",
    "options": 1,
    "tax_category": "standard",
-   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-10-19: 19 %"
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-10-19: 19 %; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 138,
@@ -410,7 +431,8 @@
    "status": "live",
    "options": 2,
    "tax_category": "standard",
-   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 144,
@@ -445,7 +467,8 @@
    "status": "live",
    "options": 3,
    "tax_category": "standard",
-   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 159,
@@ -462,7 +485,8 @@
    "status": "live",
    "options": 1,
    "tax_category": "standard",
-   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-10-05: 19 %"
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-10-05: 19 %; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 162,
@@ -479,7 +503,8 @@
    "status": "live",
    "options": 1,
    "tax_category": "standard",
-   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 164,
@@ -487,7 +512,8 @@
    "status": "live",
    "options": 1,
    "tax_category": "standard",
-   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-07-20: 19 %"
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-07-20: 19 %; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 165,
@@ -504,7 +530,8 @@
    "status": "live",
    "options": 1,
    "tax_category": "standard",
-   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 167,
@@ -521,7 +548,8 @@
    "status": "live",
    "options": 1,
    "tax_category": "steuerfrei_4_21",
-   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-09-09: 0 %"
+   "amount_basis": "netto",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-09-09: 0 %; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 169,
@@ -565,7 +593,8 @@
    "status": "live",
    "options": 1,
    "tax_category": "steuerfrei_4_21",
-   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+   "amount_basis": "netto",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   },
   {
    "thrivecart_product_id": 175,
@@ -591,7 +620,8 @@
    "status": "live",
    "options": 1,
    "tax_category": "standard",
-   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-10-15: 19 %"
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-10-15: 19 %; bestätigt durch Thrivecart-Produkteinstellung (abgelesen 30.10.2026)"
   }
  ],
  "ohne_beleg": [
