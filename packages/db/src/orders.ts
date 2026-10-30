@@ -62,13 +62,14 @@ interface OptionRow {
   tax_category: TaxCategory;
   company_id: string;
   ch_vat_rate_bp: number | null;
+  immediate_access: boolean;
 }
 
 export async function placeOrder(client: pg.ClientBase, input: PlaceOrderInput): Promise<PlacedOrder> {
   const { rows } = await client.query<OptionRow>(
     `select o.id price_option_id, o.active option_active, o.kind, o.currency, o.amount_cents,
             o.recurring_amount_cents, o.recurring_count, o.interval_months, o.trial_days, o.amount_basis,
-            p.active product_active, p.tax_category, p.company_id, c.ch_vat_rate_bp
+            p.active product_active, p.tax_category, p.company_id, c.ch_vat_rate_bp, p.immediate_access
        from app.price_options o
        join app.products p on p.id = o.product_id
        join app.companies c on c.id = p.company_id
@@ -148,7 +149,8 @@ export async function placeOrder(client: pg.ClientBase, input: PlaceOrderInput):
       input.agbVersionId,
       input.privacyVersionId,
       input.withdrawalVersionId,
-      input.withdrawalWaiver,
+      // Bei Sofortzugang gibt es kein Häkchen, also auch keine Erklärung.
+      input.withdrawalWaiver && !opt.immediate_access,
       c.country.toUpperCase(),
       isBusiness,
     ],

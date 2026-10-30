@@ -29,7 +29,7 @@ function companyFooter(co: { legal_name: string; street: string; postal_code: st
  */
 export async function enqueueOrderConfirmation(client: pg.ClientBase, orderId: string, orderUrl: string): Promise<string> {
   const { rows } = await client.query(
-    `select o.created_at, o.currency, o.total_gross_cents, o.withdrawal_waiver_at,
+    `select o.created_at, o.currency, o.total_gross_cents, o.withdrawal_waiver_at, p.immediate_access,
             ((o.created_at at time zone 'Europe/Berlin')::date + $2::int)::text access_from,
             cu.email, cu.first_name, cu.last_name, cu.company_name,
             co.legal_name, co.street, co.postal_code, co.city, co.vat_id, co.register_info,
@@ -78,6 +78,8 @@ export async function enqueueOrderConfirmation(client: pg.ClientBase, orderId: s
       `Du hast beim Kauf erklärt: „${SOFORTSTART_TEXT}“ (Fassung ${SOFORTSTART_VERSION})`,
       "Was das bei einem Widerruf bedeutet, steht unten in der Widerrufsbelehrung.",
     );
+  } else if (o.immediate_access) {
+    lines.push("", "Dein Start", "Deinen Zugang bekommst du sofort.");
   } else {
     lines.push(
       "",
