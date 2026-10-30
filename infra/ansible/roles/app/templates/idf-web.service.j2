@@ -1,0 +1,21 @@
+[Unit]
+Description=IDF Checkout (Next.js)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=idf-app
+Group=idf-app
+WorkingDirectory=/opt/idf-checkout/src/apps/web
+EnvironmentFile=/etc/idf/checkout.env
+ExecStart=/opt/idf-checkout/src/apps/web/node_modules/.bin/next start -H 127.0.0.1 -p 3000
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/idf-checkout/src/apps/web/.next
+
+[Install]
+WantedBy=multi-user.target

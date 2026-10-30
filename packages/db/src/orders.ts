@@ -171,5 +171,14 @@ export async function placeOrder(client: pg.ClientBase, input: PlaceOrderInput):
     );
   }
 
+  // Abo: Bedingungen festschreiben, damit Verlängerungen nicht vom heutigen Katalog abhängen.
+  if (plan.kind === "abo") {
+    await client.query(
+      `insert into app.subscription_terms (order_item_id, order_id, plan, purchase_day, amount_basis, tax_rate_bp)
+       values ($1, $2, $3, $4, $5, $6)`,
+      [orderItemId, orderId, JSON.stringify(plan), input.purchaseDay, opt.amount_basis, tax.rateBp],
+    );
+  }
+
   return { orderId, customerId, orderItemId, tax, installments };
 }

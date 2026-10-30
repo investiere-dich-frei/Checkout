@@ -66,3 +66,13 @@ infra/db/run-prod.sh db:thrivecart:history
 - **Rechnungs-PDFs:** Thrivecart erzeugt die PDFs selbst; im Spiegel liegen sie nicht. Sie müssen aus Thrivecart geholt, mit Prüfsumme in den WORM-Speicher gelegt und hier nachgetragen werden.
 - **81 fehlende Nummern:** in Thrivecart nachsehen (Test- oder Gratisbestellungen?) und dokumentieren.
 - **Folgezahlungen ohne eigene Rechnungsnummer:** Thrivecart vergibt eine Nummer je Kauf, nicht je Rate. Mit der Steuerberatung klären, ob das für die Altdaten reicht.
+
+## Abos ohne Startdatum
+
+- Bei manchen Abos fehlt im Spiegel das Startdatum. Ihre Rechnungsnummer wird trotzdem archiviert, damit keine weiteren Lücken entstehen.
+- Das Rechnungsdatum wird dann ersetzt, in dieser Reihenfolge:
+  1. frühestes Zahlungsereignis zu Abo, Bestellung oder Rechnung;
+  2. Kaufdatum der zugehörigen Bestellung;
+  3. letzte bekannte Zahlung des Abos.
+- Woher das Datum stammt, steht in `issued_at_source` (`kauf`, `abo_start`, `ersatz_ereignis`, `ersatz_kauf`, `ersatz_zahlung`).
+- Abos ganz ohne Datum bleiben ohne Rechnungsverweis. Der Import meldet ihre IDs (`subscriptionsWithoutInvoice`).
