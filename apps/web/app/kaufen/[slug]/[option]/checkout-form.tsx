@@ -15,6 +15,7 @@ interface OfferProps {
   amountBasis: AmountBasis;
   taxCategory: TaxCategory;
   chVatRateBp: number | null;
+  immediateAccess: boolean;
   plan: PricePlan;
 }
 
@@ -151,13 +152,19 @@ export function CheckoutForm(props: {
           </span>
         </label>
         {state.errors.terms && <p className="error" id="terms-error">{state.errors.terms}</p>}
-        <label className="check">
-          <input type="checkbox" name="waiver" aria-describedby="waiver-note" />
-          <span>{SOFORTSTART_TEXT} (freiwillig)</span>
-        </label>
-        <p className="note" id="waiver-note">
-          Ohne Häkchen kannst du trotzdem kaufen. Deinen Zugang bekommst du dann am Tag nach Ablauf der 14-tägigen Widerrufsfrist.
-        </p>
+        {offer.immediateAccess ? (
+          <p className="note">Deinen Zugang bekommst du sofort nach dem Kauf.</p>
+        ) : (
+          <>
+            <label className="check">
+              <input type="checkbox" name="waiver" aria-describedby="waiver-note" />
+              <span>{SOFORTSTART_TEXT} (freiwillig)</span>
+            </label>
+            <p className="note" id="waiver-note">
+              Ohne Häkchen kannst du trotzdem kaufen. Deinen Zugang bekommst du dann am Tag nach Ablauf der 14-tägigen Widerrufsfrist.
+            </p>
+          </>
+        )}
         <details>
           <summary>Widerrufsbelehrung lesen</summary>
           <p style={{ whiteSpace: "pre-line" }}>{props.withdrawalText}</p>

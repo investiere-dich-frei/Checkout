@@ -11,12 +11,14 @@ export interface Offer {
   amountBasis: AmountBasis;
   taxCategory: TaxCategory;
   chVatRateBp: number | null;
+  /** Zugang ab Kauftag ohne Sofortstart-Häkchen (Masterclass Essential). */
+  immediateAccess: boolean;
   plan: PricePlan;
 }
 
 export async function getOffer(db: pg.Pool | pg.ClientBase, productSlug: string, priceOptionId: string): Promise<Offer | null> {
   const { rows } = await db.query(
-    `select o.id, p.name, o.label, o.currency, o.amount_basis, p.tax_category, c.ch_vat_rate_bp, o.kind,
+    `select o.id, p.name, o.label, o.currency, o.amount_basis, p.tax_category, c.ch_vat_rate_bp, p.immediate_access, o.kind,
             o.amount_cents, o.recurring_amount_cents, o.recurring_count, o.interval_months, o.trial_days
        from app.price_options o
        join app.products p on p.id = o.product_id
@@ -34,6 +36,7 @@ export async function getOffer(db: pg.Pool | pg.ClientBase, productSlug: string,
     amountBasis: r.amount_basis,
     taxCategory: r.tax_category,
     chVatRateBp: r.ch_vat_rate_bp,
+    immediateAccess: r.immediate_access,
     plan: {
       kind: r.kind,
       amountCents: Number(r.amount_cents),

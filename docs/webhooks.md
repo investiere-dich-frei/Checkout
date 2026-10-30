@@ -16,7 +16,7 @@ Jede Meldung enthält die Bestellung mit Kundin (E-Mail, Name, Land, HubSpot-ID)
 Für den Kurszugang trägt die Bestellung außerdem (Widerruf und Sofortstart, SOP CS-009):
 
 - `sofortstart_at`: Zeitpunkt, zu dem die Kundin den Sofortstart verlangt hat, sonst `null`;
-- `access_from`: Tag, ab dem der Zugang freigeschaltet wird (`YYYY-MM-DD`). Mit Sofortstart der Kauftag, ohne ihn Kauftag + 15 Tage. n8n schaltet frühestens an diesem Tag frei, wie beim Thrivecart-Kauf ohne Häkchen.
+- `access_from`: Tag, ab dem der Zugang freigeschaltet wird (`YYYY-MM-DD`). Mit Sofortstart oder bei Produkten mit Sofortzugang (Masterclass Essential, Thrivecart 166) der Kauftag, sonst Kauftag + 15 Tage. n8n schaltet frühestens an diesem Tag frei, wie beim Thrivecart-Kauf ohne Häkchen.
 
 ## Zustellung
 

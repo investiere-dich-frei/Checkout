@@ -35,6 +35,7 @@ export default async function CheckoutPage(props: {
           amountBasis: offer.amountBasis,
           taxCategory: offer.taxCategory,
           chVatRateBp: offer.chVatRateBp,
+          immediateAccess: offer.immediateAccess,
           plan: offer.plan,
         }}
         sellerCode={sellerCode}

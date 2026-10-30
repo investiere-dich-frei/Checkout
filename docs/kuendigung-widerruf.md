@@ -38,6 +38,7 @@ select received_at, kind, full_name, contract_reference from app.contract_notice
 - Die Checkbox im Checkout ist freiwillig (§ 357a Abs. 2 BGB, Schreiben RA Dr. Metzner, Az. 385/26). Wortlaut nach Entscheidung Christian vom 28.10.2026, gleich wie im Thrivecart-Checkout, in `packages/db/src/legal.ts`.
 - Mit Häkchen: `app.orders.withdrawal_waiver_at` ist gesetzt, Zugang sofort. Ohne Häkchen: Kauf trotzdem möglich, Zugang am Tag nach Ablauf der Widerrufsfrist (Kauftag + 15 Tage).
 - Die Bestellbestätigung nennt den erklärten Text oder den Starttermin; die Webhooks an n8n tragen `sofortstart_at` und `access_from`.
+- Ausnahme wie in Thrivecart (SOP CS-009, n8n-Ablauf „ThriveCart Webhook“): Produkte mit `app.products.immediate_access` (Masterclass Essential, Thrivecart 166) zeigen kein Häkchen; der Zugang beginnt am Kauftag (Migration 0018).
 
 ## Postausgang
 

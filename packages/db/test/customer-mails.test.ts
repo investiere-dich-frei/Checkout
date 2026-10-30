@@ -84,6 +84,22 @@ describe("E-Mails an Kundinnen", () => {
     assert.doesNotMatch(m.body_text, /Ich verlange ausdrücklich/);
   });
 
+  it("gibt bei Sofortzugang (Masterclass Essential) den Zugang sofort, ohne Sofortstart-Erklärung", async () => {
+    await db.pool.query(`update app.products set immediate_access = true where name = 'Coaching'`);
+    try {
+      // Ein mitgeschicktes Häkchen zählt hier nicht, es wird gar nicht angezeigt.
+      const placed = await tx(db.pool, (c) => placeOrder(c, order));
+      const o = (await db.pool.query(`select withdrawal_waiver_at from app.orders where id = $1`, [placed.orderId])).rows[0];
+      assert.equal(o.withdrawal_waiver_at, null);
+      const mailId = await tx(db.pool, (c) => enqueueOrderConfirmation(c, placed.orderId, "https://kasse.example.org/bestellung/z"));
+      const m = (await db.pool.query(`select body_text from app.mail_outbox where id = $1`, [mailId])).rows[0];
+      assert.match(m.body_text, /Deinen Zugang bekommst du sofort\./);
+      assert.doesNotMatch(m.body_text, /Ich verlange ausdrücklich/);
+    } finally {
+      await db.pool.query(`update app.products set immediate_access = false where name = 'Coaching'`);
+    }
+  });
+
   it("schickt die Rechnung genau einmal, wenn die Zahlung gebucht wird", async () => {
     const placed = await tx(db.pool, (c) => placeOrder(c, aboOrder));
     const t = (await nextPaymentTarget(db.pool, placed.orderId, "2099-12-31"))!;
