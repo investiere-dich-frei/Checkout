@@ -1,0 +1,1082 @@
+{
+ "stand": "2026-10-30",
+ "regel": "1. Thrivecart-Steuertabelle je Produkt, 2. sonst letzte bezahlte DE-Bestellung seit 01.12.2025; ohne Beleg bleibt das Produkt gesperrt",
+ "entscheidungen": [
+  {
+   "thrivecart_product_id": 7,
+   "name": "Finance Fitness Club - Investiere dich frei - D",
+   "status": "live",
+   "options": 2,
+   "tax_category": "standard",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-10-22: 19 %"
+  },
+  {
+   "thrivecart_product_id": 10,
+   "name": "Fast Lane - Investiere Dich Frei - D",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+  },
+  {
+   "thrivecart_product_id": 55,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar LZ - D",
+   "status": "live",
+   "options": 1,
+   "tax_category": "steuerfrei_4_21",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+  },
+  {
+   "thrivecart_product_id": 62,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar LZ - OE/CH",
+   "status": "live",
+   "options": 2,
+   "tax_category": "standard",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-06-24: 19 %"
+  },
+  {
+   "thrivecart_product_id": 64,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien",
+   "status": "live",
+   "options": 1,
+   "tax_category": "steuerfrei_4_21",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+  },
+  {
+   "thrivecart_product_id": 69,
+   "name": "Fast Lane - Investiere Dich Frei - OE",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+  },
+  {
+   "thrivecart_product_id": 79,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar - D3R",
+   "status": "live",
+   "options": 3,
+   "tax_category": "steuerfrei_4_21",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-10-22: 0 %"
+  },
+  {
+   "thrivecart_product_id": 86,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Affiliate",
+   "status": "live",
+   "options": 1,
+   "tax_category": "steuerfrei_4_21",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-04-17: 0 %"
+  },
+  {
+   "thrivecart_product_id": 87,
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto - und Blockchain - Kompetenz - D",
+   "status": "live",
+   "options": 1,
+   "tax_category": "steuerfrei_4_21",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+  },
+  {
+   "thrivecart_product_id": 88,
+   "name": "She Trades - Professioneller Boersenhandel - D",
+   "status": "live",
+   "options": 1,
+   "tax_category": "steuerfrei_4_21",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+  },
+  {
+   "thrivecart_product_id": 98,
+   "name": "Masterclass Investiere Dich Frei - Summit ETF - D",
+   "status": "disabled",
+   "options": 0,
+   "tax_category": "steuerfrei_4_21",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-07-14: 0 %"
+  },
+  {
+   "thrivecart_product_id": 110,
+   "name": "She Trades - Professioneller Boersenhandel - Webinar- lz- D",
+   "status": "live",
+   "options": 2,
+   "tax_category": "steuerfrei_4_21",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-06-04: 0 %"
+  },
+  {
+   "thrivecart_product_id": 111,
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto- und Blockchain - Kompetenz - D-Webinar",
+   "status": "live",
+   "options": 1,
+   "tax_category": "steuerfrei_4_21",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+  },
+  {
+   "thrivecart_product_id": 112,
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto- und Blockchain - Kompetenz- OE/CH - Webianr",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-05-19: 19 %"
+  },
+  {
+   "thrivecart_product_id": 116,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar Mein Geld - D",
+   "status": "live",
+   "options": 2,
+   "tax_category": "steuerfrei_4_21",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-04-15: 0 %"
+  },
+  {
+   "thrivecart_product_id": 119,
+   "name": "She Trades - Inner Circle Monats Abo D",
+   "status": "live",
+   "options": 1,
+   "tax_category": "steuerfrei_4_21",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-09-25: 0 %"
+  },
+  {
+   "thrivecart_product_id": 122,
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto - und Blockchain - Kompetenz Inner Circle Monats Abo D",
+   "status": "live",
+   "options": 1,
+   "tax_category": "steuerfrei_4_21",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-08-06: 0 %"
+  },
+  {
+   "thrivecart_product_id": 129,
+   "name": "She Trades - Professioneller Boersenhandel - Webinar D Rabatt- LZ",
+   "status": "live",
+   "options": 2,
+   "tax_category": "steuerfrei_4_21",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+  },
+  {
+   "thrivecart_product_id": 130,
+   "name": "She Trades - Professioneller Boersenhandel - Webinar Rabatt - LZ-S (",
+   "status": "disabled",
+   "options": 0,
+   "tax_category": "steuerfrei_4_21",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2025-12-10: 0 %"
+  },
+  {
+   "thrivecart_product_id": 134,
+   "name": "She Trades - Inner Circle Jahres Abo D",
+   "status": "live",
+   "options": 1,
+   "tax_category": "steuerfrei_4_21",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-05-13: 0 %"
+  },
+  {
+   "thrivecart_product_id": 137,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Lebenslanger Zugang Videokurs",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-10-19: 19 %"
+  },
+  {
+   "thrivecart_product_id": 141,
+   "name": "Mein Geld & Ich",
+   "status": "live",
+   "options": 2,
+   "tax_category": "standard",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+  },
+  {
+   "thrivecart_product_id": 158,
+   "name": "Bundle Her Options und She Trades",
+   "status": "live",
+   "options": 3,
+   "tax_category": "standard",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+  },
+  {
+   "thrivecart_product_id": 161,
+   "name": "Blockchain Ladies - Lebenslanger Zugang Videokurs",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-10-05: 19 %"
+  },
+  {
+   "thrivecart_product_id": 163,
+   "name": "Mein Geld und Ich",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+  },
+  {
+   "thrivecart_product_id": 164,
+   "name": "Mein Geld und Ich",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-07-20: 19 %"
+  },
+  {
+   "thrivecart_product_id": 166,
+   "name": "Aktienmentoring Masterclass Essential - Professionelle Aktienanalyse & Portfoliostrategien",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+  },
+  {
+   "thrivecart_product_id": 168,
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto- und Blockchain - Kompetenz - D-Web_pr",
+   "status": "live",
+   "options": 1,
+   "tax_category": "steuerfrei_4_21",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-09-09: 0 %"
+  },
+  {
+   "thrivecart_product_id": 174,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar Mein Geld - D",
+   "status": "live",
+   "options": 1,
+   "tax_category": "steuerfrei_4_21",
+   "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+  },
+  {
+   "thrivecart_product_id": 178,
+   "name": "Longevity Workshop für Frauen",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-10-15: 19 %"
+  }
+ ],
+ "ohne_beleg": [
+  {
+   "thrivecart_product_id": 1,
+   "name": "Aktienmentoring Masterclass - Investiere Dich Frei",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 2,
+   "name": "Aktiencoaching Masterclass - Investiere Dich Frei Testversion",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 3,
+   "name": "Aktienmentoring Fast Lane - Investiere Dich Frei",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 4,
+   "name": "Excellence - Investiere Dich Frei - D",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 5,
+   "name": "Vermögensaufbau mit ETFs - Investiere Dich Frei",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 6,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 8,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 9,
+   "name": "Aktienmentoring Masterclass - Investiere Dich Frei",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 11,
+   "name": "Aktienmentoring Masterclass - Investiere Dich Frei",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 12,
+   "name": "Vermögensaufbau mit ETFs - Investiere Dich Frei",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 13,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 14,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 15,
+   "name": "Trackingtest",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 16,
+   "name": "1:1 Beratungssession Aktien - Dauer: 60 Minuten",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 17,
+   "name": "Aktienmentoring Masterclass + ETF Online Kurs",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 18,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 19,
+   "name": "Depotscan mit 1:1 Beratung - Dauer: 90 Min.",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 20,
+   "name": "Dein Finanz-Kompass",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 21,
+   "name": "Aktienmentoring Masterclass + Scan deines Aktiendepots",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 22,
+   "name": "Aktienmentoring Masterclass - Investiere Dich Frei",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 23,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 24,
+   "name": "Aktienmentoring Masterclass - Investiere Dich Frei - CH",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 25,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 26,
+   "name": "Aktienmentoring Fast Lane - Investiere Dich Frei - CH",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 27,
+   "name": "Vermögensaufbau mit ETFs - Investiere Dich Frei - Web",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 28,
+   "name": "Aktienmentoring Masterclass - Investiere Dich Frei - G",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 29,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 30,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 31,
+   "name": "Aktienmentoring Masterclass - Investiere Dich Frei (Copy 3)",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 32,
+   "name": "Inner Circle - Investiere Dich Frei - D",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 33,
+   "name": "Aktienmentoring Masterclass + ETF Online Kurs - CH",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 34,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 35,
+   "name": "Aktienmentoring Masterclass + ETF Online Kurs - D",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 36,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 37,
+   "name": "Vermögensaufbau mit ETFs - Investiere Dich Frei - Page",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 38,
+   "name": "Aktienmentoring Masterclass - Investiere Dich Frei - G -",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 39,
+   "name": "ETF Express - Investiere Dich Frei",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 40,
+   "name": "Aktienmentoring Masterclass - D -",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 41,
+   "name": "Masterclass Investiere Dich Frei - CH",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 42,
+   "name": "Aktienmentoring Masterclass - D - R",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 43,
+   "name": "Masterclass - Investiere Dich Frei - DG",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 44,
+   "name": "Aktienmentoring Masterclass Webinar - CH",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 45,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 46,
+   "name": "Aktienmentoring Masterclass - Investiere Dich Frei",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 47,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 48,
+   "name": "Aktienmentoring Masterclass - D",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 49,
+   "name": "Aktienmentoring Greator - Investiere Dich Frei",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 50,
+   "name": "Aktienmentoring Masterclass - Investiere Dich Frei (Copy 2)",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 51,
+   "name": "Dein Finanz-Kompass Greator",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 52,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 53,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 54,
+   "name": "ETF Express - Weltkindertag - Investiere Dich Frei",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 56,
+   "name": "Dein Finanz-Kompass - Gutschein",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 57,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 58,
+   "name": "ETF Wohlstandsplan - Investiere Dich Reich",
+   "status": "disabled",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 59,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 60,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 61,
+   "name": "Dein Finanz-Kompass",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 63,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar LZ - Greator",
+   "status": "disabled",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 65,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien -OE",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 66,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Aff - A",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 67,
+   "name": "Masterclass Investiere Dich Frei - D (Copy 2)",
+   "status": "unbekannt",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 68,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 70,
+   "name": "Fast Lane - Investiere Dich Frei - S",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 71,
+   "name": "Excellence - Investiere Dich Frei - Ö",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 72,
+   "name": "Excellence - Investiere Dich Frei - S",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 73,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 74,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 75,
+   "name": "Masterclass Investiere Dich Frei - Ö",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 76,
+   "name": "Masterclass Investiere Dich Frei - DR",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 77,
+   "name": "Masterclass Investiere Dich Frei - DANZ",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 78,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 80,
+   "name": "Masterclass Investiere Dich Frei -Web - D Rechnung",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 81,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 82,
+   "name": "kein Produkt",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 83,
+   "name": "Dein Finanz-Kompass - A",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 84,
+   "name": "Masterclass Investiere Dich Frei - D F.Summit",
+   "status": "disabled",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 85,
+   "name": "Masterclass Investiere Dich Frei - Webinar - D12R",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 89,
+   "name": "She Trades - Professioneller Börsenhandel - Summit",
+   "status": "disabled",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 90,
+   "name": "She Trades - Professioneller Börsenhandel - DResJan",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 91,
+   "name": "Bundle Masterclass und She Trades - D",
+   "status": "live",
+   "options": 3
+  },
+  {
+   "thrivecart_product_id": 92,
+   "name": "Greator Stammtisch 2025 Titanticket",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 93,
+   "name": "Masterclass Investiere Dich Frei - D 2,5",
+   "status": "test",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 94,
+   "name": "Blockchain Ladies Investiere Dich Frei - D Summit",
+   "status": "disabled",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 96,
+   "name": "Investiere.Dich.Frei-Summit – Glow Ticket",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 97,
+   "name": "Investiere.Dich.Frei-Summit – Glow plus Ticket",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 99,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien- Webinar Mein Geld",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 100,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar ETF - S",
+   "status": "disabled",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 101,
+   "name": "She Trades - Professioneller Boersenhandel - OE",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 102,
+   "name": "She Trades - Professioneller Boersenhandel - S",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 103,
+   "name": "Vermögensaufbau mit ETFs - Investiere Dich Frei (Copy 2)",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 104,
+   "name": "Summit Checkout",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 105,
+   "name": "Dein Finanz-Kompass",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 106,
+   "name": "Untitled product",
+   "status": "test",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 108,
+   "name": "She Trades - Professioneller Boersenhandel - Webinar OE",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 109,
+   "name": "She Trades - Professioneller Boersenhandel - Webinar S",
+   "status": "live",
+   "options": 2
+  },
+  {
+   "thrivecart_product_id": 113,
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto - und Blockchain - Kompetenz - S - Webinar",
+   "status": "disabled",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 114,
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto - und Blockchain - Kompetenz - OE",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 115,
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto - und Blockchain - Kompetenz  - S",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 117,
+   "name": "Blockchain Ladies Inner Circle",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 120,
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto - und Blockchain - Kompetenz  Inner Circle 6 Monate D",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 121,
+   "name": "She Trades - Inner Circel S",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 125,
+   "name": "Blockchain Ladies Inner Circle 6 Monate S",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 126,
+   "name": "Blockchain Ladies Inner Circle Monats Abo S",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 127,
+   "name": "Blockchain Ladies Inner Circle 6 Monate Ö",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 128,
+   "name": "Blockchain Ladies Inner Circle Monats Abo Ö",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 131,
+   "name": "She Trades - Professioneller Boersenhandel - Webinar Rabatt - LZ- OE",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 133,
+   "name": "She Trades - Inner Circle Monats Abo Ö",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 135,
+   "name": "She Trades - Inner Circle Jahres Abo - Ö",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 136,
+   "name": "She Trades - Inner Circle Jahres Abo Ö (Test)",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 138,
+   "name": "She Trades - Inner Circle Jahres Abo S",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 140,
+   "name": "She Trades - Inner Circle Monats Abo S",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 142,
+   "name": "Mein Geld & Ich S",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 143,
+   "name": "Mein Geld & Ich OE",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 144,
+   "name": "Mein Geld & Ich Website",
+   "status": "live",
+   "options": 2
+  },
+  {
+   "thrivecart_product_id": 145,
+   "name": "Mein Geld & Ich Website S",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 146,
+   "name": "Mein Geld & Ich Website OE",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 148,
+   "name": "She Trades Trading Camp-online",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 149,
+   "name": "She Trades - Inner Circle Jahres Abo S (Copy 2)",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 150,
+   "name": "She Trades - Inner Circle Jahres Abo - Ö (Copy 1)",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 151,
+   "name": "She Trades Trading Camp-online -  Ö",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 152,
+   "name": "She Trades Trading Camp-online -  S",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 153,
+   "name": "She Trades Live",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 154,
+   "name": "She Trades Live -  Ö",
+   "status": "disabled",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 155,
+   "name": "She Trades Live -  S",
+   "status": "disabled",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 157,
+   "name": "Mein Geld & Ich",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 159,
+   "name": "Bundle Her Options und She Trades",
+   "status": "live",
+   "options": 3
+  },
+  {
+   "thrivecart_product_id": 160,
+   "name": "Her Options - Investiere Dich Frei_",
+   "status": "disabled",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 162,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 165,
+   "name": "Mein Geld und Ich -",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 167,
+   "name": "She Trades - LiveCall Verlängerung 90 Days",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 169,
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto- und Blockchain - Kompetenz- OE/CH - Web_pr)",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 170,
+   "name": "Masterclass Inner Circle",
+   "status": "live",
+   "options": 2
+  },
+  {
+   "thrivecart_product_id": 171,
+   "name": "IDF - Börsencockpit",
+   "status": "live",
+   "options": 2
+  },
+  {
+   "thrivecart_product_id": 173,
+   "name": "Mein Geld und Ich - Verlängerung 6 Monate",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 175,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar Mein Geld - A",
+   "status": "live",
+   "options": 2
+  },
+  {
+   "thrivecart_product_id": 176,
+   "name": "She Trades Trading Camp - Aufzeichnung",
+   "status": "live",
+   "options": 1
+  },
+  {
+   "thrivecart_product_id": 177,
+   "name": "Her Options - Investiere Dich Frei_",
+   "status": "live",
+   "options": 0
+  },
+  {
+   "thrivecart_product_id": 9001,
+   "name": "Dein Altersvorsorge-Fahrplan (kostenlos)",
+   "status": "live",
+   "options": 0
+  }
+ ]
+}

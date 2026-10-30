@@ -76,6 +76,10 @@ describe("Ausgehende Webhooks", () => {
     const body = JSON.parse(paid!.body);
     assert.equal(body.order.customer.email, "erika@example.org");
     assert.equal(body.order.product.thrivecart_product_id, 42);
+    // Kurszugang: mit Sofortstart ab dem Kauftag.
+    assert.ok(body.order.sofortstart_at);
+    const today = (await db.pool.query(`select ((created_at at time zone 'Europe/Berlin')::date)::text d from app.orders where id = $1`, [body.order.order_id])).rows[0].d;
+    assert.equal(body.order.access_from, today);
     assert.deepEqual({ ...body.payment, invoice_number: undefined }, { provider: "stripe", seq: 1, first: true, gross_cents: 9900, invoice_number: undefined });
     assert.equal(JSON.parse(ended!.body).event, "abo.beendet");
     await assert.rejects(db.pool.query(`update app.webhook_outbox set payload = '{}'`), /GoBD/);

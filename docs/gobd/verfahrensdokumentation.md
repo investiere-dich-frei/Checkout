@@ -28,6 +28,7 @@ Bestellung → Zahlung → Rechnung → Auszahlung des Zahlungsanbieters.
   die im Parallelbetrieb weiterlaufen (Entscheidung Christian, 29.10.2026). Die Vorsilbe ist danach nicht mehr änderbar.
 - Die Steuerberatung bestätigt den eigenen Kreis vor dem ersten Verkauf.
 - Alte Thrivecart-Rechnungen bleiben mit ihren Originalnummern im Archiv (`legacy.thrivecart_invoices`), getrennt vom neuen Kreis.
+  85 Nummern des Thrivecart-Kreises fehlen schon im Datenbestand von Thrivecart bzw. im Spiegel; sie werden laut Entscheidung von Christian (30.10.2026) nicht nachgeholt, Nachweis bleibt Thrivecart.
 - Die Nummer vergibt ausschließlich die Datenbank.
 
 ### 3.3 Unveränderbarkeit und Korrektur

@@ -28,6 +28,16 @@ Die Anwendung läuft auf app-nbg1 (Ansible-Rolle `infra/ansible/roles/app`):
 6. Stripe: Webhook-Endpunkt `https://kasse.investieredichfrei.de/api/stripe/webhook` für `payment_intent.succeeded`.
 7. PayPal: Webhook `https://kasse.investieredichfrei.de/api/paypal/webhook` für `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.PENDING`, `PAYMENT.CAPTURE.DENIED`.
 8. Rechtstexte (AGB, Datenschutz, Widerrufsbelehrung) als Fassungen in `app.legal_text_versions` einspielen.
-9. Admin-Zugang: Nutzer in `app.users` anlegen (Rolle `admin`, Vertrieb mit `sales_code`).
-10. Steuerkategorie je Produkt bestätigen und Produkte freischalten.
+9. Admin-Zugänge anlegen (Christian, Emilia, Julia; Liste in `infra/db/setup/admins.json`):
+   `infra/db/run-prod.sh db:configure users $PWD/infra/db/setup/admins.json --actor cli:christian`.
+   Vertrieb kommt später mit Rolle `vertrieb` und `sales_code` in eine eigene Datei.
+10. Steuer wie in Thrivecart:
+    - Schweiz 8,1 %: `infra/db/run-prod.sh db:configure ch-vat 810 --company <id> --actor cli:christian`.
+      Österreich nimmt den EU-Satz 20 % ohne eigene Einstellung.
+    - Steuerkategorie je Produkt bestätigen und Live-Produkte freischalten:
+      `infra/db/run-prod.sh db:configure tax $PWD/infra/db/setup/steuer-je-produkt.json --by ChristianBolda@investieredichfrei.de`.
+      Die Datei übernimmt Thrivecart 1:1: zuerst die Steuertabelle je Produkt, sonst die letzte bezahlte
+      DE-Bestellung seit 01.12.2025. Produkte ohne Beleg (Liste `ohne_beleg`) bleiben gesperrt, bis ihre
+      Einstellung in Thrivecart abgelesen ist. Bereits bestätigte Produkte ändert ein zweiter Lauf nicht.
+    - Alle drei Befehle zuerst mit `--dry-run`.
 11. Testkauf mit Stripe-Testkarte und PayPal-Sandbox, dann auf Live-Schlüssel umstellen.

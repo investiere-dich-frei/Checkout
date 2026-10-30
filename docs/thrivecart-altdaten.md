@@ -64,7 +64,7 @@ infra/db/run-prod.sh db:thrivecart:history
 ## Offen
 
 - **Rechnungs-PDFs:** Thrivecart erzeugt die PDFs selbst; im Spiegel liegen sie nicht. Sie müssen aus Thrivecart geholt, mit Prüfsumme in den WORM-Speicher gelegt und hier nachgetragen werden.
-- **81 fehlende Nummern:** in Thrivecart nachsehen (Test- oder Gratisbestellungen?) und dokumentieren.
+- **Fehlende Nummern (im Prod-Import 85):** Entscheidung Christian 30.10.2026: Sie werden nicht nachgeholt und bleiben in Thrivecart als Originalquelle. Der Archivbestand in `legacy.thrivecart_invoices` enthält nur die Rechnungen aus dem Spiegel; für die fehlenden Nummern ist Thrivecart der Nachweis.
 - **Folgezahlungen ohne eigene Rechnungsnummer:** Thrivecart vergibt eine Nummer je Kauf, nicht je Rate. Mit der Steuerberatung klären, ob das für die Altdaten reicht.
 
 ## Abos ohne Startdatum

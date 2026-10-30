@@ -1,5 +1,6 @@
 import { createHmac } from "node:crypto";
 import type pg from "pg";
+import { ACCESS_DELAY_DAYS } from "./legal.ts";
 
 /**
  * Ausgehende Webhooks. Ereignisse entstehen in der Transaktion ihres Anlasses;
@@ -13,6 +14,10 @@ export type WebhookEvent = "zahlung.eingegangen" | "zahlung.erstattet" | "abo.be
 async function orderPayload(client: pg.ClientBase, orderId: string) {
   const { rows } = await client.query(
     `select o.id order_id, o.status, o.currency, o.total_gross_cents, o.created_at,
+            -- Kurszugang: sofort bei Sofortstart, sonst am Tag nach Ablauf der Widerrufsfrist.
+            o.withdrawal_waiver_at sofortstart_at,
+            case when o.withdrawal_waiver_at is not null then (o.created_at at time zone 'Europe/Berlin')::date
+                 else (o.created_at at time zone 'Europe/Berlin')::date + $2::int end::text access_from,
             jsonb_build_object('id', c.id, 'email', c.email, 'first_name', c.first_name, 'last_name', c.last_name,
                                'company_name', c.company_name, 'country', c.country, 'hubspot_contact_id', c.hubspot_contact_id) customer,
             jsonb_build_object('id', p.id, 'name', p.name, 'slug', p.slug, 'thrivecart_product_id', p.thrivecart_product_id,
@@ -26,7 +31,7 @@ async function orderPayload(client: pg.ClientBase, orderId: string) {
        join app.products p on p.id = po.product_id
        left join app.users u on u.id = o.seller_user_id
       where o.id = $1`,
-    [orderId],
+    [orderId, ACCESS_DELAY_DAYS],
   );
   return rows[0];
 }
