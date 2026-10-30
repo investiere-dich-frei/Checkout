@@ -7,15 +7,20 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "next typegen && tsc -p tsconfig.json --noEmit",
-    "test": "node --import tsx --test test/*.test.ts"
+    "test": "node --import tsx --test test/*.test.ts",
+    "einzug": "tsx scripts/einzug.ts"
   },
   "dependencies": {
     "@idf/core": "workspace:*",
     "@idf/db": "workspace:*",
+    "@paypal/react-paypal-js": "10.5.2",
+    "@stripe/react-stripe-js": "7.0.0",
+    "@stripe/stripe-js": "10.1.0",
     "next": "16.4.1",
     "pg": "^8.23.1",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "stripe": "23.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",

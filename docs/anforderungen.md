@@ -22,7 +22,10 @@ Stand 29.10.2026. Grundlage ist die Funktionsanalyse im Projekt-Dokument „Eige
   - Widerrufsbutton (§ 356a BGB, ab 19.06.2026);
   - Kündigungsbutton (§ 312k BGB).
 - Zahlungen über Stripe, PayPal und Überweisung.
-- Rechnungen nach GoBD, lückenlos ab Nummer 7981; Thrivecart endet bei 7980.
+- Rechnungen nach GoBD in einem eigenen, lückenlosen Nummernkreis mit Vorsilbe: IDF-1, IDF-2, …
+  Thrivecart schreibt im Parallelbetrieb weiter Rechnungen mit eigenen Nummern; ein Anschluss an
+  dessen Kreis würde doppelte Nummern erzeugen (Entscheidung Christian, 29.10.2026).
+  Die Steuerberatung soll das vor dem ersten Verkauf bestätigen.
 - Umsatzsteuer:
   - DE 19 %, AT 20 %, CH ohne deutsche USt;
   - Steuerbefreiung nach § 4 Nr. 21 UStG je Produkt;

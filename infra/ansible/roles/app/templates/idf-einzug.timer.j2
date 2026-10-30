@@ -1,0 +1,9 @@
+[Unit]
+Description=IDF Checkout: Einzug täglich um 6:30 Uhr
+
+[Timer]
+OnCalendar=*-*-* 06:30:00 Europe/Berlin
+Persistent=true
+
+[Install]
+WantedBy=timers.target

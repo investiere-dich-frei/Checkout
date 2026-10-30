@@ -1,0 +1,17 @@
+[Unit]
+Description=IDF Checkout: Ausgehende Webhooks zustellen
+
+[Service]
+Type=oneshot
+User=idf-app
+Group=idf-app
+WorkingDirectory=/opt/idf-checkout/src
+EnvironmentFile=/etc/idf/checkout.env
+ExecStart=/usr/bin/pnpm db:webhooks:send
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+# pnpm (Corepack) und tsx legen ihren Zwischenspeicher im Heimverzeichnis ab.
+Environment=HOME=/opt/idf-checkout COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+ReadWritePaths=/opt/idf-checkout

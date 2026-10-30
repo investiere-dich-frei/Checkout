@@ -24,7 +24,10 @@ Bestellung → Zahlung → Rechnung → Auszahlung des Zahlungsanbieters.
 ### 3.2 Rechnungsnummern
 
 - Jede Gesellschaft hat einen eigenen Nummernkreis.
-- Der erste Wert für die IDF GmbH ist 7981 und schließt an die letzte Thrivecart-Rechnung 7980 an.
+- Der Kreis der IDF GmbH beginnt bei IDF-1. Die Vorsilbe „IDF-“ trennt ihn von den Thrivecart-Nummern,
+  die im Parallelbetrieb weiterlaufen (Entscheidung Christian, 29.10.2026). Die Vorsilbe ist danach nicht mehr änderbar.
+- Die Steuerberatung bestätigt den eigenen Kreis vor dem ersten Verkauf.
+- Alte Thrivecart-Rechnungen bleiben mit ihren Originalnummern im Archiv (`legacy.thrivecart_invoices`), getrennt vom neuen Kreis.
 - Die Nummer vergibt ausschließlich die Datenbank.
 
 ### 3.3 Unveränderbarkeit und Korrektur
