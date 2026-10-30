@@ -23,8 +23,13 @@ describe("Katalog für den Checkout", () => {
     const draft = await q(`insert into app.products (company_id, name, slug, tax_category) values ($1, 'Entwurf', 'entwurf', 'standard') returning id`, [company]);
     option = await q(`insert into app.price_options (product_id, label, kind, amount_cents) values ($1, 'Einmal', 'einmal', 1000) returning id`, [live]);
     hidden = await q(`insert into app.price_options (product_id, label, kind, amount_cents) values ($1, 'Einmal', 'einmal', 1000) returning id`, [draft]);
-    for (const [kind, version, from] of [["agb", "1", "2026-01-01"], ["agb", "2", "2026-06-01"], ["agb", "3", "2099-01-01"], ["widerruf", "1", "2026-01-01"]]) {
-      await db.pool.query(`insert into app.legal_text_versions (kind, version, content, valid_from) values ($1, $2, 'Text', $3)`, [kind, version, from]);
+    // Migration 0017 bringt die echten Texte mit (gültig ab 30.10.2026); „2“ ist jünger, „3“ liegt in der Zukunft.
+    for (const [kind, version, from] of [["agb", "1", "2026-01-01"], ["agb", "2", "now"], ["agb", "3", "2099-01-01"], ["widerruf", "1", "2026-01-01"]]) {
+      await db.pool.query(
+        `insert into app.legal_text_versions (kind, version, content, valid_from)
+         values ($1, $2, 'Text', case when $3 = 'now' then now() - interval '1 minute' else $3::timestamptz end)`,
+        [kind, version, from],
+      );
     }
   });
   after(() => db.drop());
@@ -40,8 +45,20 @@ describe("Katalog für den Checkout", () => {
   it("nimmt die jeweils gültige Fassung der Rechtstexte", async () => {
     const t = await currentLegalTexts(db.pool);
     assert.equal(t.agb?.version, "2");
-    assert.equal(t.widerruf?.version, "1");
-    assert.equal(t.datenschutz, null);
+    assert.equal(t.widerruf?.version, "3.1");
+    assert.equal(t.datenschutz?.version, "Stand 09.08.2025");
+  });
+
+  it("übernimmt die Rechtstexte der Website und die Belehrung 3.1 im Wortlaut", async () => {
+    const { rows } = await db.pool.query(
+      `select kind, content, md5(content) m from app.legal_text_versions where version in ('Stand Oktober 2026', 'Stand 09.08.2025', '3.1') order by kind`,
+    );
+    assert.deepEqual(rows.map((r) => r.kind), ["agb", "datenschutz", "widerruf"]);
+    assert.match(rows[0].content, /^AGB\n\n1\. Präambel\n/);
+    assert.match(rows[0].content, /Stand: Oktober 2026$/);
+    assert.match(rows[1].content, /^Datenschutzerklärung\n\nStand: 09\.08\.2025/);
+    // Gleicher Klartext wie in Supabase manual_order_settings.widerruf_html (Rechnungsmails seit 28.10.2026).
+    assert.equal(rows[2].m, "9581c0011f9adf4acac06bbbc6cab63a");
   });
 
   it("findet nur aktive Vertriebspersonen", async () => {

@@ -57,7 +57,7 @@ describe("E-Mails an Kundinnen", () => {
   });
   after(() => db.drop());
 
-  it("bestätigt die Bestellung mit Zahlplan, Rechtstexten im Wortlaut und Verzicht auf das Widerrufsrecht", async () => {
+  it("bestätigt die Bestellung mit Zahlplan, Rechtstexten im Wortlaut und dem erklärten Sofortstart", async () => {
     const placed = await tx(db.pool, (c) => placeOrder(c, order));
     const mailId = await tx(db.pool, (c) => enqueueOrderConfirmation(c, placed.orderId, "https://kasse.example.org/bestellung/x"));
     const m = (await db.pool.query(`select purpose, to_address, subject, body_text, related_id from app.mail_outbox where id = $1`, [mailId])).rows[0];
@@ -71,8 +71,17 @@ describe("E-Mails an Kundinnen", () => {
     assert.match(m.body_text, /§ 4 Nr\. 21/);
     assert.match(m.body_text, /Wortlaut widerruf/);
     assert.match(m.body_text, /Wortlaut agb/);
-    assert.match(m.body_text, /§ 356 Abs\. 5 BGB/);
+    assert.match(m.body_text, /Ich verlange ausdrücklich, dass die Investiere Dich Frei GmbH vor Ablauf der Widerrufsfrist/);
     assert.match(m.body_text, /kasse\.example\.org/);
+  });
+
+  it("nennt ohne Sofortstart den Starttermin nach Ablauf der Widerrufsfrist", async () => {
+    const placed = await tx(db.pool, (c) => placeOrder(c, { ...order, withdrawalWaiver: false }));
+    const mailId = await tx(db.pool, (c) => enqueueOrderConfirmation(c, placed.orderId, "https://kasse.example.org/bestellung/y"));
+    const m = (await db.pool.query(`select body_text from app.mail_outbox where id = $1`, [mailId])).rows[0];
+    const start = (await db.pool.query(`select to_char((created_at at time zone 'Europe/Berlin')::date + 15, 'DD.MM.YYYY') d from app.orders where id = $1`, [placed.orderId])).rows[0].d;
+    assert.match(m.body_text, new RegExp(`Zugang bekommst du am ${start.replace(/\./g, "\\.")}`));
+    assert.doesNotMatch(m.body_text, /Ich verlange ausdrücklich/);
   });
 
   it("schickt die Rechnung genau einmal, wenn die Zahlung gebucht wird", async () => {

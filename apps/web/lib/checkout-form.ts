@@ -40,9 +40,6 @@ export function parseCheckoutForm(form: FormData): { ok: true; value: CheckoutFo
   if (!COUNTRY_CODES.has(country)) errors.country = "Bitte wähle dein Land.";
   if (vatId && !/^[A-Z]{2}[A-Z0-9]{2,13}$/.test(vatId)) errors.vat_id = "Diese USt-IdNr. hat kein gültiges Format.";
   if (form.get("terms") !== "on") errors.terms = "Bitte stimme den AGB zu und bestätige die Datenschutzhinweise.";
-  if (form.get("waiver") !== "on") {
-    errors.waiver = "Damit du sofort starten kannst, brauchen wir deine Zustimmung zum vorzeitigen Beginn.";
-  }
 
   if (Object.keys(errors).length) return { ok: false, errors };
   return {
@@ -61,7 +58,8 @@ export function parseCheckoutForm(form: FormData): { ok: true; value: CheckoutFo
         vat_id: kind === "unternehmen" && vatId ? vatId : null,
       },
       acceptedTerms: true,
-      withdrawalWaiver: true,
+      // Freiwillig (§ 357a Abs. 2 BGB): Eine Pflicht-Checkbox wäre kein ausdrückliches Verlangen.
+      withdrawalWaiver: form.get("waiver") === "on",
     },
   };
 }

@@ -33,6 +33,12 @@ select received_at, kind, full_name, contract_reference from app.contract_notice
 
 - Das Beenden des Vertrags selbst (Abo stoppen, Raten stornieren) folgt mit dem Mahnwesen und der Abo-Verwaltung.
 
+## Sofortstart
+
+- Die Checkbox im Checkout ist freiwillig (§ 357a Abs. 2 BGB, Schreiben RA Dr. Metzner, Az. 385/26). Wortlaut nach Entscheidung Christian vom 28.10.2026, gleich wie im Thrivecart-Checkout, in `packages/db/src/legal.ts`.
+- Mit Häkchen: `app.orders.withdrawal_waiver_at` ist gesetzt, Zugang sofort. Ohne Häkchen: Kauf trotzdem möglich, Zugang am Tag nach Ablauf der Widerrufsfrist (Kauftag + 15 Tage).
+- Die Bestellbestätigung nennt den erklärten Text oder den Starttermin; die Webhooks an n8n tragen `sofortstart_at` und `access_from`.
+
 ## Postausgang
 
 - Alle E-Mails an Kundinnen entstehen zuerst in `app.mail_outbox`, in derselben Transaktion wie ihr Anlass.

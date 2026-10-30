@@ -30,12 +30,19 @@ describe("Checkout-Formular", () => {
     assert.ok(r.ok);
     assert.equal(r.value.customer.country, "DE");
     assert.equal(r.value.customer.company_name, null);
+    assert.equal(r.value.withdrawalWaiver, true);
+  });
+
+  it("lässt den Sofortstart freiwillig", () => {
+    const r = parseCheckoutForm(form({ ...valid, waiver: "" }));
+    assert.ok(r.ok);
+    assert.equal(r.value.withdrawalWaiver, false);
   });
 
   it("meldet fehlende Pflichtangaben und Zustimmungen einzeln", () => {
     const r = parseCheckoutForm(form({ ...valid, email: "kein-at", terms: "", waiver: "", country: "XX" }));
     assert.ok(!r.ok);
-    assert.deepEqual(Object.keys(r.errors).sort(), ["country", "email", "terms", "waiver"]);
+    assert.deepEqual(Object.keys(r.errors).sort(), ["country", "email", "terms"]);
   });
 
   it("verlangt bei Unternehmen den Firmennamen und prüft das Format der USt-IdNr.", () => {

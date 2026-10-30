@@ -13,6 +13,11 @@ Für alles, was nach einem Kauf außerhalb des Checkouts passieren muss, etwa de
 
 Jede Meldung enthält die Bestellung mit Kundin (E-Mail, Name, Land, HubSpot-ID), Produkt (mit `thrivecart_product_id`, damit n8n die bestehenden Zuordnungen weiter nutzen kann), Preisoption und Vertriebskürzel.
 
+Für den Kurszugang trägt die Bestellung außerdem (Widerruf und Sofortstart, SOP CS-009):
+
+- `sofortstart_at`: Zeitpunkt, zu dem die Kundin den Sofortstart verlangt hat, sonst `null`;
+- `access_from`: Tag, ab dem der Zugang freigeschaltet wird (`YYYY-MM-DD`). Mit Sofortstart der Kauftag, ohne ihn Kauftag + 15 Tage. n8n schaltet frühestens an diesem Tag frei, wie beim Thrivecart-Kauf ohne Häkchen.
+
 ## Zustellung
 
 - Die Ereignisse entstehen in derselben Transaktion wie ihr Anlass (`app.webhook_outbox`).

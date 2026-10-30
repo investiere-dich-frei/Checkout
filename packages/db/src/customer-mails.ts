@@ -1,4 +1,5 @@
 import type pg from "pg";
+import { ACCESS_DELAY_DAYS, SOFORTSTART_TEXT, SOFORTSTART_VERSION } from "./legal.ts";
 
 /**
  * E-Mails an Kundinnen: Bestellbestätigung und Rechnung. Sie landen im Postausgang
@@ -24,11 +25,12 @@ function companyFooter(co: { legal_name: string; street: string; postal_code: st
 /**
  * Bestellbestätigung mit Vertragsinhalt auf einem dauerhaften Datenträger (Art. 246a § 1 EGBGB, § 312f BGB):
  * Leistung, Preis und Zahlplan, AGB und Widerrufsbelehrung im Wortlaut der zugestimmten Fassung und,
- * falls erklärt, die Bestätigung des vorzeitigen Leistungsbeginns (§ 356 Abs. 5 BGB).
+ * die Bestätigung des freiwilligen Sofortstarts (§ 357a Abs. 2 BGB) oder ohne ihn der Starttermin nach Fristablauf.
  */
 export async function enqueueOrderConfirmation(client: pg.ClientBase, orderId: string, orderUrl: string): Promise<string> {
   const { rows } = await client.query(
     `select o.created_at, o.currency, o.total_gross_cents, o.withdrawal_waiver_at,
+            ((o.created_at at time zone 'Europe/Berlin')::date + $2::int)::text access_from,
             cu.email, cu.first_name, cu.last_name, cu.company_name,
             co.legal_name, co.street, co.postal_code, co.city, co.vat_id, co.register_info,
             p.name product, po.label, it.tax_rate_bp, it.tax_note,
@@ -44,7 +46,7 @@ export async function enqueueOrderConfirmation(client: pg.ClientBase, orderId: s
        join app.legal_text_versions wid on wid.id = o.withdrawal_version_id
        join app.legal_text_versions dsg on dsg.id = o.privacy_version_id
       where o.id = $1`,
-    [orderId],
+    [orderId, ACCESS_DELAY_DAYS],
   );
   const o = rows[0];
   if (!o) throw new Error("Bestellung gibt es nicht");
@@ -72,9 +74,15 @@ export async function enqueueOrderConfirmation(client: pg.ClientBase, orderId: s
   if (o.withdrawal_waiver_at) {
     lines.push(
       "",
-      "Bestätigung zum Widerrufsrecht",
-      "Du hast ausdrücklich zugestimmt, dass wir vor Ablauf der Widerrufsfrist mit der Leistung beginnen. " +
-        "Dir ist bekannt, dass du dadurch dein Widerrufsrecht verlierst, sobald wir mit der Leistung begonnen haben (§ 356 Abs. 5 BGB).",
+      "Dein Sofortstart",
+      `Du hast beim Kauf erklärt: „${SOFORTSTART_TEXT}“ (Fassung ${SOFORTSTART_VERSION})`,
+      "Was das bei einem Widerruf bedeutet, steht unten in der Widerrufsbelehrung.",
+    );
+  } else {
+    lines.push(
+      "",
+      "Dein Start",
+      `Du hast keinen Sofortstart gewählt. Deinen Zugang bekommst du am ${day(o.access_from)}, am Tag nach Ablauf der Widerrufsfrist.`,
     );
   }
   lines.push(

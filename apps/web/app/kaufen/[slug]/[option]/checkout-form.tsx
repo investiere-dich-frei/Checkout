@@ -2,6 +2,7 @@
 
 import type { AmountBasis, PricePlan } from "@idf/core/pricing";
 import type { TaxCategory } from "@idf/core/tax";
+import { SOFORTSTART_TEXT } from "@idf/db/legal";
 import { useActionState, useState } from "react";
 import { COUNTRIES } from "../../../../lib/countries";
 import { formatCents, formatDay, formatRate } from "../../../../lib/format";
@@ -151,13 +152,12 @@ export function CheckoutForm(props: {
         </label>
         {state.errors.terms && <p className="error" id="terms-error">{state.errors.terms}</p>}
         <label className="check">
-          <input type="checkbox" name="waiver" aria-describedby={state.errors.waiver ? "waiver-error" : undefined} />
-          <span>
-            Ich stimme ausdrücklich zu, dass ihr vor Ablauf der Widerrufsfrist mit der Leistung beginnt. Mir ist bekannt, dass ich mein
-            Widerrufsrecht bei digitalen Inhalten mit Beginn der Ausführung verliere.
-          </span>
+          <input type="checkbox" name="waiver" aria-describedby="waiver-note" />
+          <span>{SOFORTSTART_TEXT} (freiwillig)</span>
         </label>
-        {state.errors.waiver && <p className="error" id="waiver-error">{state.errors.waiver}</p>}
+        <p className="note" id="waiver-note">
+          Ohne Häkchen kannst du trotzdem kaufen. Deinen Zugang bekommst du dann am Tag nach Ablauf der 14-tägigen Widerrufsfrist.
+        </p>
         <details>
           <summary>Widerrufsbelehrung lesen</summary>
           <p style={{ whiteSpace: "pre-line" }}>{props.withdrawalText}</p>
