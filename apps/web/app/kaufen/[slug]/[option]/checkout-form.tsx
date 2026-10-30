@@ -145,8 +145,8 @@ export function CheckoutForm(props: {
         <label className="check">
           <input type="checkbox" name="terms" aria-describedby={state.errors.terms ? "terms-error" : undefined} />
           <span>
-            Ich akzeptiere die <a href="https://www.investieredichfrei.de/agb" target="_blank" rel="noreferrer">AGB</a> und habe die{" "}
-            <a href="https://www.investieredichfrei.de/datenschutz" target="_blank" rel="noreferrer">Datenschutzhinweise</a> gelesen.
+            Ich akzeptiere die <a href="https://www.investieredichfrei.de/rechtliches/allgemeine-geschaeftsbedingungen" target="_blank" rel="noreferrer">AGB</a> und habe die{" "}
+            <a href="https://www.investieredichfrei.de/rechtliches/datenschutzerklaerung" target="_blank" rel="noreferrer">Datenschutzhinweise</a> gelesen.
           </span>
         </label>
         {state.errors.terms && <p className="error" id="terms-error">{state.errors.terms}</p>}

@@ -16,8 +16,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </header>
         <main id="inhalt">{children}</main>
         <footer className="site-footer">
-          <a href="https://www.investieredichfrei.de/impressum">Impressum</a>
-          <a href="https://www.investieredichfrei.de/datenschutz">Datenschutz</a>
+          <a href="https://www.investieredichfrei.de/rechtliches/impressum">Impressum</a>
+          <a href="https://www.investieredichfrei.de/rechtliches/datenschutzerklaerung">Datenschutz</a>
+          <a href="https://www.investieredichfrei.de/rechtliches/allgemeine-geschaeftsbedingungen">AGB</a>
+          <a href="https://www.investieredichfrei.de/rechtliches/widerrufsbelehrungen">Widerrufsbelehrung</a>
           <a href="/vertraege-kuendigen">Verträge hier kündigen</a>
           <a href="/vertrag-widerrufen">Vertrag widerrufen</a>
         </footer>
