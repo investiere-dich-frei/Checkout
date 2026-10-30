@@ -2,4 +2,4 @@
 # Zugangsdaten in secrets.sops.yml stehen (siehe docs/betrieb.md).
 checkout_ready: false
 checkout_domain: kasse.investieredichfrei.de
-checkout_mail_from: service@investieredichfrei.de
+checkout_mail_from: buchhaltung@investieredichfrei.de
