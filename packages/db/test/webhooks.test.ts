@@ -76,6 +76,9 @@ describe("Ausgehende Webhooks", () => {
     const body = JSON.parse(paid!.body);
     assert.equal(body.order.customer.email, "erika@example.org");
     assert.equal(body.order.product.thrivecart_product_id, 42);
+    // Für Versand (DHL) und Abo-Rhythmus in n8n.
+    assert.ok("street" in body.order.customer && "postal_code" in body.order.customer && "city" in body.order.customer);
+    assert.ok("interval_months" in body.order.price_option);
     // Kurszugang: mit Sofortstart ab dem Kauftag.
     assert.ok(body.order.sofortstart_at);
     const today = (await db.pool.query(`select ((created_at at time zone 'Europe/Berlin')::date)::text d from app.orders where id = $1`, [body.order.order_id])).rows[0].d;
