@@ -1,6 +1,6 @@
 {
  "stand": "2026-10-30",
- "regel": "1. Thrivecart-Steuertabelle je Produkt, 2. sonst letzte bezahlte DE-Bestellung seit 01.12.2025; ohne Beleg bleibt das Produkt gesperrt",
+ "regel": "1. Thrivecart-Produkteinstellung, 2. Thrivecart-Steuertabelle je Produkt, 3. sonst letzte bezahlte DE-Bestellung seit 01.12.2025; ohne Beleg bleibt das Produkt gesperrt. Preisart: „Include in price“ = brutto, „Add to price“ = netto.",
  "entscheidungen": [
   {
    "thrivecart_product_id": 7,
@@ -17,6 +17,15 @@
    "options": 1,
    "tax_category": "standard",
    "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+  },
+  {
+   "thrivecart_product_id": 20,
+   "name": "Dein Finanz-Kompass",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "netto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Add to price“"
   },
   {
    "thrivecart_product_id": 55,
@@ -43,6 +52,24 @@
    "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
   },
   {
+   "thrivecart_product_id": 65,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien -OE",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Include in price“"
+  },
+  {
+   "thrivecart_product_id": 66,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Aff - A",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Include in price“"
+  },
+  {
    "thrivecart_product_id": 69,
    "name": "Fast Lane - Investiere Dich Frei - OE",
    "status": "live",
@@ -51,12 +78,30 @@
    "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
   },
   {
+   "thrivecart_product_id": 70,
+   "name": "Fast Lane - Investiere Dich Frei - S",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Include in price“"
+  },
+  {
    "thrivecart_product_id": 79,
    "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar - D3R",
    "status": "live",
    "options": 3,
    "tax_category": "steuerfrei_4_21",
    "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-10-22: 0 %"
+  },
+  {
+   "thrivecart_product_id": 83,
+   "name": "Dein Finanz-Kompass - A",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "netto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Add to price“"
   },
   {
    "thrivecart_product_id": 86,
@@ -83,12 +128,75 @@
    "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
   },
   {
+   "thrivecart_product_id": 91,
+   "name": "Bundle Masterclass und She Trades - D",
+   "status": "live",
+   "options": 3,
+   "tax_category": "steuerfrei_4_21",
+   "amount_basis": "netto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ aus, „Add to price“"
+  },
+  {
    "thrivecart_product_id": 98,
    "name": "Masterclass Investiere Dich Frei - Summit ETF - D",
    "status": "disabled",
    "options": 0,
    "tax_category": "steuerfrei_4_21",
    "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-07-14: 0 %"
+  },
+  {
+   "thrivecart_product_id": 99,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien- Webinar Mein Geld",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Include in price“"
+  },
+  {
+   "thrivecart_product_id": 101,
+   "name": "She Trades - Professioneller Boersenhandel - OE",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "netto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Add to price“"
+  },
+  {
+   "thrivecart_product_id": 102,
+   "name": "She Trades - Professioneller Boersenhandel - S",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "netto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Add to price“"
+  },
+  {
+   "thrivecart_product_id": 105,
+   "name": "Dein Finanz-Kompass",
+   "status": "live",
+   "options": 1,
+   "tax_category": "steuerfrei_4_21",
+   "amount_basis": "netto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ aus, „Add to price“"
+  },
+  {
+   "thrivecart_product_id": 108,
+   "name": "She Trades - Professioneller Boersenhandel - Webinar OE",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Include in price“"
+  },
+  {
+   "thrivecart_product_id": 109,
+   "name": "She Trades - Professioneller Boersenhandel - Webinar S",
+   "status": "live",
+   "options": 2,
+   "tax_category": "standard",
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Include in price“"
   },
   {
    "thrivecart_product_id": 110,
@@ -115,12 +223,39 @@
    "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-05-19: 19 %"
   },
   {
+   "thrivecart_product_id": 114,
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto - und Blockchain - Kompetenz - OE",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "netto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Add to price“"
+  },
+  {
+   "thrivecart_product_id": 115,
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto - und Blockchain - Kompetenz  - S",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "netto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Add to price“"
+  },
+  {
    "thrivecart_product_id": 116,
    "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar Mein Geld - D",
    "status": "live",
    "options": 2,
    "tax_category": "steuerfrei_4_21",
    "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-04-15: 0 %"
+  },
+  {
+   "thrivecart_product_id": 117,
+   "name": "Blockchain Ladies Inner Circle",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "netto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Add to price“"
   },
   {
    "thrivecart_product_id": 119,
@@ -131,12 +266,57 @@
    "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-09-25: 0 %"
   },
   {
+   "thrivecart_product_id": 120,
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto - und Blockchain - Kompetenz  Inner Circle 6 Monate D",
+   "status": "live",
+   "options": 1,
+   "tax_category": "steuerfrei_4_21",
+   "amount_basis": "netto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ aus, „Add to price“"
+  },
+  {
    "thrivecart_product_id": 122,
    "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto - und Blockchain - Kompetenz Inner Circle Monats Abo D",
    "status": "live",
    "options": 1,
    "tax_category": "steuerfrei_4_21",
    "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-08-06: 0 %"
+  },
+  {
+   "thrivecart_product_id": 125,
+   "name": "Blockchain Ladies Inner Circle 6 Monate S",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "netto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Add to price“"
+  },
+  {
+   "thrivecart_product_id": 126,
+   "name": "Blockchain Ladies Inner Circle Monats Abo S",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "netto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Add to price“"
+  },
+  {
+   "thrivecart_product_id": 127,
+   "name": "Blockchain Ladies Inner Circle 6 Monate Ö",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "netto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Add to price“"
+  },
+  {
+   "thrivecart_product_id": 128,
+   "name": "Blockchain Ladies Inner Circle Monats Abo Ö",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "netto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Add to price“"
   },
   {
    "thrivecart_product_id": 129,
@@ -155,12 +335,48 @@
    "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2025-12-10: 0 %"
   },
   {
+   "thrivecart_product_id": 131,
+   "name": "She Trades - Professioneller Boersenhandel - Webinar Rabatt - LZ- OE",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Include in price“"
+  },
+  {
+   "thrivecart_product_id": 133,
+   "name": "She Trades - Inner Circle Monats Abo Ö",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "netto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Add to price“"
+  },
+  {
    "thrivecart_product_id": 134,
    "name": "She Trades - Inner Circle Jahres Abo D",
    "status": "live",
    "options": 1,
    "tax_category": "steuerfrei_4_21",
    "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-05-13: 0 %"
+  },
+  {
+   "thrivecart_product_id": 135,
+   "name": "She Trades - Inner Circle Jahres Abo - Ö",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "netto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Add to price“"
+  },
+  {
+   "thrivecart_product_id": 136,
+   "name": "She Trades - Inner Circle Jahres Abo Ö (Test)",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "netto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Add to price“"
   },
   {
    "thrivecart_product_id": 137,
@@ -171,12 +387,57 @@
    "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-10-19: 19 %"
   },
   {
+   "thrivecart_product_id": 138,
+   "name": "She Trades - Inner Circle Jahres Abo S",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "netto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Add to price“"
+  },
+  {
+   "thrivecart_product_id": 140,
+   "name": "She Trades - Inner Circle Monats Abo S",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "netto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Add to price“"
+  },
+  {
    "thrivecart_product_id": 141,
    "name": "Mein Geld & Ich",
    "status": "live",
    "options": 2,
    "tax_category": "standard",
    "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+  },
+  {
+   "thrivecart_product_id": 144,
+   "name": "Mein Geld & Ich Website",
+   "status": "live",
+   "options": 2,
+   "tax_category": "standard",
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Include in price“"
+  },
+  {
+   "thrivecart_product_id": 153,
+   "name": "She Trades Live",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Include in price“"
+  },
+  {
+   "thrivecart_product_id": 157,
+   "name": "Mein Geld & Ich",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Include in price“"
   },
   {
    "thrivecart_product_id": 158,
@@ -187,12 +448,30 @@
    "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
   },
   {
+   "thrivecart_product_id": 159,
+   "name": "Bundle Her Options und She Trades",
+   "status": "live",
+   "options": 3,
+   "tax_category": "standard",
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Include in price“"
+  },
+  {
    "thrivecart_product_id": 161,
    "name": "Blockchain Ladies - Lebenslanger Zugang Videokurs",
    "status": "live",
    "options": 1,
    "tax_category": "standard",
    "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-10-05: 19 %"
+  },
+  {
+   "thrivecart_product_id": 162,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien",
+   "status": "live",
+   "options": 1,
+   "tax_category": "steuerfrei_4_21",
+   "amount_basis": "netto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ aus, „Add to price“"
   },
   {
    "thrivecart_product_id": 163,
@@ -211,12 +490,30 @@
    "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-07-20: 19 %"
   },
   {
+   "thrivecart_product_id": 165,
+   "name": "Mein Geld und Ich -",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Include in price“"
+  },
+  {
    "thrivecart_product_id": 166,
    "name": "Aktienmentoring Masterclass Essential - Professionelle Aktienanalyse & Portfoliostrategien",
    "status": "live",
    "options": 1,
    "tax_category": "standard",
    "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+  },
+  {
+   "thrivecart_product_id": 167,
+   "name": "She Trades - LiveCall Verlängerung 90 Days",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "netto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Add to price“"
   },
   {
    "thrivecart_product_id": 168,
@@ -227,12 +524,66 @@
    "source": "Thrivecart-Bestellungen DE seit 01.12.2025, letzte am 2026-09-09: 0 %"
   },
   {
+   "thrivecart_product_id": 169,
+   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto- und Blockchain - Kompetenz- OE/CH - Web_pr)",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Include in price“"
+  },
+  {
+   "thrivecart_product_id": 170,
+   "name": "Masterclass Inner Circle",
+   "status": "live",
+   "options": 2,
+   "tax_category": "standard",
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Include in price“"
+  },
+  {
+   "thrivecart_product_id": 171,
+   "name": "IDF - Börsencockpit",
+   "status": "live",
+   "options": 2,
+   "tax_category": "standard",
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Include in price“"
+  },
+  {
+   "thrivecart_product_id": 173,
+   "name": "Mein Geld und Ich - Verlängerung 6 Monate",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Include in price“"
+  },
+  {
    "thrivecart_product_id": 174,
    "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar Mein Geld - D",
    "status": "live",
    "options": 1,
    "tax_category": "steuerfrei_4_21",
    "source": "Thrivecart-Steuertabelle (Supabase manual_order_tax), DE"
+  },
+  {
+   "thrivecart_product_id": 175,
+   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar Mein Geld - A",
+   "status": "live",
+   "options": 2,
+   "tax_category": "standard",
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Include in price“"
+  },
+  {
+   "thrivecart_product_id": 176,
+   "name": "She Trades Trading Camp - Aufzeichnung",
+   "status": "live",
+   "options": 1,
+   "tax_category": "standard",
+   "amount_basis": "brutto",
+   "source": "Thrivecart-Produkteinstellung (abgelesen 30.10.2026): „Calculate sales tax?“ an, „Include in price“"
   },
   {
    "thrivecart_product_id": 178,
@@ -345,12 +696,6 @@
    "name": "Depotscan mit 1:1 Beratung - Dauer: 90 Min.",
    "status": "unbekannt",
    "options": 0
-  },
-  {
-   "thrivecart_product_id": 20,
-   "name": "Dein Finanz-Kompass",
-   "status": "live",
-   "options": 1
   },
   {
    "thrivecart_product_id": 21,
@@ -599,18 +944,6 @@
    "options": 0
   },
   {
-   "thrivecart_product_id": 65,
-   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien -OE",
-   "status": "live",
-   "options": 1
-  },
-  {
-   "thrivecart_product_id": 66,
-   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Aff - A",
-   "status": "live",
-   "options": 1
-  },
-  {
    "thrivecart_product_id": 67,
    "name": "Masterclass Investiere Dich Frei - D (Copy 2)",
    "status": "unbekannt",
@@ -621,12 +954,6 @@
    "name": "kein Produkt",
    "status": "live",
    "options": 0
-  },
-  {
-   "thrivecart_product_id": 70,
-   "name": "Fast Lane - Investiere Dich Frei - S",
-   "status": "live",
-   "options": 1
   },
   {
    "thrivecart_product_id": 71,
@@ -695,12 +1022,6 @@
    "options": 0
   },
   {
-   "thrivecart_product_id": 83,
-   "name": "Dein Finanz-Kompass - A",
-   "status": "live",
-   "options": 1
-  },
-  {
    "thrivecart_product_id": 84,
    "name": "Masterclass Investiere Dich Frei - D F.Summit",
    "status": "disabled",
@@ -723,12 +1044,6 @@
    "name": "She Trades - Professioneller Börsenhandel - DResJan",
    "status": "live",
    "options": 0
-  },
-  {
-   "thrivecart_product_id": 91,
-   "name": "Bundle Masterclass und She Trades - D",
-   "status": "live",
-   "options": 3
   },
   {
    "thrivecart_product_id": 92,
@@ -761,28 +1076,10 @@
    "options": 0
   },
   {
-   "thrivecart_product_id": 99,
-   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien- Webinar Mein Geld",
-   "status": "live",
-   "options": 1
-  },
-  {
    "thrivecart_product_id": 100,
    "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar ETF - S",
    "status": "disabled",
    "options": 0
-  },
-  {
-   "thrivecart_product_id": 101,
-   "name": "She Trades - Professioneller Boersenhandel - OE",
-   "status": "live",
-   "options": 1
-  },
-  {
-   "thrivecart_product_id": 102,
-   "name": "She Trades - Professioneller Boersenhandel - S",
-   "status": "live",
-   "options": 1
   },
   {
    "thrivecart_product_id": 103,
@@ -797,28 +1094,10 @@
    "options": 0
   },
   {
-   "thrivecart_product_id": 105,
-   "name": "Dein Finanz-Kompass",
-   "status": "live",
-   "options": 1
-  },
-  {
    "thrivecart_product_id": 106,
    "name": "Untitled product",
    "status": "test",
    "options": 0
-  },
-  {
-   "thrivecart_product_id": 108,
-   "name": "She Trades - Professioneller Boersenhandel - Webinar OE",
-   "status": "live",
-   "options": 1
-  },
-  {
-   "thrivecart_product_id": 109,
-   "name": "She Trades - Professioneller Boersenhandel - Webinar S",
-   "status": "live",
-   "options": 2
   },
   {
    "thrivecart_product_id": 113,
@@ -827,94 +1106,10 @@
    "options": 0
   },
   {
-   "thrivecart_product_id": 114,
-   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto - und Blockchain - Kompetenz - OE",
-   "status": "live",
-   "options": 1
-  },
-  {
-   "thrivecart_product_id": 115,
-   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto - und Blockchain - Kompetenz  - S",
-   "status": "live",
-   "options": 1
-  },
-  {
-   "thrivecart_product_id": 117,
-   "name": "Blockchain Ladies Inner Circle",
-   "status": "live",
-   "options": 1
-  },
-  {
-   "thrivecart_product_id": 120,
-   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto - und Blockchain - Kompetenz  Inner Circle 6 Monate D",
-   "status": "live",
-   "options": 1
-  },
-  {
    "thrivecart_product_id": 121,
    "name": "She Trades - Inner Circel S",
    "status": "live",
    "options": 0
-  },
-  {
-   "thrivecart_product_id": 125,
-   "name": "Blockchain Ladies Inner Circle 6 Monate S",
-   "status": "live",
-   "options": 1
-  },
-  {
-   "thrivecart_product_id": 126,
-   "name": "Blockchain Ladies Inner Circle Monats Abo S",
-   "status": "live",
-   "options": 1
-  },
-  {
-   "thrivecart_product_id": 127,
-   "name": "Blockchain Ladies Inner Circle 6 Monate Ö",
-   "status": "live",
-   "options": 1
-  },
-  {
-   "thrivecart_product_id": 128,
-   "name": "Blockchain Ladies Inner Circle Monats Abo Ö",
-   "status": "live",
-   "options": 1
-  },
-  {
-   "thrivecart_product_id": 131,
-   "name": "She Trades - Professioneller Boersenhandel - Webinar Rabatt - LZ- OE",
-   "status": "live",
-   "options": 1
-  },
-  {
-   "thrivecart_product_id": 133,
-   "name": "She Trades - Inner Circle Monats Abo Ö",
-   "status": "live",
-   "options": 1
-  },
-  {
-   "thrivecart_product_id": 135,
-   "name": "She Trades - Inner Circle Jahres Abo - Ö",
-   "status": "live",
-   "options": 1
-  },
-  {
-   "thrivecart_product_id": 136,
-   "name": "She Trades - Inner Circle Jahres Abo Ö (Test)",
-   "status": "live",
-   "options": 1
-  },
-  {
-   "thrivecart_product_id": 138,
-   "name": "She Trades - Inner Circle Jahres Abo S",
-   "status": "live",
-   "options": 1
-  },
-  {
-   "thrivecart_product_id": 140,
-   "name": "She Trades - Inner Circle Monats Abo S",
-   "status": "live",
-   "options": 1
   },
   {
    "thrivecart_product_id": 142,
@@ -927,12 +1122,6 @@
    "name": "Mein Geld & Ich OE",
    "status": "live",
    "options": 0
-  },
-  {
-   "thrivecart_product_id": 144,
-   "name": "Mein Geld & Ich Website",
-   "status": "live",
-   "options": 2
   },
   {
    "thrivecart_product_id": 145,
@@ -977,12 +1166,6 @@
    "options": 0
   },
   {
-   "thrivecart_product_id": 153,
-   "name": "She Trades Live",
-   "status": "live",
-   "options": 1
-  },
-  {
    "thrivecart_product_id": 154,
    "name": "She Trades Live -  Ö",
    "status": "disabled",
@@ -995,76 +1178,10 @@
    "options": 0
   },
   {
-   "thrivecart_product_id": 157,
-   "name": "Mein Geld & Ich",
-   "status": "live",
-   "options": 1
-  },
-  {
-   "thrivecart_product_id": 159,
-   "name": "Bundle Her Options und She Trades",
-   "status": "live",
-   "options": 3
-  },
-  {
    "thrivecart_product_id": 160,
    "name": "Her Options - Investiere Dich Frei_",
    "status": "disabled",
    "options": 0
-  },
-  {
-   "thrivecart_product_id": 162,
-   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien",
-   "status": "live",
-   "options": 1
-  },
-  {
-   "thrivecart_product_id": 165,
-   "name": "Mein Geld und Ich -",
-   "status": "live",
-   "options": 1
-  },
-  {
-   "thrivecart_product_id": 167,
-   "name": "She Trades - LiveCall Verlängerung 90 Days",
-   "status": "live",
-   "options": 1
-  },
-  {
-   "thrivecart_product_id": 169,
-   "name": "Blockchain Ladies - Digitale Vermögensentwicklung mit Krypto- und Blockchain - Kompetenz- OE/CH - Web_pr)",
-   "status": "live",
-   "options": 1
-  },
-  {
-   "thrivecart_product_id": 170,
-   "name": "Masterclass Inner Circle",
-   "status": "live",
-   "options": 2
-  },
-  {
-   "thrivecart_product_id": 171,
-   "name": "IDF - Börsencockpit",
-   "status": "live",
-   "options": 2
-  },
-  {
-   "thrivecart_product_id": 173,
-   "name": "Mein Geld und Ich - Verlängerung 6 Monate",
-   "status": "live",
-   "options": 1
-  },
-  {
-   "thrivecart_product_id": 175,
-   "name": "Aktienmentoring Masterclass - Professionelle Aktienanalyse & Portfoliostrategien - Webinar Mein Geld - A",
-   "status": "live",
-   "options": 2
-  },
-  {
-   "thrivecart_product_id": 176,
-   "name": "She Trades Trading Camp - Aufzeichnung",
-   "status": "live",
-   "options": 1
   },
   {
    "thrivecart_product_id": 177,
