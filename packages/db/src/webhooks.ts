@@ -19,10 +19,12 @@ async function orderPayload(client: pg.ClientBase, orderId: string) {
             case when o.withdrawal_waiver_at is not null or p.immediate_access then (o.created_at at time zone 'Europe/Berlin')::date
                  else (o.created_at at time zone 'Europe/Berlin')::date + $2::int end::text access_from,
             jsonb_build_object('id', c.id, 'email', c.email, 'first_name', c.first_name, 'last_name', c.last_name,
-                               'company_name', c.company_name, 'country', c.country, 'hubspot_contact_id', c.hubspot_contact_id) customer,
+                               'company_name', c.company_name, 'street', c.street, 'postal_code', c.postal_code, 'city', c.city,
+                               'country', c.country, 'hubspot_contact_id', c.hubspot_contact_id) customer,
             jsonb_build_object('id', p.id, 'name', p.name, 'slug', p.slug, 'thrivecart_product_id', p.thrivecart_product_id,
                                'external_refs', p.external_refs) product,
-            jsonb_build_object('id', po.id, 'label', po.label, 'kind', po.kind, 'thrivecart_option_id', po.thrivecart_option_id) price_option,
+            jsonb_build_object('id', po.id, 'label', po.label, 'kind', po.kind, 'interval_months', po.interval_months,
+                               'thrivecart_option_id', po.thrivecart_option_id) price_option,
             u.sales_code seller
        from app.orders o
        join app.customers c on c.id = o.customer_id
