@@ -36,8 +36,10 @@ Die Anwendung läuft auf app-nbg1 (Ansible-Rolle `infra/ansible/roles/app`):
       Österreich nimmt den EU-Satz 20 % ohne eigene Einstellung.
     - Steuerkategorie je Produkt bestätigen und Live-Produkte freischalten:
       `infra/db/run-prod.sh db:configure tax $PWD/infra/db/setup/steuer-je-produkt.json --by ChristianBolda@investieredichfrei.de`.
-      Die Datei übernimmt Thrivecart 1:1: zuerst die Steuertabelle je Produkt, sonst die letzte bezahlte
-      DE-Bestellung seit 01.12.2025. Produkte ohne Beleg (Liste `ohne_beleg`) bleiben gesperrt, bis ihre
-      Einstellung in Thrivecart abgelesen ist. Bereits bestätigte Produkte ändert ein zweiter Lauf nicht.
+      Die Datei übernimmt Thrivecart 1:1: zuerst die abgelesene Produkteinstellung („Calculate sales tax?“),
+      sonst die Steuertabelle je Produkt, sonst die letzte bezahlte DE-Bestellung seit 01.12.2025.
+      `amount_basis` übernimmt die Preisart: „Include in price“ = brutto, „Add to price“ = netto. Sie gilt für
+      alle Preisoptionen des Produkts. Produkte ohne Beleg (Liste `ohne_beleg`) bleiben gesperrt.
+      Bereits bestätigte Produkte ändert ein zweiter Lauf nicht, auch nicht ihre Preisart.
     - Alle drei Befehle zuerst mit `--dry-run`.
 11. Testkauf mit Stripe-Testkarte und PayPal-Sandbox, dann auf Live-Schlüssel umstellen.

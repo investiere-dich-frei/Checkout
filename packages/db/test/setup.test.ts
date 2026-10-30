@@ -76,6 +76,32 @@ describe("Einrichtung vor dem ersten Verkauf", () => {
     assert.equal(cat.tax_category, "steuerfrei_4_21");
   });
 
+  it("übernimmt die Preisart aus Thrivecart für die Preisoptionen des Produkts", async () => {
+    const product = (await db.pool.query(`select id from app.products where thrivecart_product_id = 904`)).rows[0].id;
+    await db.pool.query(
+      `insert into app.price_options (product_id, label, kind, amount_cents, amount_basis)
+       values ($1, 'Einmal', 'einmal', 99700, 'netto'), ($1, 'Später', 'einmal', 49700, 'netto')`,
+      [product],
+    );
+    const decisions = parseTaxFile({
+      entscheidungen: [{ thrivecart_product_id: 904, tax_category: "standard", source: "Thrivecart-Produkt", amount_basis: "brutto" }],
+    });
+    const r = await tx(db.pool, (c) => confirmTaxCategories(c, decisions, "anna.admin@beispiel.de"));
+    assert.deepEqual(r, { confirmed: 1, activated: 1, unknown: [] });
+    const bases = (await db.pool.query(`select distinct amount_basis from app.price_options where product_id = $1`, [product])).rows;
+    assert.deepEqual(bases, [{ amount_basis: "brutto" }]);
+    await assert.rejects(
+      tx(db.pool, (c) =>
+        confirmTaxCategories(
+          c,
+          [{ thrivecart_product_id: 902, tax_category: "standard", source: "x", amount_basis: "inklusive" as never }],
+          "anna.admin@beispiel.de",
+        ),
+      ),
+      /Unbekannte Preisart/,
+    );
+  });
+
   it("verlangt eine aktive Admin-Person und eine gültige Kategorie", async () => {
     await assert.rejects(
       tx(db.pool, (c) => confirmTaxCategories(c, [], "unbekannt@beispiel.de")),

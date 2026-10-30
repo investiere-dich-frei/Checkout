@@ -1,4 +1,5 @@
 import type pg from "pg";
+import type { AmountBasis } from "@idf/core/pricing";
 
 /**
  * Einrichtung vor dem ersten Verkauf: Zugänge zur Verwaltung, Steuerkategorie je
@@ -39,6 +40,11 @@ export interface TaxDecisionInput {
   thrivecart_product_id: number;
   tax_category: "standard" | "steuerfrei_4_21";
   source: string;
+  /**
+   * Preisart wie in Thrivecart: „Include in price“ = brutto, „Add to price“ = netto.
+   * Ohne Angabe bleibt die Preisart der Preisoptionen unverändert.
+   */
+  amount_basis?: AmountBasis;
 }
 
 export interface TaxConfirmResult {
@@ -69,6 +75,9 @@ export async function confirmTaxCategories(
     if (d.tax_category !== "standard" && d.tax_category !== "steuerfrei_4_21") {
       throw new Error(`Unbekannte Steuerkategorie bei Thrivecart-Produkt ${d.thrivecart_product_id}`);
     }
+    if (d.amount_basis !== undefined && d.amount_basis !== "brutto" && d.amount_basis !== "netto") {
+      throw new Error(`Unbekannte Preisart bei Thrivecart-Produkt ${d.thrivecart_product_id}`);
+    }
     const { rows } = await client.query<{ active: boolean }>(
       `update app.products
           set tax_category = $2, tax_source = $3, tax_confirmed_at = now(), tax_confirmed_by = $4,
@@ -78,6 +87,14 @@ export async function confirmTaxCategories(
       [d.thrivecart_product_id, d.tax_category, d.source, admin.id],
     );
     if (rows[0]) {
+      if (d.amount_basis) {
+        await client.query(
+          `update app.price_options o set amount_basis = $2
+             from app.products p
+            where p.id = o.product_id and p.thrivecart_product_id = $1`,
+          [d.thrivecart_product_id, d.amount_basis],
+        );
+      }
       result.confirmed++;
       if (rows[0].active) result.activated++;
     } else {
@@ -118,6 +135,11 @@ export function parseTaxFile(raw: unknown): TaxDecisionInput[] {
     if (!Number.isInteger(d?.thrivecart_product_id) || typeof d?.source !== "string" || !d.source) {
       throw new Error(`Eintrag ${i + 1}: thrivecart_product_id und source sind Pflicht`);
     }
-    return { thrivecart_product_id: d.thrivecart_product_id, tax_category: d.tax_category, source: d.source };
+    return {
+      thrivecart_product_id: d.thrivecart_product_id,
+      tax_category: d.tax_category,
+      source: d.source,
+      ...(d.amount_basis === undefined ? {} : { amount_basis: d.amount_basis }),
+    };
   });
 }
