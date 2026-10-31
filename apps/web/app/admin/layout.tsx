@@ -13,9 +13,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     <div className="admin">
       {user && (
         <nav className="admin-nav" aria-label="Verwaltung">
-          <a href="/admin">Übersicht</a>
+          <a href="/admin">Dashboard</a>
           <a href="/admin/bestellungen">Bestellungen</a>
           {canSeeAll(user) && <a href="/admin/produkte">Produkte</a>}
+          {canSeeAll(user) && <a href="/admin/gutscheine">Gutscheine</a>}
           <a href="/admin/kauflinks">Kauflinks</a>
           {user.role === "admin" && <a href="/admin/seiten">Kaufseiten</a>}
           <span className="note">

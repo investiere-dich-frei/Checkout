@@ -47,6 +47,14 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
           {h.tax_note && <> · {h.tax_note}</>}
           {h.withdrawal_waiver_at && <> · Verzicht auf Widerrufsrecht am {dateTime.format(h.withdrawal_waiver_at)}</>}
         </p>
+        {h.coupon_code && (
+          <p>
+            Gutschein{" "}
+            {h.coupon_id ? <a href={`/admin/gutscheine/${h.coupon_id}`}>{h.coupon_code}</a> : h.coupon_code}: −{" "}
+            {formatCents(Number(h.coupon_discount_cents), h.currency)}
+            {h.coupon_scope === "alle" ? " (auf jede Zahlung)" : " (auf die erste Zahlung)"}
+          </p>
+        )}
       </section>
 
       <section className="card">

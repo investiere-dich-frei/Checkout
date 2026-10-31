@@ -3,7 +3,9 @@
 import { EU_STANDARD_RATES_BP } from "@idf/core/tax";
 import { findSeller, currentLegalTexts } from "@idf/db/catalog";
 import { enqueueOrderConfirmation } from "@idf/db/customer-mails";
-import { OrderError, placeOrder } from "@idf/db/orders";
+import { describeDiscount, type Discount } from "@idf/core/discount";
+import { findCoupon } from "@idf/db/coupons";
+import { CouponRejected, OrderError, placeOrder } from "@idf/db/orders";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { parseCheckoutForm, type FieldErrors } from "../../../../lib/checkout-form";
@@ -18,7 +20,27 @@ export interface CheckoutState {
   values: Record<string, string>;
 }
 
-const KEPT_FIELDS = ["first_name", "last_name", "company_name", "email", "street", "postal_code", "city", "vat_id"];
+const KEPT_FIELDS = ["first_name", "last_name", "company_name", "email", "street", "postal_code", "city", "vat_id", "coupon"];
+
+export type CouponPreview = { ok: true; code: string; discount: Discount; text: string } | { ok: false; message: string };
+
+/** Gutscheincode auf der Kaufseite prüfen. Bei der Bestellung wird er noch einmal geprüft. */
+export async function checkCouponAction(code: string, priceOptionId: string): Promise<CouponPreview> {
+  if (!code.trim()) return { ok: false, message: "Bitte einen Gutscheincode eingeben." };
+  try {
+    const r = await findCoupon(pool(), code, priceOptionId);
+    if (!r.ok) return r;
+    const d = r.coupon.discount;
+    const basis = (
+      await pool().query<{ amount_basis: "brutto" | "netto" }>(`select amount_basis from app.price_options where id = $1`, [priceOptionId])
+    ).rows[0]?.amount_basis;
+    const text = `${describeDiscount(d, r.coupon.currency, basis)}${d.scope === "alle" ? " auf jede Zahlung" : " auf die erste Zahlung"}`;
+    return { ok: true, code: r.coupon.code, discount: d, text };
+  } catch (err) {
+    console.error("Gutscheinprüfung fehlgeschlagen", (err as Error).message);
+    return { ok: false, message: "Der Gutschein lässt sich gerade nicht prüfen. Bitte versuche es gleich noch einmal." };
+  }
+}
 
 export async function submitOrder(_prev: CheckoutState, form: FormData): Promise<CheckoutState> {
   const values = Object.fromEntries(KEPT_FIELDS.map((k) => [k, String(form.get(k) ?? "")]));
@@ -77,6 +99,7 @@ export async function submitOrder(_prev: CheckoutState, form: FormData): Promise
         withdrawalVersionId: legal.widerruf!.id,
         withdrawalWaiver: parsed.value.withdrawalWaiver,
         purchaseDay: todayBerlin(),
+        couponCode: String(form.get("coupon") ?? "").trim() || null,
       });
       if (vies) {
         await c.query(
@@ -91,6 +114,7 @@ export async function submitOrder(_prev: CheckoutState, form: FormData): Promise
     });
     orderId = placed.orderId;
   } catch (err) {
+    if (err instanceof CouponRejected) return { errors: { coupon: err.message }, message: "Bitte prüfe den Gutscheincode.", values };
     if (err instanceof OrderError) return { errors: {}, message: "Dieses Angebot ist leider nicht mehr verfügbar.", values };
     console.error("Bestellung fehlgeschlagen", (err as Error).message);
     return { errors: {}, message: "Die Bestellung hat nicht geklappt. Bitte versuche es noch einmal.", values };

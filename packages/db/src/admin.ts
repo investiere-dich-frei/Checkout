@@ -64,7 +64,8 @@ export async function orderDetail(db: Db, user: SessionUser, orderId: string) {
     await db.query(
       `select o.*, c.kind customer_kind, c.first_name, c.last_name, c.company_name, c.email, c.street, c.postal_code, c.city,
               c.country, c.vat_id, p.name product, po.label option, po.kind plan_kind, it.tax_rate_bp, it.tax_note,
-              u.display_name seller, t.ends_on, t.ended_by, (t.order_item_id is not null) is_abo
+              u.display_name seller, t.ends_on, t.ended_by, (t.order_item_id is not null) is_abo,
+              d.code coupon_code, d.coupon_id, d.discount_gross_cents coupon_discount_cents, d.scope coupon_scope
          from app.orders o
          join app.customers c on c.id = o.customer_id
          join app.order_items it on it.order_id = o.id
@@ -72,6 +73,7 @@ export async function orderDetail(db: Db, user: SessionUser, orderId: string) {
          join app.products p on p.id = po.product_id
          left join app.users u on u.id = o.seller_user_id
          left join app.subscription_terms t on t.order_item_id = it.id
+         left join app.order_discounts d on d.order_item_id = it.id
         where o.id = $1 and ($2::boolean or o.seller_user_id = $3)`,
       [orderId, canSeeAll(user), user.id],
     )

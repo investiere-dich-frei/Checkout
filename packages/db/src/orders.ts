@@ -1,6 +1,8 @@
+import { applyDiscount, discountedPlan, DiscountError } from "@idf/core/discount";
 import { paymentSchedule, splitAmount, type AmountBasis, type PricePlan } from "@idf/core/pricing";
 import { decideTax, type TaxCategory, type TaxDecision } from "@idf/core/tax";
 import type pg from "pg";
+import { findCoupon, type ApplicableCoupon } from "./coupons.ts";
 
 /**
  * Bestellung aufgeben: Kunde, Bestellung, Position und Zahlplan entstehen in
@@ -35,6 +37,8 @@ export interface PlaceOrderInput {
   withdrawalWaiver: boolean;
   /** Kauftag in Europe/Berlin, YYYY-MM-DD. */
   purchaseDay: string;
+  /** Gutscheincode aus dem Kaufformular; wird hier erneut geprüft. */
+  couponCode?: string | null;
 }
 
 export interface PlacedOrder {
@@ -43,9 +47,13 @@ export interface PlacedOrder {
   orderItemId: string;
   tax: TaxDecision;
   installments: { seq: number; dueDate: string; netCents: number; taxCents: number; grossCents: number }[];
+  /** Eingelöster Gutschein mit Rabatt brutto über die festgeschriebenen Fälligkeiten. */
+  coupon: { code: string; discountGrossCents: number } | null;
 }
 
 export class OrderError extends Error {}
+/** Der Gutschein ist nicht (mehr) einlösbar; die Meldung ist für die Kundin geschrieben. */
+export class CouponRejected extends OrderError {}
 
 interface OptionRow {
   price_option_id: string;
@@ -109,13 +117,33 @@ export async function placeOrder(client: pg.ClientBase, input: PlaceOrderInput):
     intervalMonths: opt.interval_months,
     trialDays: opt.trial_days,
   };
+  // Gutschein erneut prüfen und für diese Transaktion sperren (Limit bei gleichzeitigen Käufen).
+  let coupon: ApplicableCoupon | null = null;
+  if (input.couponCode?.trim()) {
+    const check = await findCoupon(client, input.couponCode, opt.price_option_id, { lock: true });
+    if (!check.ok) throw new CouponRejected(check.message);
+    coupon = check.coupon;
+  }
+
   // Abos laufen ohne Ende; festgeschrieben wird die erste Fälligkeit, weitere legt die Abrechnung an.
-  const schedule = paymentSchedule(plan, input.purchaseDay, plan.kind === "abo" ? 1 : Number.MAX_SAFE_INTEGER);
-  if (schedule.length === 0) throw new OrderError("Zahlplan ohne Zahlung");
+  const listSchedule = paymentSchedule(plan, input.purchaseDay, plan.kind === "abo" ? 1 : Number.MAX_SAFE_INTEGER);
+  if (listSchedule.length === 0) throw new OrderError("Zahlplan ohne Zahlung");
+  let schedule = listSchedule.map((s) => ({ ...s, listAmountCents: s.amountCents }));
+  let termsPlan = plan;
+  if (coupon) {
+    try {
+      schedule = applyDiscount(listSchedule, coupon.discount);
+      termsPlan = discountedPlan(plan, coupon.discount);
+    } catch (err) {
+      if (err instanceof DiscountError) throw new CouponRejected("Dieser Gutschein gilt nicht für dieses Angebot.");
+      throw err;
+    }
+  }
   const installments = schedule.map((s, i) => {
     const a = splitAmount(s.amountCents, opt.amount_basis, tax.rateBp);
     return { seq: i + 1, dueDate: s.dueDate, netCents: a.netCents, taxCents: a.taxCents, grossCents: a.grossCents };
   });
+  const listGross = schedule.reduce((t, s) => t + splitAmount(s.listAmountCents, opt.amount_basis, tax.rateBp).grossCents, 0);
   const sum = (k: "netCents" | "taxCents" | "grossCents") => installments.reduce((t, x) => t + x[k], 0);
 
   const customer = await client.query<{ id: string }>(
@@ -178,9 +206,22 @@ export async function placeOrder(client: pg.ClientBase, input: PlaceOrderInput):
     await client.query(
       `insert into app.subscription_terms (order_item_id, order_id, plan, purchase_day, amount_basis, tax_rate_bp)
        values ($1, $2, $3, $4, $5, $6)`,
-      [orderItemId, orderId, JSON.stringify(plan), input.purchaseDay, opt.amount_basis, tax.rateBp],
+      [orderItemId, orderId, JSON.stringify(termsPlan), input.purchaseDay, opt.amount_basis, tax.rateBp],
     );
   }
 
-  return { orderId, customerId, orderItemId, tax, installments };
+  let couponResult: PlacedOrder["coupon"] = null;
+  if (coupon) {
+    const d = coupon.discount;
+    const discountGross = listGross - sum("grossCents");
+    await client.query(
+      `insert into app.order_discounts (order_item_id, order_id, coupon_id, code, kind, percent_bp, amount_cents, scope,
+         amount_basis, list_gross_cents, discount_gross_cents)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [orderItemId, orderId, coupon.id, coupon.code, d.kind, d.percentBp, d.amountCents, d.scope, opt.amount_basis, listGross, discountGross],
+    );
+    couponResult = { code: coupon.code, discountGrossCents: discountGross };
+  }
+
+  return { orderId, customerId, orderItemId, tax, installments, coupon: couponResult };
 }

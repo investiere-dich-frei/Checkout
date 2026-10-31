@@ -1,19 +1,31 @@
 import { canChange, canSeeAll, listOrders, openWork } from "@idf/db/admin";
+import { checkRange, dashboard, presetRange, PRESETS, type Preset, type Range } from "@idf/db/dashboard";
 import { pool } from "../../lib/db";
-import { formatCents } from "../../lib/format";
+import { formatCents, todayBerlin } from "../../lib/format";
 import { requireUser } from "../../lib/session";
 import { resolveNoticeAction } from "./actions";
+import { DashboardView } from "./dashboard-view";
 import { OrderTable } from "./order-table";
 
 const dateTime = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", dateStyle: "medium", timeStyle: "short" });
 
-export default async function AdminHome() {
+export default async function AdminHome(props: { searchParams: Promise<{ zeitraum?: string; von?: string; bis?: string }> }) {
   const user = await requireUser();
-  const orders = await listOrders(pool(), user, { limit: 10 });
-  const work = canSeeAll(user) ? await openWork(pool()) : null;
+  const sp = await props.searchParams;
+  const today = todayBerlin();
+  // Eigener Zeitraum (von/bis) vor Auswahl; Vorgabe: letzte 30 Tage wie in Thrivecart.
+  const custom = sp.von && sp.bis ? checkRange({ from: sp.von, to: sp.bis }) : null;
+  const active: Preset | null = custom ? null : sp.zeitraum && sp.zeitraum in PRESETS ? (sp.zeitraum as Preset) : "30";
+  const range: Range = custom ?? presetRange(active!, today);
+  const [orders, work, dash] = await Promise.all([
+    listOrders(pool(), user, { limit: 10 }),
+    canSeeAll(user) ? openWork(pool()) : null,
+    dashboard(pool(), user, range, today),
+  ]);
 
   return (
     <>
+      <DashboardView d={dash} active={active} />
       {work && (
         <section className="card">
           <h1>Zu erledigen</h1>
