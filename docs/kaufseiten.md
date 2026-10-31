@@ -58,3 +58,20 @@ DATABASE_URL=… pnpm db:kaufseiten:thrivecart /absoluter/pfad/idf-thrivecart-se
 - Produkte mit eigener Seite bleiben unverändert (außer mit `--ueberschreiben`).
 - Gibt es noch keine Standardseite, bekommt sie das häufigste Logo.
 - Seiten, die Thrivecart nicht mehr ausliefert (404), werden gemeldet und ausgelassen.
+
+## Gestaltung (Brandbook)
+
+Kaufseiten und Verwaltung folgen dem Brandbook „Investiere Dich Frei – Emilia Bolda“
+(Juli 2025) und dem Aufbau der Thrivecart-Seite /her/:
+
+- Farben: Black #363636 (Text), Dark Rose #A26766 (Knöpfe, Akzente), Rosé #D29E9F,
+  Soft Rose #FFCCCC (Dekoration), Light Grey #EEE9E7 (Bestellbereich, Hintergrund
+  der Verwaltung). Alle als CSS-Variablen in `apps/web/app/globals.css`.
+- Schriften: Playfair Display für Überschriften, Raleway für Unterzeilen und Text.
+  Sie liegen auf unserem Server (`apps/web/public/schriften`), es geht nichts an Google.
+- Logos aus dem Brandbook unter `apps/web/public/marke` (bunt, weiß, Bildmarke).
+  Ohne eigenes Logo im Editor zeigt die Kaufseite das bunte Logo.
+- Aufbau der Kaufseite: Logo oben mittig, Kopfbereich mit Text links und Bild rechts
+  (mit Punktraster und Fläche in Soft Rose), Bestellbereich auf hellgrauem Grund mit
+  weißer Bestellbox und den Schritten „01 Kunde / 02 Zahlung“, Bereich unten
+  (z. B. Emilia mit Foto), dunkle Fußzeile mit weißem Logo.
