@@ -16,6 +16,7 @@
     "einzug": "pnpm --filter @idf/web einzug",
     "db:webhooks:send": "pnpm --filter @idf/db webhooks:send",
     "db:grants": "pnpm --filter @idf/db grants",
-    "db:configure": "pnpm --filter @idf/db configure"
+    "db:configure": "pnpm --filter @idf/db configure",
+    "db:kaufseiten:thrivecart": "pnpm --filter @idf/db kaufseiten:thrivecart"
   }
 }

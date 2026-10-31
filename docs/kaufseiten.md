@@ -38,3 +38,23 @@ Bestellknopf „Zahlungspflichtig bestellen“, AGB-, Datenschutz- und Widerrufs
 - Texte werden nie als HTML übernommen.
 - Ist eine gespeicherte Seite nicht lesbar, zeigt der Checkout die Vorgabe statt
   eines Fehlers: Ein Gestaltungsfehler verhindert nie einen Verkauf.
+
+## Übernahme aus Thrivecart
+
+Die öffentlichen Thrivecart-Kaufseiten (ohne Login gesichert, Ordner mit
+`html/<slug>.html` und `bilder/<dateiname>`) lassen sich als Ausgangspunkt übernehmen:
+
+```
+DATABASE_URL=… pnpm db:kaufseiten:thrivecart /absoluter/pfad/idf-thrivecart-seiten          # Probelauf
+DATABASE_URL=… pnpm db:kaufseiten:thrivecart /absoluter/pfad/idf-thrivecart-seiten --schreiben
+```
+
+- Zuordnung über den Slug (`app.products.slug` = Thrivecart-Adresse).
+- Übernommen werden Logo, Überschrift, Unterzeile, Knopftext, Titelbild sowie
+  Überschriften, Texte, Aufzählungen, Bilder und „Person mit Bild“-Abschnitte. Zeilen
+  mit ✅ werden Vertrauenshinweise.
+- Nicht übernommen: Formular, Preise, Gutscheinfeld, Knöpfe, Rechtstexte, Fußzeile,
+  ausgeblendete Elemente und Thrivecart-Platzhalter.
+- Produkte mit eigener Seite bleiben unverändert (außer mit `--ueberschreiben`).
+- Gibt es noch keine Standardseite, bekommt sie das häufigste Logo.
+- Seiten, die Thrivecart nicht mehr ausliefert (404), werden gemeldet und ausgelassen.

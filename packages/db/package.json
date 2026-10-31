@@ -31,10 +31,12 @@
     "mail:send": "tsx src/mail-cli.ts",
     "webhooks:send": "tsx src/webhooks-cli.ts",
     "grants": "tsx src/grants-cli.ts",
-    "configure": "tsx src/setup-cli.ts"
+    "configure": "tsx src/setup-cli.ts",
+    "kaufseiten:thrivecart": "tsx src/thrivecart-pages-cli.ts"
   },
   "dependencies": {
     "@idf/core": "workspace:*",
+    "node-html-parser": "9.0.4",
     "pdf-lib": "1.17.1",
     "pg": "^8.23.1"
   },
