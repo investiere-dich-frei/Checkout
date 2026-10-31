@@ -1,5 +1,7 @@
 import { currentLegalTexts, findSeller, getOffer } from "@idf/db/catalog";
+import { DEFAULT_CONTENT, resolvePage } from "@idf/db/checkout-pages";
 import { notFound } from "next/navigation";
+import { CheckoutPageView } from "../../../../lib/checkout-page-view";
 import { pool } from "../../../../lib/db";
 import { todayBerlin } from "../../../../lib/format";
 import { CheckoutForm } from "./checkout-form";
@@ -22,11 +24,18 @@ export default async function CheckoutPage(props: {
   if (!offer || !legal.agb || !legal.datenschutz || !legal.widerruf) notFound();
   // Ein unbekanntes Kürzel verhindert keinen Kauf; die Bestellung läuft dann ohne Vertrieb.
   const sellerCode = v && (await findSeller(db, v)) ? v.toLowerCase() : null;
+  // Eine fehlerhafte Gestaltung darf den Verkauf nie verhindern.
+  const content = await resolvePage(db, offer.productId).catch((err) => {
+    console.error("Kaufseite: Gestaltung nicht lesbar, Vorgabe verwendet", (err as Error).message);
+    return DEFAULT_CONTENT;
+  });
 
   return (
-    <>
-      <h1>{offer.productName}</h1>
-      <p className="note">{offer.optionLabel}</p>
+    <CheckoutPageView
+      content={content}
+      productName={offer.productName}
+      optionLabel={offer.optionLabel}
+      form={
       <CheckoutForm
         slug={slug}
         offer={{
@@ -42,6 +51,7 @@ export default async function CheckoutPage(props: {
         purchaseDay={todayBerlin()}
         withdrawalText={legal.widerruf.content}
       />
-    </>
+      }
+    />
   );
 }

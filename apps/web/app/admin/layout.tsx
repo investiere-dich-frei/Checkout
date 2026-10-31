@@ -17,6 +17,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <a href="/admin/bestellungen">Bestellungen</a>
           {canSeeAll(user) && <a href="/admin/produkte">Produkte</a>}
           <a href="/admin/kauflinks">Kauflinks</a>
+          {user.role === "admin" && <a href="/admin/seiten">Kaufseiten</a>}
           <span className="note">
             {user.displayName} · {ROLE[user.role]}
           </span>

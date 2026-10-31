@@ -108,6 +108,39 @@ describe("Täglicher Einzug", () => {
     assert.equal(again.submitted, 0);
   });
 
+  it("hält ein gescheitertes Anlegen bei Stripe als Fehlversuch fest und nutzt danach einen neuen Schlüssel", async () => {
+    const order = await placeAndPayFirst("create-fail@example.org", "pm_createfail");
+    const keys: string[] = [];
+    let fail = true;
+    const fakeStripe = {
+      paymentIntents: {
+        create: async (params: Record<string, unknown>, opts: { idempotencyKey: string }) => {
+          const seq = (params.metadata as Record<string, string>).seq;
+          if (params.payment_method !== "pm_createfail" || seq !== "2") return { id: `pi_other_${opts.idempotencyKey}`, amount: params.amount, currency: params.currency };
+          keys.push(opts.idempotencyKey);
+          if (fail) throw Object.assign(new Error("idempotency"), { type: "StripeIdempotencyError" });
+          return { id: "pi_createfail_ok", amount: params.amount, currency: params.currency };
+        },
+        confirm: async (id: string) => ({ id, status: "succeeded" }),
+      },
+    } as unknown as Stripe;
+
+    await runCharging(db.pool, { stripe: fakeStripe, paypal: null }, "2026-10-01");
+    const attempts = async () =>
+      (await db.pool.query(
+        `select a.outcome, a.error_code, a.provider_ref from app.charge_attempts a join app.order_installments i on i.id = a.installment_id where i.order_id = $1 order by a.attempted_at`,
+        [order],
+      )).rows;
+    assert.deepEqual(await attempts(), [{ outcome: "fehler", error_code: "StripeIdempotencyError", provider_ref: null }]);
+
+    // Nach der Wartezeit versucht der nächste Lauf es mit einem neuen Schlüssel.
+    fail = false;
+    await runCharging(db.pool, { stripe: fakeStripe, paypal: null }, "2026-12-31");
+    assert.equal(keys.length, 2);
+    assert.notEqual(keys[0], keys[1]);
+    assert.deepEqual((await attempts()).map((a) => a.outcome).slice(0, 2), ["fehler", "eingereicht"]);
+  });
+
   it("zieht über ein gespeichertes PayPal-Konto ein und bucht sofort", async () => {
     const placed = await tx(db.pool, (c) => placeOrder(c, { ...base, customer: { ...base.customer, email: "pp@example.org" } }));
     const t = (await nextPaymentTarget(db.pool, placed.orderId, "2099-12-31"))!;
