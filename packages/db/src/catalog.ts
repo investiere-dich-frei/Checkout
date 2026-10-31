@@ -5,6 +5,7 @@ import type pg from "pg";
 /** Ein verkaufbares Angebot, wie es der Checkout anzeigt. */
 export interface Offer {
   priceOptionId: string;
+  productId: string;
   productName: string;
   optionLabel: string;
   currency: string;
@@ -18,7 +19,7 @@ export interface Offer {
 
 export async function getOffer(db: pg.Pool | pg.ClientBase, productSlug: string, priceOptionId: string): Promise<Offer | null> {
   const { rows } = await db.query(
-    `select o.id, p.name, o.label, o.currency, o.amount_basis, p.tax_category, c.ch_vat_rate_bp, p.immediate_access, o.kind,
+    `select o.id, p.id product_id, p.name, o.label, o.currency, o.amount_basis, p.tax_category, c.ch_vat_rate_bp, p.immediate_access, o.kind,
             o.amount_cents, o.recurring_amount_cents, o.recurring_count, o.interval_months, o.trial_days
        from app.price_options o
        join app.products p on p.id = o.product_id
@@ -30,6 +31,7 @@ export async function getOffer(db: pg.Pool | pg.ClientBase, productSlug: string,
   if (!r) return null;
   return {
     priceOptionId: r.id,
+    productId: r.product_id,
     productName: r.name,
     optionLabel: r.label,
     currency: r.currency,

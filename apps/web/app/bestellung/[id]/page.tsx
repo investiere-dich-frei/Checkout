@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Steps } from "../../../lib/checkout-page-view";
 import { pool } from "../../../lib/db";
 import { formatCents, formatDay } from "../../../lib/format";
 import { preparePayment } from "../../../lib/payment";
@@ -44,6 +45,7 @@ export default async function OrderPage(props: {
 
   return (
     <section className="card">
+      <Steps current={2} />
       <h1>Danke für deine Bestellung</h1>
       <p>
         {first.name} – {first.label}
