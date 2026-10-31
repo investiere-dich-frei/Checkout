@@ -2,9 +2,9 @@ import { notFound } from "next/navigation";
 import { Steps } from "../../../lib/checkout-page-view";
 import { pool } from "../../../lib/db";
 import { formatCents, formatDay } from "../../../lib/format";
-import { preparePayment } from "../../../lib/payment";
+import { completeCardSetup, preparePayment } from "../../../lib/payment";
 import { publishableKey, stripe } from "../../../lib/stripe";
-import { PaymentForm } from "./payment-form";
+import { CardSetupForm, PaymentForm } from "./payment-form";
 import { PaypalButton } from "./paypal-button";
 
 export const dynamic = "force-dynamic";
@@ -13,10 +13,10 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default async function OrderPage(props: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ redirect_status?: string }>;
+  searchParams: Promise<{ redirect_status?: string; setup_intent?: string }>;
 }) {
   const { id } = await props.params;
-  const { redirect_status } = await props.searchParams;
+  const { redirect_status, setup_intent } = await props.searchParams;
   if (!UUID.test(id)) notFound();
   const { rows } = await pool().query(
     `select o.status, o.currency, p.name, po.label, i.seq, i.due_date::text, i.gross_cents, i.status installment_status,
@@ -37,6 +37,8 @@ export default async function OrderPage(props: {
   const paypalClientId = process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET ? process.env.PAYPAL_CLIENT_ID : null;
   let payment: Awaited<ReturnType<typeof preparePayment>> | null = null;
   try {
+    // Rückkehr nach dem Hinterlegen der Karte (Probezeit ohne Anzahlung).
+    if (setup_intent && key && redirect_status === "succeeded") await completeCardSetup(stripe()!, id, setup_intent);
     payment = await preparePayment(key ? stripe() : null, id);
   } catch (err) {
     // Stripe nicht erreichbar: Seite trotzdem zeigen, ohne Kundendaten im Log.
@@ -104,11 +106,29 @@ export default async function OrderPage(props: {
             <p className="note">Die folgenden Zahlungen werden zum Fälligkeitstag mit derselben Zahlungsart eingezogen.</p>
           )}
         </>
+      ) : payment.state === "karte_hinterlegen" && key ? (
+        <>
+          <h2 style={{ marginTop: 24 }}>Karte hinterlegen</h2>
+          <p className="note">
+            Heute wird nichts abgebucht. Die erste Zahlung über {formatCents(payment.setup.firstGrossCents, payment.setup.currency)} wird am{" "}
+            {formatDay(payment.setup.firstDueDate)} eingezogen, die folgenden jeweils zum Fälligkeitstag.
+          </p>
+          {redirect_status === "failed" && (
+            <p className="error" role="alert">
+              Das Hinterlegen hat nicht geklappt. Bitte versuche es noch einmal.
+            </p>
+          )}
+          <div className="pay-option">
+            <CardSetupForm publishableKey={key} clientSecret={payment.clientSecret} orderId={id} />
+          </div>
+        </>
       ) : payment.state === "in_bearbeitung" || (payment.state !== "nichts_faellig" && redirect_status === "succeeded") ? (
         <p className="note">Danke, deine Zahlung ist unterwegs. Die Rechnung bekommst du per E-Mail, sobald sie bestätigt ist.</p>
       ) : payment.state === "nichts_faellig" ? (
         <p className="note">
-          {rows.some((r) => r.installment_status === "offen")
+          {rows.some((r) => r.installment_status === "offen") && !rows.some((r) => r.installment_status === "bezahlt")
+            ? "Danke, deine Zahlungsart ist hinterlegt. Die Zahlungen werden zum Fälligkeitstag eingezogen."
+            : rows.some((r) => r.installment_status === "offen")
             ? "Danke, die fällige Zahlung ist eingegangen. Die nächsten Raten werden zum Fälligkeitstag eingezogen."
             : "Alles bezahlt. Die Rechnung bekommst du per E-Mail."}
         </p>

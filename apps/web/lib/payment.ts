@@ -1,4 +1,12 @@
-import { nextPaymentTarget, rememberPaymentIntent, rememberStripeCustomer, type PaymentTarget } from "@idf/db/stripe";
+import {
+  cardSetupTarget,
+  nextPaymentTarget,
+  rememberCardSetup,
+  rememberPaymentIntent,
+  rememberStripeCustomer,
+  type CardSetupTarget,
+  type PaymentTarget,
+} from "@idf/db/stripe";
 import type Stripe from "stripe";
 import { pool, transaction } from "./db";
 import { todayBerlin } from "./format";
@@ -6,6 +14,8 @@ import { todayBerlin } from "./format";
 export type PreparedPayment =
   /** Jetzt ist nichts fällig; spätere Raten werden zum Fälligkeitstag eingezogen. */
   | { state: "nichts_faellig" }
+  /** Probezeit ohne Anzahlung: Heute wird nichts abgebucht, die Kundin hinterlegt nur ihre Karte. */
+  | { state: "karte_hinterlegen"; setup: CardSetupTarget; clientSecret: string }
   | { state: "nicht_eingerichtet"; target: PaymentTarget }
   | { state: "bereit"; target: PaymentTarget; clientSecret: string }
   /** Zahlung läuft oder ist bei Stripe eingegangen; die Bestätigung von Stripe steht noch aus. */
@@ -21,7 +31,7 @@ const REUSABLE: Stripe.PaymentIntent.Status[] = ["requires_payment_method", "req
  */
 export async function preparePayment(api: Stripe | null, orderId: string): Promise<PreparedPayment> {
   const target = await nextPaymentTarget(pool(), orderId, todayBerlin());
-  if (!target) return { state: "nichts_faellig" };
+  if (!target) return api ? prepareCardSetup(api, orderId) : { state: "nichts_faellig" };
   if (!api) return { state: "nicht_eingerichtet", target };
 
   if (target.paymentIntentId) {
@@ -32,15 +42,7 @@ export async function preparePayment(api: Stripe | null, orderId: string): Promi
     }
   }
 
-  let customer = target.stripeCustomerId;
-  if (!customer) {
-    const created = await api.customers.create(
-      { email: target.email, name: target.name || undefined, metadata: { customer_id: target.customerId } },
-      { idempotencyKey: `kunde-${target.customerId}` },
-    );
-    customer = created.id;
-    await rememberStripeCustomer(pool(), target.customerId, customer);
-  }
+  const customer = await ensureStripeCustomer(api, target);
 
   const intent = await api.paymentIntents.create(
     {
@@ -60,4 +62,52 @@ export async function preparePayment(api: Stripe | null, orderId: string): Promi
   );
   if (!intent.client_secret) throw new Error("Stripe hat kein client_secret geliefert");
   return { state: "bereit", target, clientSecret: intent.client_secret };
+}
+
+async function ensureStripeCustomer(
+  api: Stripe,
+  who: { customerId: string; stripeCustomerId: string | null; email: string; name: string },
+): Promise<string> {
+  if (who.stripeCustomerId) return who.stripeCustomerId;
+  const created = await api.customers.create(
+    { email: who.email, name: who.name || undefined, metadata: { customer_id: who.customerId } },
+    { idempotencyKey: `kunde-${who.customerId}` },
+  );
+  await rememberStripeCustomer(pool(), who.customerId, created.id);
+  return created.id;
+}
+
+/** Karte für eine Probezeit ohne Anzahlung hinterlegen lassen (SetupIntent, nichts wird abgebucht). */
+async function prepareCardSetup(api: Stripe, orderId: string): Promise<PreparedPayment> {
+  const setup = await cardSetupTarget(pool(), orderId);
+  if (!setup) return { state: "nichts_faellig" };
+  const customer = await ensureStripeCustomer(api, setup);
+  const intent = await api.setupIntents.create(
+    {
+      customer,
+      usage: "off_session",
+      automatic_payment_methods: { enabled: true },
+      metadata: { order_id: orderId },
+    },
+    // Beim Neuladen der Seite dieselbe Hinterlegung, keine zweite.
+    { idempotencyKey: `karte-${orderId}` },
+  );
+  if (!intent.client_secret) throw new Error("Stripe hat kein client_secret geliefert");
+  return { state: "karte_hinterlegen", setup, clientSecret: intent.client_secret };
+}
+
+/**
+ * Nach der Rückkehr von Stripe: bestätigte Karten-Hinterlegung zur Bestellung merken.
+ * Liest den Stand bei Stripe selbst, der Rückgabe-Link allein zählt nicht.
+ */
+export async function completeCardSetup(api: Stripe, orderId: string, setupIntentId: string): Promise<boolean> {
+  const intent = await api.setupIntents.retrieve(setupIntentId);
+  const id = (v: string | { id: string } | null) => (v == null ? null : typeof v === "string" ? v : v.id);
+  return rememberCardSetup(pool(), {
+    orderId,
+    setupOrderId: intent.metadata?.order_id ?? null,
+    status: intent.status,
+    paymentMethod: id(intent.payment_method),
+    stripeCustomerId: id(intent.customer as string | { id: string } | null),
+  });
 }

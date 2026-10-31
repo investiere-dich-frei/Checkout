@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
 import { dueCharges, endSubscription, extendSubscriptions, recordChargeAttempt } from "../src/billing.ts";
 import { placeOrder, type PlaceOrderInput } from "../src/orders.ts";
-import { handleStripeEvent, nextPaymentTarget, rememberPaymentIntent } from "../src/stripe.ts";
+import { cardSetupTarget, handleStripeEvent, nextPaymentTarget, rememberCardSetup, rememberPaymentIntent } from "../src/stripe.ts";
 import { createTestDb, tx, type TestDb } from "./helpers.ts";
 
 // Ausgedachte Gesellschaft, Produkte und Kundinnen, keine echten Daten.
@@ -10,6 +10,7 @@ describe("Wiederkehrende Zahlungen", () => {
   let db: TestDb;
   let order: PlaceOrderInput;
   let aboOrder: PlaceOrderInput;
+  let trialOrder: PlaceOrderInput;
 
   before(async () => {
     db = await createTestDb();
@@ -52,6 +53,17 @@ describe("Wiederkehrende Zahlungen", () => {
       purchaseDay: "2026-11-02",
     };
     aboOrder = { ...order, priceOptionId: abo, purchaseDay: "2026-01-31" };
+    const trial = await q(
+      `insert into app.price_options (product_id, label, kind, amount_cents, amount_basis, recurring_amount_cents, recurring_count, installments, interval_months, trial_days)
+       values ($1, '0 € heute, dann 2 Raten', 'raten', 0, 'netto', 249850, 2, 2, 3, 42) returning id`,
+      [product],
+    );
+    trialOrder = {
+      ...order,
+      priceOptionId: trial,
+      customer: { ...order.customer, email: "probe@example.org" },
+      purchaseDay: "2026-11-01",
+    };
   });
   after(() => db.drop());
 
@@ -136,5 +148,28 @@ describe("Wiederkehrende Zahlungen", () => {
     );
     await assert.rejects(db.pool.query(`update app.subscription_terms set ends_on = null where order_id = $1`, [placed.orderId]), /GoBD/);
     assert.deepEqual((await db.pool.query(`select * from app.audit_verify()`)).rows, []);
+  });
+  it("lässt bei Probezeit ohne Anzahlung die Karte hinterlegen und zieht dann auch die erste Zahlung ein", async () => {
+    const placed = await tx(db.pool, (c) => placeOrder(c, trialOrder));
+    assert.deepEqual((await due(placed.orderId)).map((r) => r.d), ["2026-12-13", "2027-03-13"]);
+    // Heute ist nichts fällig, also auch keine Zahlung auf der Bestellseite.
+    assert.equal(await nextPaymentTarget(db.pool, placed.orderId, "2026-11-01"), null);
+    const setup = (await cardSetupTarget(db.pool, placed.orderId))!;
+    assert.deepEqual([setup.firstDueDate, setup.firstGrossCents], ["2026-12-13", 249850]);
+
+    // Ohne hinterlegte Karte kann zum Fälligkeitstag nichts eingezogen werden.
+    const mine = async (day: string) => (await dueCharges(db.pool, day)).filter((d) => d.orderId === placed.orderId);
+    assert.equal((await mine("2026-12-13"))[0]!.method, null);
+
+    // Eine Hinterlegung zu einer anderen Bestellung oder ohne Bestätigung zählt nicht.
+    const base = { orderId: placed.orderId, status: "succeeded", paymentMethod: "pm_probe", stripeCustomerId: "cus_probe" };
+    assert.equal(await rememberCardSetup(db.pool, { ...base, setupOrderId: order.priceOptionId }), false);
+    assert.equal(await rememberCardSetup(db.pool, { ...base, setupOrderId: placed.orderId, status: "requires_payment_method" }), false);
+    assert.equal(await rememberCardSetup(db.pool, { ...base, setupOrderId: placed.orderId }), true);
+    assert.equal(await cardSetupTarget(db.pool, placed.orderId), null);
+
+    assert.deepEqual(await mine("2026-12-12"), []);
+    const charge = (await mine("2026-12-13"))[0]!;
+    assert.deepEqual([charge.seq, charge.grossCents, charge.method?.ref], [1, 249850, "pm_probe"]);
   });
 });

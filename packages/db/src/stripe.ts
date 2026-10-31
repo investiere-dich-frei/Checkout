@@ -70,6 +70,73 @@ export async function nextPaymentTarget(
   };
 }
 
+export interface CardSetupTarget {
+  orderId: string;
+  customerId: string;
+  email: string;
+  name: string;
+  stripeCustomerId: string | null;
+  currency: string;
+  /** Erste spätere Fälligkeit, die automatisch eingezogen wird. */
+  firstDueDate: string;
+  firstGrossCents: number;
+}
+
+/**
+ * Bestellung, bei der heute nichts fällig ist, später aber eingezogen wird
+ * (Probezeit ohne Anzahlung), und für die noch keine Zahlungsart hinterlegt ist.
+ * Dann hinterlegt die Kundin jetzt ihre Karte, ohne dass etwas abgebucht wird.
+ * null, wenn nichts zu hinterlegen ist.
+ */
+export async function cardSetupTarget(client: pg.Pool | pg.ClientBase, orderId: string): Promise<CardSetupTarget | null> {
+  const { rows } = await client.query(
+    `select o.id order_id, o.customer_id, c.email,
+            coalesce(nullif(c.company_name, ''), concat_ws(' ', c.first_name, c.last_name)) as name,
+            c.stripe_customer_id, o.currency, i.due_date::text, i.gross_cents
+       from app.orders o
+       join app.customers c on c.id = o.customer_id
+       join app.order_installments i on i.order_id = o.id
+      where o.id = $1 and o.status not in ('storniert', 'erstattet') and i.status in ('offen', 'fehlgeschlagen')
+        and not exists (select 1 from app.order_installments b where b.order_id = o.id and b.status = 'bezahlt')
+        and not exists (select 1 from app.saved_payment_methods s where s.customer_id = o.customer_id and s.revoked_at is null)
+      order by i.seq
+      limit 1`,
+    [orderId],
+  );
+  const r = rows[0];
+  if (!r) return null;
+  return {
+    orderId: r.order_id,
+    customerId: r.customer_id,
+    email: r.email,
+    name: r.name,
+    stripeCustomerId: r.stripe_customer_id,
+    currency: r.currency,
+    firstDueDate: r.due_date,
+    firstGrossCents: Number(r.gross_cents),
+  };
+}
+
+/**
+ * Bei Stripe hinterlegte Karte zur Bestellung merken, nachdem die Kundin sie
+ * bestätigt hat. Prüft, dass die Hinterlegung zu dieser Bestellung gehört.
+ */
+export async function rememberCardSetup(
+  client: pg.Pool | pg.ClientBase,
+  input: { orderId: string; setupOrderId: string | null; status: string; paymentMethod: string | null; stripeCustomerId: string | null },
+): Promise<boolean> {
+  if (input.setupOrderId !== input.orderId || input.status !== "succeeded" || !input.paymentMethod) return false;
+  const { rows } = await client.query(`select customer_id from app.orders where id = $1`, [input.orderId]);
+  if (!rows[0]) return false;
+  await rememberPaymentMethod(client, {
+    customerId: rows[0].customer_id,
+    provider: "stripe",
+    ref: input.paymentMethod,
+    providerCustomer: input.stripeCustomerId,
+  });
+  return true;
+}
+
 /** Stripe-Kunden am Kunden vermerken. Ein schon gesetzter Verweis bleibt. */
 export async function rememberStripeCustomer(client: pg.Pool | pg.ClientBase, customerId: string, stripeCustomerId: string) {
   await client.query(`update app.customers set stripe_customer_id = $2 where id = $1 and stripe_customer_id is null`, [
