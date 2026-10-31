@@ -1,5 +1,5 @@
 # Checkout-Anwendung (roles/app). Erst einschalten, wenn Domain, DNS-Eintrag und
 # Zugangsdaten in secrets.sops.yml stehen (siehe docs/betrieb.md).
 checkout_ready: false
-checkout_domain: kasse.investieredichfrei.de
+checkout_domain: buchhaltung.investieredichfrei.de
 checkout_mail_from: buchhaltung@investieredichfrei.de

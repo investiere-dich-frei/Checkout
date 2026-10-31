@@ -22,11 +22,11 @@ Die Anwendung läuft auf app-nbg1 (Ansible-Rolle `infra/ansible/roles/app`):
    - `outbound_webhook_url`, `outbound_webhook_secret` (n8n);
    - die Graph-Zugangsdaten gibt es schon (Alarm-Mails).
    - Absender der Kunden-E-Mails ist `buchhaltung@investieredichfrei.de` (`checkout_mail_from`, Entscheidung Christian 30.10.2026). Die Entra-App darf bisher nur als service@ senden: Postfach buchhaltung@ in den Exchange-Bereich „IDF Ueberwachung - nur service@“ aufnehmen (RBAC für Anwendungen), sonst lehnt Graph das Senden ab.
-3. DNS: `kasse.investieredichfrei.de` als A-Eintrag auf 2.31.89.112.
+3. DNS: `buchhaltung.investieredichfrei.de` als A-Eintrag auf 2.31.89.112.
 4. `checkout_ready: true` in `group_vars/app/checkout.yml`, dann `ansible-playbook site.yml`.
 5. `infra/db/grants-prod.sh`.
-6. Stripe: Webhook-Endpunkt `https://kasse.investieredichfrei.de/api/stripe/webhook` für `payment_intent.succeeded`.
-7. PayPal: Webhook `https://kasse.investieredichfrei.de/api/paypal/webhook` für `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.PENDING`, `PAYMENT.CAPTURE.DENIED`.
+6. Stripe: Webhook-Endpunkt `https://buchhaltung.investieredichfrei.de/api/stripe/webhook` für `payment_intent.succeeded`.
+7. PayPal: Webhook `https://buchhaltung.investieredichfrei.de/api/paypal/webhook` für `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.PENDING`, `PAYMENT.CAPTURE.DENIED`.
 8. Rechtstexte (AGB, Datenschutz, Widerrufsbelehrung) als Fassungen in `app.legal_text_versions` einspielen.
 9. Admin-Zugänge anlegen (Christian, Emilia, Julia; Liste in `infra/db/setup/admins.json`):
    `infra/db/run-prod.sh db:configure users $PWD/infra/db/setup/admins.json --actor cli:christian`.
