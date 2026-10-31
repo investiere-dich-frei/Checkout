@@ -31,7 +31,9 @@
     src: "{{ hostvars[groups['app'][0]].private_ip }}"
     comment: Prometheus
   loop: ["9100", "9187"]
-  when: inventory_hostname in groups['db'] or item == "9100"
+  when: >-
+    (inventory_hostname in groups['db'] or item == "9100")
+    and inventory_hostname not in groups.get('bot', [])
 
 # Prometheus läuft im Docker-Netz; seine Abfrage des eigenen Servers kommt deshalb
 # von einer Docker-Adresse (172.16.0.0/12), nicht von 10.20.1.10.
@@ -44,14 +46,14 @@
     comment: Prometheus (Docker)
   when: inventory_hostname in groups['app']
 
-- name: App – HTTP und HTTPS
+- name: App und Bot – HTTP und HTTPS
   community.general.ufw:
     rule: allow
     port: "{{ item }}"
     proto: tcp
     comment: Web
   loop: ["80", "443"]
-  when: inventory_hostname in groups['app']
+  when: inventory_hostname in groups['app'] or inventory_hostname in groups.get('bot', [])
 
 - name: Ausgehend erlaubt, eingehend gesperrt, ufw an
   community.general.ufw:
