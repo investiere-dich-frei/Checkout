@@ -105,4 +105,16 @@
     enabled: true
     state: started
     daemon_reload: true
-  loop: [idf-web.service, idf-postausgang.timer, idf-webhooks.timer, idf-einzug.timer, caddy.service]
+  loop: [idf-web.service, idf-postausgang.timer, idf-einzug.timer, caddy.service]
+
+# Meldungen an n8n nur, wenn Adresse und Geheimnis hinterlegt sind. Ohne sie bricht
+# der Dienst jede Minute mit Fehler ab; die Meldungen bleiben in der Datenbank liegen
+# und gehen raus, sobald der Zeitgeber läuft.
+- name: Zeitgeber für Meldungen an n8n
+  ansible.builtin.systemd_service:
+    name: idf-webhooks.timer
+    enabled: "{{ webhooks_configured }}"
+    state: "{{ 'started' if webhooks_configured else 'stopped' }}"
+    daemon_reload: true
+  vars:
+    webhooks_configured: "{{ (outbound_webhook_url | default('') | length > 0) and (outbound_webhook_secret | default('') | length > 0) }}"
