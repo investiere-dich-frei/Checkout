@@ -69,7 +69,8 @@ export interface DueCharge {
 
 /**
  * Fälligkeiten, die jetzt automatisch eingezogen werden: ab der zweiten Zahlung (die
- * erste zahlt die Kundin selbst auf der Bestellseite), höchstens MAX_ATTEMPTS Versuche,
+ * erste zahlt die Kundin selbst auf der Bestellseite; bei Probezeit ohne Anzahlung
+ * hinterlegt sie dort nur die Karte, dann wird auch die erste eingezogen), höchstens MAX_ATTEMPTS Versuche,
  * mit Wartezeit nach einem gescheiterten Versuch und nie, solange ein Einzug unterwegs ist.
  */
 export async function dueCharges(client: Db, today: string): Promise<DueCharge[]> {
@@ -88,7 +89,10 @@ export async function dueCharges(client: Db, today: string): Promise<DueCharge[]
          select provider, ref, provider_customer from app.saved_payment_methods s
           where s.customer_id = o.customer_id and s.revoked_at is null
           order by s.created_at desc limit 1) m on true
-      where i.status in ('offen', 'fehlgeschlagen') and i.seq > 1 and i.due_date <= $1
+       join app.order_items it on it.id = i.order_item_id
+       join app.price_options po on po.id = it.price_option_id
+      -- Ab der zweiten Zahlung; bei Probezeit ohne Anzahlung (erste Zahlung 0) auch die erste.
+      where i.status in ('offen', 'fehlgeschlagen') and (i.seq > 1 or po.amount_cents = 0) and i.due_date <= $1
         and o.status not in ('storniert', 'erstattet')
       order by i.due_date, i.id`,
     [today],
