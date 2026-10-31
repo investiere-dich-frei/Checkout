@@ -73,14 +73,18 @@ describe("Täglicher Einzug", () => {
     const bad = await placeAndPayFirst("bad@example.org", "pm_declined");
     let n = 0;
     const created: Record<string, unknown>[] = [];
+    const confirmParams: Record<string, unknown>[] = [];
     const fakeStripe = {
       paymentIntents: {
         create: async (params: Record<string, unknown>) => {
+          // Wie bei Stripe: off_session ist beim Anlegen nur zusammen mit confirm erlaubt.
+          if (params.off_session !== undefined && params.confirm !== true) throw new Error("off_session ohne confirm");
           created.push(params);
           // Beim Bestätigen muss die Zahlungsabsicht schon gemerkt sein.
           return { id: `pi_einzug_${++n}`, amount: params.amount, currency: params.currency };
         },
-        confirm: async (id: string) => {
+        confirm: async (id: string, params: Record<string, unknown>) => {
+          confirmParams.push(params);
           const known = (await db.pool.query(`select 1 from app.stripe_payment_intents where id = $1`, [id])).rowCount;
           assert.equal(known, 1);
           const p = created[Number(id.split("_").pop()) - 1]!;
@@ -92,7 +96,8 @@ describe("Täglicher Einzug", () => {
 
     const run = await runCharging(db.pool, { stripe: fakeStripe, paypal: null }, "2026-10-01");
     assert.deepEqual(run, { extended: 0, due: 2, submitted: 1, booked: 0, declined: 1, withoutMethod: 0, errors: 0 });
-    assert.ok(created.every((p) => p.off_session === true && (p.metadata as Record<string, string>).installment_id));
+    assert.ok(created.every((p) => p.off_session === undefined && (p.metadata as Record<string, string>).installment_id));
+    assert.ok(confirmParams.length === 2 && confirmParams.every((p) => p.off_session === true));
     const statuses = async (o: string) => (await db.pool.query(`select status from app.order_installments where order_id = $1 order by seq`, [o])).rows.map((r) => r.status);
     assert.deepEqual(await statuses(bad), ["bezahlt", "fehlgeschlagen", "offen"]);
     assert.deepEqual(await statuses(ok), ["bezahlt", "offen", "offen"]);

@@ -39,13 +39,13 @@ async function inTx<T>(pool: pg.Pool, fn: (c: pg.PoolClient) => Promise<T>): Pro
 async function chargeStripe(pool: pg.Pool, api: Stripe, d: DueCharge, run: ChargeRun) {
   const m = d.method!;
   // Erst anlegen und merken, dann bestätigen: So kennt der Webhook die Zahlung immer schon.
+  // off_session gehört nur an die Bestätigung; Stripe lehnt es beim Anlegen ohne confirm ab.
   const intent = await api.paymentIntents.create(
     {
       amount: d.grossCents,
       currency: d.currency.toLowerCase(),
       customer: m.providerCustomer ?? undefined,
       payment_method: m.ref,
-      off_session: true,
       metadata: { installment_id: d.installmentId, order_id: d.orderId, seq: String(d.seq) },
     },
     { idempotencyKey: `einzug-${d.installmentId}-${d.attempts + 1}` },
