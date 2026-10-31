@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
-import { confirmTaxCategories, parseTaxFile, parseUsers, setSwissVatRate, upsertUsers } from "../src/setup.ts";
+import { confirmTaxCategories, parseTaxFile, parseUsers, setPaymentsMode, setSwissVatRate, upsertUsers } from "../src/setup.ts";
 import { createTestDb, seed, tx, type TestDb } from "./helpers.ts";
 
 // Ausgedachte Personen und Produkte, keine echten Daten.
@@ -121,5 +121,15 @@ describe("Einrichtung vor dem ersten Verkauf", () => {
     const row = (await db.pool.query(`select ch_vat_rate_bp from app.companies where id = $1`, [companyId])).rows[0];
     assert.equal(row.ch_vat_rate_bp, 810);
     await assert.rejects(tx(db.pool, (c) => setSwissVatRate(c, companyId, 0, "cli:test")), /Basispunkten/);
+  });
+
+  it("stellt den Zahlungsmodus um und steht ohne Angabe auf live", async () => {
+    const mode = async () => (await db.pool.query(`select payments_mode from app.companies where id = $1`, [companyId])).rows[0].payments_mode;
+    assert.equal(await mode(), "live");
+    await tx(db.pool, (c) => setPaymentsMode(c, companyId, "test", "cli:test"));
+    assert.equal(await mode(), "test");
+    await tx(db.pool, (c) => setPaymentsMode(c, companyId, "live", "cli:test"));
+    assert.equal(await mode(), "live");
+    await assert.rejects(tx(db.pool, (c) => setPaymentsMode(c, companyId, "probe" as never, "cli:test")), /live oder test/);
   });
 });

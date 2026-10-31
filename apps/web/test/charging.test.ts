@@ -12,7 +12,10 @@ describe("Täglicher Einzug", () => {
   let db: TestDb;
   let base: PlaceOrderInput;
 
+  const paypalEnv = process.env.PAYPAL_ENV;
   before(async () => {
+    // Die nachgebaute PayPal-Antwort gilt als echte Zahlung, wie die Datenbank (live).
+    process.env.PAYPAL_ENV = "live";
     db = await createTestDb();
     const q = async (sql: string, params: unknown[] = []) => (await db.pool.query(sql, params)).rows[0].id as string;
     const company = await q(`insert into app.companies (legal_name, street, postal_code, city) values ('Test GmbH', 'Teststr. 1', '10115', 'Berlin') returning id`);
@@ -43,7 +46,11 @@ describe("Täglicher Einzug", () => {
       purchaseDay: "2026-09-01",
     };
   });
-  after(() => db.drop());
+  after(async () => {
+    if (paypalEnv === undefined) delete process.env.PAYPAL_ENV;
+    else process.env.PAYPAL_ENV = paypalEnv;
+    await db.drop();
+  });
 
   const placeAndPayFirst = async (email: string, pm: string) => {
     const placed = await tx(db.pool, (c) => placeOrder(c, { ...base, customer: { ...base.customer, email } }));

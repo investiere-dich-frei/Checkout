@@ -1,6 +1,6 @@
 import type pg from "pg";
 import { rememberPaymentMethod } from "./billing.ts";
-import { bookPayment, NO_INVOICE, type BookingOutcome, type Decision, type HandledEvent } from "./booking.ts";
+import { bookPayment, foreignPayload, NO_INVOICE, paymentsModeMismatch, type BookingOutcome, type Decision, type HandledEvent } from "./booking.ts";
 
 /**
  * Datenbankseite der PayPal-Bezahlung. Die Web-App spricht mit PayPal und reicht
@@ -37,6 +37,8 @@ export interface PaypalCaptureInput {
   /** Gespeichertes PayPal-Konto (Vault-ID) für spätere Einzüge, falls PayPal es angelegt hat. */
   vaultId?: string | null;
   payload: unknown;
+  /** false bei Zahlungen aus der PayPal-Sandbox; fehlt die Angabe, gilt live. */
+  live?: boolean;
 }
 
 /**
@@ -70,7 +72,7 @@ export async function handlePaypalCapture(client: pg.ClientBase, input: PaypalCa
       result.outcome,
       result.note,
       result.invoiceId,
-      JSON.stringify(input.payload),
+      JSON.stringify(result.foreign ? foreignPayload(input.eventId, input.type) : input.payload),
     ],
   );
   return { outcome: result.outcome, note: result.note, invoiceNumber: result.invoiceNumber, firstDelivery: true };
@@ -98,12 +100,14 @@ async function decide(client: pg.ClientBase, input: PaypalCaptureInput): Promise
   if (!known) {
     return cap.customId
       ? { outcome: "pruefen", note: "PayPal-Bestellung unbekannt, trägt aber eine Fälligkeit", ...none }
-      : { outcome: "ignoriert", note: "PayPal-Bestellung nicht aus diesem System", ...none };
+      : { outcome: "ignoriert", note: "PayPal-Bestellung nicht aus diesem System", ...none, foreign: true };
   }
   if (cap.status !== "COMPLETED") return { outcome: "pruefen", note: `Status ${cap.status}`, ...none };
   if (cap.customId && cap.customId !== known.installment_id) {
     return { outcome: "pruefen", note: "Fälligkeit in custom_id passt nicht", ...none };
   }
+  const mismatch = await paymentsModeMismatch(client, known.installment_id, input.live ?? true);
+  if (mismatch) return mismatch;
   const currency = cap.currency.toUpperCase();
   if (currency !== known.order_currency || cap.amountCents !== Number(known.gross_cents)) {
     return {

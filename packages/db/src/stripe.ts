@@ -1,6 +1,6 @@
 import type pg from "pg";
 import { rememberPaymentMethod } from "./billing.ts";
-import { bookPayment, NO_INVOICE, type BookingOutcome, type Decision, type HandledEvent } from "./booking.ts";
+import { bookPayment, foreignPayload, NO_INVOICE, paymentsModeMismatch, type BookingOutcome, type Decision, type HandledEvent } from "./booking.ts";
 
 export type { HandledEvent } from "./booking.ts";
 
@@ -98,6 +98,8 @@ export interface StripeEventInput {
   created: number;
   /** Vollständiger Inhalt, wird als Nachweis abgelegt. */
   payload: unknown;
+  /** false bei Ereignissen aus dem Stripe-Testmodus; fehlt die Angabe, gilt live. */
+  livemode?: boolean;
   paymentIntent?: {
     id: string;
     status: string;
@@ -134,7 +136,15 @@ export async function handleStripeEvent(client: pg.ClientBase, event: StripeEven
   await client.query(
     `insert into app.stripe_events (id, type, payment_intent, outcome, outcome_note, invoice_id, payload)
      values ($1, $2, $3, $4, $5, $6, $7)`,
-    [event.id, event.type, event.paymentIntent?.id ?? null, result.outcome, result.note, result.invoiceId, JSON.stringify(event.payload)],
+    [
+      event.id,
+      event.type,
+      event.paymentIntent?.id ?? null,
+      result.outcome,
+      result.note,
+      result.invoiceId,
+      JSON.stringify(result.foreign ? foreignPayload(event.id, event.type) : event.payload),
+    ],
   );
   return { outcome: result.outcome, note: result.note, invoiceNumber: result.invoiceNumber, firstDelivery: true };
 }
@@ -168,11 +178,13 @@ async function decide(
   if (!k) {
     return pi.metadata.installment_id
       ? { outcome: "pruefen", note: "Zahlungsabsicht unbekannt, trägt aber eine Fälligkeit", ...none }
-      : { outcome: "ignoriert", note: "Zahlungsabsicht nicht aus diesem System", ...none };
+      : { outcome: "ignoriert", note: "Zahlungsabsicht nicht aus diesem System", ...none, foreign: true };
   }
   if (pi.metadata.installment_id && pi.metadata.installment_id !== k.installment_id) {
     return { outcome: "pruefen", note: "Fälligkeit in den Metadaten passt nicht", ...none };
   }
+  const mismatch = await paymentsModeMismatch(client, k.installment_id, event.livemode ?? true);
+  if (mismatch) return mismatch;
   const currency = pi.currency.toUpperCase();
   if (currency !== k.order_currency || pi.amountReceived !== Number(k.gross_cents)) {
     return {

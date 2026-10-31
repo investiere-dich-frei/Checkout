@@ -1,12 +1,13 @@
 import { readFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
 import pg from "pg";
-import { confirmTaxCategories, parseTaxFile, parseUsers, setSwissVatRate, upsertUsers } from "./setup.ts";
+import { confirmTaxCategories, parseTaxFile, parseUsers, setPaymentsMode, setSwissVatRate, upsertUsers } from "./setup.ts";
 
 const USAGE = `Aufruf:
   DATABASE_URL=… pnpm db:configure users <zugaenge.json> --actor cli:<name> [--dry-run]
   DATABASE_URL=… pnpm db:configure tax <steuer-je-produkt.json> --by <admin-e-mail> [--dry-run]
-  DATABASE_URL=… pnpm db:configure ch-vat <basispunkte> --company <id> --actor cli:<name> [--dry-run]`;
+  DATABASE_URL=… pnpm db:configure ch-vat <basispunkte> --company <id> --actor cli:<name> [--dry-run]
+  DATABASE_URL=… pnpm db:configure payments-mode <live|test> --company <id> --actor cli:<name> [--dry-run]`;
 
 const { values, positionals } = parseArgs({
   allowPositionals: true,
@@ -40,6 +41,12 @@ try {
   } else if (command === "ch-vat" && values.company && values.actor) {
     await setSwissVatRate(client, values.company, Number(arg), values.actor);
     summary = `MWST Schweiz auf ${(Number(arg) / 100).toFixed(2)} % gesetzt`;
+  } else if (command === "payments-mode" && values.company && values.actor) {
+    if (arg === "test" && !/test/i.test(new URL(url).pathname)) {
+      throw new Error("Testbetrieb nur in einer Datenbank, deren Name „test“ enthält (z. B. idf_test)");
+    }
+    await setPaymentsMode(client, values.company, arg as "live" | "test", values.actor);
+    summary = `Zahlungsmodus auf ${arg} gesetzt`;
   } else {
     console.error(USAGE);
     process.exitCode = 1;

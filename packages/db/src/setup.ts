@@ -113,6 +113,14 @@ export async function setSwissVatRate(client: pg.ClientBase, companyId: string, 
   if (r.rowCount !== 1) throw new Error("Gesellschaft gibt es nicht");
 }
 
+/** Zahlungsmodus der Gesellschaft: „test“ nur in einer Testdatenbank, sonst „live“. */
+export async function setPaymentsMode(client: pg.ClientBase, companyId: string, mode: "live" | "test", actor: string) {
+  if (mode !== "live" && mode !== "test") throw new Error("Modus muss live oder test sein");
+  await setActor(client, actor);
+  const r = await client.query(`update app.companies set payments_mode = $2 where id = $1`, [companyId, mode]);
+  if (r.rowCount !== 1) throw new Error("Gesellschaft gibt es nicht");
+}
+
 const ROLES: readonly UserRole[] = ["admin", "vertrieb", "freelancer", "pruefer"];
 
 /** Prüft eine Liste von Zugängen, z. B. aus einer JSON-Datei. */
