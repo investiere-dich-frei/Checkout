@@ -40,16 +40,27 @@ async function chargeStripe(pool: pg.Pool, api: Stripe, d: DueCharge, run: Charg
   const m = d.method!;
   // Erst anlegen und merken, dann bestätigen: So kennt der Webhook die Zahlung immer schon.
   // off_session gehört nur an die Bestätigung; Stripe lehnt es beim Anlegen ohne confirm ab.
-  const intent = await api.paymentIntents.create(
-    {
-      amount: d.grossCents,
-      currency: d.currency.toLowerCase(),
-      customer: m.providerCustomer ?? undefined,
-      payment_method: m.ref,
-      metadata: { installment_id: d.installmentId, order_id: d.orderId, seq: String(d.seq) },
-    },
-    { idempotencyKey: `einzug-${d.installmentId}-${d.attempts + 1}` },
-  );
+  let intent: Stripe.PaymentIntent;
+  try {
+    intent = await api.paymentIntents.create(
+      {
+        amount: d.grossCents,
+        currency: d.currency.toLowerCase(),
+        customer: m.providerCustomer ?? undefined,
+        payment_method: m.ref,
+        metadata: { installment_id: d.installmentId, order_id: d.orderId, seq: String(d.seq) },
+      },
+      { idempotencyKey: `einzug-${d.installmentId}-${d.attempts + 1}` },
+    );
+  } catch (err) {
+    // Anlegen gescheitert (z. B. ungültige Anfrage, Stripe nicht erreichbar): als Fehlversuch
+    // festhalten. So steht er im Protokoll, und der nächste Lauf nutzt einen neuen Schlüssel.
+    const code = (err as { code?: string }).code ?? (err as { type?: string }).type ?? "unbekannt";
+    await inTx(pool, (c) => recordChargeAttempt(c, { installmentId: d.installmentId, provider: "stripe", providerRef: null, outcome: "fehler", errorCode: code }));
+    console.error(`Einzug für Fälligkeit ${d.installmentId}: Anlegen bei Stripe fehlgeschlagen:`, (err as Error).message);
+    run.errors++;
+    return;
+  }
   await inTx(pool, (c) => rememberPaymentIntent(c, { id: intent.id, installmentId: d.installmentId, amountCents: intent.amount, currency: intent.currency }));
   try {
     const confirmed = await api.paymentIntents.confirm(intent.id, { off_session: true }, { idempotencyKey: `bestaetigung-${intent.id}` });
