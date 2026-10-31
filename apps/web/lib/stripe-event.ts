@@ -3,7 +3,7 @@ import type Stripe from "stripe";
 
 /** Stripe-Ereignis auf die Werte zurückführen, die die Datenbank verbucht. */
 export function toEventInput(event: Stripe.Event): StripeEventInput {
-  const base = { id: event.id, type: event.type, created: event.created, payload: event };
+  const base = { id: event.id, type: event.type, created: event.created, payload: event, livemode: event.livemode };
   if (!event.type.startsWith("payment_intent.")) return base;
   const pi = event.data.object as Stripe.PaymentIntent;
   return {

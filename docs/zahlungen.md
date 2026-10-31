@@ -84,6 +84,24 @@ select id, received_at, paypal_order, outcome_note from app.paypal_events where 
 - Erst mit Sandbox-Zugang testen.
 - Im Stripe-Konto PayPal als Zahlungsart ausgeschaltet lassen, damit PayPal nicht doppelt erscheint.
 
+# Test- und Live-Betrieb
+
+- Jede Gesellschaft trägt einen Zahlungsmodus (`app.companies.payments_mode`, Migration 0019). Voreinstellung ist `live`.
+- Eine Zahlung wird nur verbucht, wenn sie zum Modus passt:
+  - Stripe: `livemode` des Ereignisses;
+  - PayPal: `PAYPAL_ENV=live`, sonst gilt die Zahlung als Sandbox.
+- Passt sie nicht, entsteht keine Rechnung. Das Ereignis wird als `pruefen` abgelegt, mit dem Hinweis „Testzahlung, die Datenbank ist im Live-Betrieb“ oder umgekehrt.
+- Grund: Eine Testrechnung im echten Nummernkreis ließe sich nicht zurücknehmen (GoBD).
+- Testkäufe laufen deshalb gegen eine eigene Datenbank (z. B. `idf_test`), ohne Kundendaten und mit eigener Vorsilbe für den Nummernkreis (z. B. `TEST-`). Umstellen mit
+  `pnpm db:configure payments-mode test --company <id> --actor cli:<name>`.
+  Das geht nur in einer Datenbank, deren Name „test“ enthält.
+
+# Gemeinsames Konto mit Thrivecart
+
+- Solange Thrivecart parallel läuft, meldet ein gemeinsames Stripe- oder PayPal-Konto auch die Thrivecart-Zahlungen an unsere Webhooks.
+- Solche Zahlungen kennt dieses System nicht. Sie werden mit `ignoriert` abgelegt.
+- Von ihnen werden nur Ereignis-ID und Art gespeichert, keine Kundendaten.
+
 # Wiederkehrende Zahlungen
 
 ## Abos verlängern

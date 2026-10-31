@@ -12,6 +12,38 @@ export interface Decision {
   note: string | null;
   invoiceId: string | null;
   invoiceNumber: string | null;
+  /**
+   * Zahlung stammt nicht aus diesem System (z. B. noch über Thrivecart auf demselben Konto).
+   * Dann wird nur ID und Art des Ereignisses abgelegt, keine Kundendaten.
+   */
+  foreign?: true;
+}
+
+/**
+ * Testzahlungen nur in einer Testdatenbank verbuchen, echte nur in der echten.
+ * Gibt eine Entscheidung „pruefen“ zurück, wenn Zahlung und Gesellschaft nicht zusammenpassen.
+ */
+export async function paymentsModeMismatch(client: pg.ClientBase, installmentId: string, live: boolean): Promise<Decision | null> {
+  const { rows } = await client.query<{ payments_mode: "live" | "test" }>(
+    `select c.payments_mode
+       from app.order_installments i
+       join app.orders o on o.id = i.order_id
+       join app.companies c on c.id = o.company_id
+      where i.id = $1`,
+    [installmentId],
+  );
+  const mode = rows[0]?.payments_mode ?? "live";
+  if (live === (mode === "live")) return null;
+  return {
+    outcome: "pruefen",
+    note: live ? "Echte Zahlung, die Datenbank ist im Testbetrieb" : "Testzahlung, die Datenbank ist im Live-Betrieb",
+    ...NO_INVOICE,
+  };
+}
+
+/** Was von einem fremden Ereignis gespeichert wird: nur der Verweis, kein Inhalt. */
+export function foreignPayload(id: string, type: string) {
+  return { id, type, hinweis: "Zahlung nicht aus diesem System, Inhalt nicht gespeichert" };
 }
 
 export interface HandledEvent {

@@ -116,12 +116,18 @@ describe("PayPal-Zahlungen verbuchen", () => {
     const otherInst = await tx(db.pool, (c) => handlePaypalCapture(c, capture("PP-B", target.grossCents, { customId: "00000000-0000-0000-0000-000000000000" })));
     assert.equal(otherInst.outcome, "pruefen");
     assert.equal((await tx(db.pool, (c) => handlePaypalCapture(c, capture("PP-THRIVECART", 100)))).outcome, "ignoriert");
+    const kept = (await db.pool.query(`select payload from app.paypal_events where paypal_order = 'PP-THRIVECART'`)).rows[0].payload;
+    assert.deepEqual(Object.keys(kept).sort(), ["hinweis", "id", "type"]);
     assert.equal((await tx(db.pool, (c) => handlePaypalCapture(c, capture("PP-X", 100, { customId: target.installmentId })))).outcome, "pruefen");
     assert.equal(
       (await tx(db.pool, (c) => handlePaypalCapture(c, { eventId: "WH-2", type: "CHECKOUT.ORDER.APPROVED", paypalOrderId: "PP-B", capture: null, payload: {} }))).outcome,
       "ignoriert",
     );
     assert.equal((await db.pool.query(`select count(*)::int n from app.invoices where order_id = $1`, [orderId])).rows[0].n, 0);
+    // Eine Sandbox-Zahlung führt in der echten Datenbank nie zu einer Rechnung.
+    const sandbox = await tx(db.pool, (c) => handlePaypalCapture(c, { ...capture("PP-B", target.grossCents), eventId: "WH-SANDBOX", live: false }));
+    assert.equal(sandbox.outcome, "pruefen");
+    assert.match(sandbox.note!, /Testzahlung/);
     // Der Abschluss der ausstehenden Zahlung wird dann gebucht.
     assert.equal((await tx(db.pool, (c) => handlePaypalCapture(c, capture("PP-B", target.grossCents)))).outcome, "gebucht");
   });

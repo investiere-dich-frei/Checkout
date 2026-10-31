@@ -18,9 +18,14 @@ export function paypalConfig(env: Record<string, string | undefined> = process.e
     clientId: env.PAYPAL_CLIENT_ID,
     clientSecret: env.PAYPAL_CLIENT_SECRET,
     // Ohne ausdrückliches „live“ immer die Testumgebung.
-    baseUrl: env.PAYPAL_ENV === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com",
+    baseUrl: isPaypalLive(env) ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com",
     webhookId: env.PAYPAL_WEBHOOK_ID || null,
   };
+}
+
+/** Echte Zahlungen nur mit ausdrücklichem PAYPAL_ENV=live, sonst Sandbox. */
+export function isPaypalLive(env: Record<string, string | undefined> = process.env): boolean {
+  return env.PAYPAL_ENV === "live";
 }
 
 export class PaypalError extends Error {
@@ -198,7 +203,7 @@ function toCapture(c: PaypalCapture): NonNullable<PaypalCaptureInput["capture"]>
 }
 
 /** Antwort auf den Einzug in die Werte für die Verbuchung übersetzen. */
-export function captureFromOrder(order: PaypalOrderResponse): PaypalCaptureInput {
+export function captureFromOrder(order: PaypalOrderResponse, live = isPaypalLive()): PaypalCaptureInput {
   const c = order.purchase_units?.[0]?.payments?.captures?.[0];
   return {
     eventId: c ? `capture:${c.id}` : `bestellung:${order.id}:${order.status}`,
@@ -207,6 +212,7 @@ export function captureFromOrder(order: PaypalOrderResponse): PaypalCaptureInput
     capture: c ? toCapture(c) : null,
     vaultId: order.payment_source?.paypal?.attributes?.vault?.status === "VAULTED" ? (order.payment_source.paypal.attributes.vault.id ?? null) : null,
     payload: order,
+    live,
   };
 }
 
@@ -218,7 +224,7 @@ export interface PaypalWebhookEvent {
 }
 
 /** Webhook-Meldung in die Werte für die Verbuchung übersetzen. Nur Zahlungs-Ereignisse tragen eine Zahlung. */
-export function captureFromWebhook(event: PaypalWebhookEvent): PaypalCaptureInput {
+export function captureFromWebhook(event: PaypalWebhookEvent, live = isPaypalLive()): PaypalCaptureInput {
   const isCapture = event.event_type.startsWith("PAYMENT.CAPTURE.") && event.resource_type === "capture";
   const c = isCapture ? (event.resource as PaypalCapture) : null;
   return {
@@ -227,6 +233,7 @@ export function captureFromWebhook(event: PaypalWebhookEvent): PaypalCaptureInpu
     paypalOrderId: c?.supplementary_data?.related_ids?.order_id ?? null,
     capture: c ? toCapture(c) : null,
     payload: event,
+    live,
   };
 }
 

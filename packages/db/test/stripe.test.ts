@@ -108,6 +108,28 @@ describe("Stripe-Zahlungen verbuchen", () => {
     assert.equal((await nextPaymentTarget(db.pool, placed.orderId, "2026-12-02"))?.seq, 2);
   });
 
+  it("verbucht Testzahlungen nur, wenn die Gesellschaft im Testbetrieb ist", async () => {
+    const placed = await tx(db.pool, (c) => placeOrder(c, aboOrder));
+    const t = (await nextPaymentTarget(db.pool, placed.orderId, FAR))!;
+    await rememberPaymentIntent(db.pool, { id: "pi_test", installmentId: t.installmentId, amountCents: t.grossCents, currency: "eur" });
+
+    const test = await tx(db.pool, (c) => handleStripeEvent(c, { ...succeeded("pi_test", t.grossCents), livemode: false }));
+    assert.equal(test.outcome, "pruefen");
+    assert.match(test.note!, /Testzahlung/);
+    assert.equal((await db.pool.query(`select count(*)::int n from app.invoices where order_id = $1`, [placed.orderId])).rows[0].n, 0);
+
+    await db.pool.query(`update app.companies set payments_mode = 'test'`);
+    try {
+      const live = await tx(db.pool, (c) => handleStripeEvent(c, succeeded("pi_test", t.grossCents)));
+      assert.equal(live.outcome, "pruefen");
+      assert.match(live.note!, /Echte Zahlung/);
+      const ok = await tx(db.pool, (c) => handleStripeEvent(c, { ...succeeded("pi_test", t.grossCents), livemode: false }));
+      assert.equal(ok.outcome, "gebucht");
+    } finally {
+      await db.pool.query(`update app.companies set payments_mode = 'live'`);
+    }
+  });
+
   it("bucht nichts bei falschem Betrag oder fremder Zahlung und legt das Ereignis zur Prüfung ab", async () => {
     const placed = await tx(db.pool, (c) => placeOrder(c, aboOrder));
     const t = (await nextPaymentTarget(db.pool, placed.orderId, FAR))!;
@@ -119,13 +141,16 @@ describe("Stripe-Zahlungen verbuchen", () => {
     assert.match(wrong.note!, /erwartet/);
     const foreign = await tx(db.pool, (c) => handleStripeEvent(c, succeeded("pi_thrivecart", 100)));
     assert.equal(foreign.outcome, "ignoriert");
+    // Von fremden Zahlungen bleiben keine Kundendaten in der Datenbank.
+    const kept = (await db.pool.query(`select payload from app.stripe_events where payment_intent = 'pi_thrivecart'`)).rows[0].payload;
+    assert.deepEqual(Object.keys(kept).sort(), ["hinweis", "id", "type"]);
     const suspicious = await tx(db.pool, (c) => handleStripeEvent(c, succeeded("pi_x", 100, { metadata: { installment_id: t.installmentId } })));
     assert.equal(suspicious.outcome, "pruefen");
     const other = await tx(db.pool, (c) => handleStripeEvent(c, { id: `evt_${++n}`, type: "charge.refunded", created: 0, payload: {} }));
     assert.equal(other.outcome, "ignoriert");
 
     assert.equal((await db.pool.query(`select count(*)::int n from app.invoices where order_id = $1`, [placed.orderId])).rows[0].n, 0);
-    const review = (await db.pool.query(`select count(*)::int n from app.stripe_events where outcome = 'pruefen'`)).rows[0].n;
+    const review = (await db.pool.query(`select count(*)::int n from app.stripe_events where outcome = 'pruefen' and payment_intent in ('pi_c', 'pi_x')`)).rows[0].n;
     assert.equal(review, 2);
   });
 
