@@ -12,6 +12,23 @@ Die Anwendung läuft auf app-nbg1 (Ansible-Rolle `infra/ansible/roles/app`):
 - Die Rolle legt Ansible an (Variable `pg_app_password`), Zugang nur vom App-Server über das private Netz (TLS).
 - Die Rechte setzt `infra/db/grants-prod.sh` (packages/db/grants.sql). Nach jeder Migration ausführen.
 
+## Testphase mit idf_test
+
+Testkäufe laufen nie gegen `idf`: Jede verbuchte Zahlung erzeugt dort eine unveränderliche Rechnung
+im Kreis `IDF-`, auch mit Stripe-Testschlüsseln oder PayPal-Sandbox. Für die Testphase gibt es die
+Datenbank `idf_test` (Ansible legt sie an), ohne Kundendaten und mit eigenem Nummernkreis `TEST-`.
+Die Anwendung nutzt sie, solange `checkout_database: idf_test` in `group_vars/app/checkout.yml` steht.
+
+Einrichten, jeweils mit `IDF_DB=idf_test` vor `infra/db/run-prod.sh`:
+
+1. `db:migrate`;
+2. `db:company:create` mit denselben Angaben wie in `idf`, Vorsilbe `TEST-`;
+3. `db:thrivecart:import` (nur Katalog, **nie** `db:thrivecart:history`);
+4. `db:configure users`, `ch-vat 810`, `tax` wie in `idf`;
+5. `db:grants`.
+
+Beim Go-live `checkout_database: idf` setzen und auf die Live-Schlüssel umstellen.
+
 ## Reihenfolge bis zum ersten Verkauf
 
 1. PR freigeben, dann `infra/db/migrate-prod.sh` (Migrationen ab 0008).

@@ -24,6 +24,20 @@
   become_user: postgres
   when: pg_role == "primary"
 
+# Testdatenbank für Testkäufe mit Stripe-Testschlüsseln und PayPal-Sandbox. Sie hat einen
+# eigenen Nummernkreis (TEST-) und keine Kundendaten. Testkäufe laufen nie gegen idf,
+# weil dort jede verbuchte Zahlung eine unveränderliche Rechnung im Kreis IDF- erzeugt.
+- name: Datenbank idf_test
+  community.postgresql.postgresql_db:
+    name: idf_test
+    owner: idf_migrator
+    encoding: UTF8
+    lc_collate: C.UTF-8
+    lc_ctype: C.UTF-8
+    template: template0
+  become_user: postgres
+  when: pg_role == "primary"
+
 # Anwendungsrolle: darf lesen und schreiben, aber nichts löschen und ist nie Eigentümerin
 # (Rechte setzt packages/db/grants.sql). Zugang nur vom App-Server über das private Netz.
 - name: Rolle für die Anwendung
@@ -38,7 +52,8 @@
 - name: Zugang der Anwendung vom App-Server
   ansible.builtin.lineinfile:
     path: /etc/postgresql/17/main/pg_hba.conf
-    line: "hostssl idf idf_app {{ hostvars[groups['app'][0]].private_ip }}/32 scram-sha-256"
+    line: "hostssl {{ item }} idf_app {{ hostvars[groups['app'][0]].private_ip }}/32 scram-sha-256"
+  loop: [idf, idf_test]
   when: pg_role == "primary" and pg_app_password is defined
   register: pg_app_hba
 

@@ -8,7 +8,16 @@
 #   infra/db/run-prod.sh db:migrate
 #   infra/db/run-prod.sh db:company:create ~/gesellschaft.json --actor cli:christian --dry-run
 #   infra/db/run-prod.sh db:thrivecart:import ~/katalog.json --company <id> --dry-run
+# Ziel ist die Datenbank idf. Für die Testdatenbank IDF_DB=idf_test davorsetzen:
+#   IDF_DB=idf_test infra/db/run-prod.sh db:migrate
 set -euo pipefail
+
+db="${IDF_DB:-idf}"
+case "$db" in
+  idf|idf_test) ;;
+  *) echo "Unbekannte Datenbank: $db (erlaubt: idf, idf_test)" >&2; exit 1 ;;
+esac
+echo "Datenbank: $db" >&2
 
 if [ $# -lt 1 ]; then
   echo "Aufruf: infra/db/run-prod.sh <pnpm-skript> [argumente …]" >&2
@@ -42,4 +51,4 @@ ssh -i "$key" -o ExitOnForwardFailure=yes -f -N -M -S "$socket" \
   -L "$local_port:localhost:5432" "$host"
 trap 'ssh -S "$socket" -O exit "$host" 2>/dev/null' EXIT
 
-DATABASE_URL="postgres://idf_migrator:${password}@localhost:${local_port}/idf" pnpm "$@"
+DATABASE_URL="postgres://idf_migrator:${password}@localhost:${local_port}/${db}" pnpm "$@"

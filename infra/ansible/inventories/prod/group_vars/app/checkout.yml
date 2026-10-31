@@ -3,3 +3,6 @@
 checkout_ready: false
 checkout_domain: buchhaltung.investieredichfrei.de
 checkout_mail_from: buchhaltung@investieredichfrei.de
+# Datenbank der Anwendung. In der Testphase idf_test (Testschlüssel, Nummernkreis TEST-),
+# erst beim Go-live mit den Live-Schlüsseln auf idf umstellen.
+checkout_database: idf_test
