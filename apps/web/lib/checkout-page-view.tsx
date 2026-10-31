@@ -11,6 +11,9 @@ import type { CSSProperties, ReactNode } from "react";
 
 export const imageUrl = (id: string) => `/bilder/${id}`;
 
+/** Logo aus dem Brandbook, wenn auf der Seite kein eigenes Logo hochgeladen ist. */
+export const BRAND_LOGO = "/marke/logo-bunt.png";
+
 /** Weiß oder Dunkelgrau als Schrift auf der Akzentfarbe, je nachdem, was besser lesbar ist. */
 export function textOn(hex: string): string {
   const n = parseInt(hex.slice(1), 16);
@@ -119,7 +122,7 @@ export function Steps(props: { current: 1 | 2 }) {
   return (
     <ol className="cp-steps" aria-label="Schritte">
       <li aria-current={props.current === 1 ? "step" : undefined}>
-        <span>01</span> Deine Angaben
+        <span>01</span> Kunde
       </li>
       <li aria-current={props.current === 2 ? "step" : undefined}>
         <span>02</span> Zahlung
@@ -135,10 +138,12 @@ export function CheckoutPageView(props: { content: PageContent; productName: str
   const style = { "--accent": c.accentColor, "--on-accent": textOn(c.accentColor) } as CSSProperties;
   return (
     <div className="checkout-page" style={style}>
+      <div className="cp-top">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="cp-logo" src={c.logoImageId ? imageUrl(c.logoImageId) : BRAND_LOGO} alt="Investiere Dich Frei – Die Emilia Bolda Finanzakademie" />
+      </div>
       <header className="cp-hero">
         <div className="cp-hero-inner">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          {c.logoImageId ? <img className="cp-logo" src={imageUrl(c.logoImageId)} alt="Investiere Dich Frei" /> : <span className="brand">Investiere Dich Frei</span>}
           <div className={c.heroImageId ? "cp-hero-grid" : undefined}>
             <div>
               <h1>{c.headline || props.productName}</h1>
@@ -153,32 +158,40 @@ export function CheckoutPageView(props: { content: PageContent; productName: str
                 </a>
               )}
             </div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            {c.heroImageId && <img className="cp-hero-image" src={imageUrl(c.heroImageId)} alt="" />}
+            {c.heroImageId && (
+              <div className="cp-hero-media">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img className="cp-hero-image" src={imageUrl(c.heroImageId)} alt="" />
+              </div>
+            )}
           </div>
         </div>
       </header>
 
-      <div className={hasContent ? "cp-columns" : "cp-columns cp-single"}>
-        {hasContent && (
-          <div className="cp-content">
-            <Blocks blocks={c.blocks} area="inhalt" />
+      <section className="cp-order" aria-label="Bestellung">
+        <div className={hasContent ? "cp-columns" : "cp-columns cp-single"}>
+          {hasContent && (
+            <div className="cp-content">
+              <Blocks blocks={c.blocks} area="inhalt" />
+            </div>
+          )}
+          <div className="cp-checkout" id="bestellen">
+            <div className="cp-product">
+              <strong>{props.productName}</strong>
+              <span className="note">{props.optionLabel}</span>
+            </div>
+            <Blocks blocks={c.blocks} area="formular" />
+            <Steps current={1} />
+            {props.form}
           </div>
-        )}
-        <div className="cp-checkout" id="bestellen">
-          <div className="cp-product">
-            <strong>{props.productName}</strong>
-            <span className="note">{props.optionLabel}</span>
-          </div>
-          <Blocks blocks={c.blocks} area="formular" />
-          <Steps current={1} />
-          {props.form}
         </div>
-      </div>
+      </section>
 
       {c.blocks.some((b) => b.area === "unten") && (
         <div className="cp-bottom">
-          <Blocks blocks={c.blocks} area="unten" />
+          <div className="cp-bottom-inner">
+            <Blocks blocks={c.blocks} area="unten" />
+          </div>
         </div>
       )}
     </div>

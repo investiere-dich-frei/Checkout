@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
+import { orderDetail } from "../src/admin.ts";
 import { dueCharges, endSubscription, extendSubscriptions, recordChargeAttempt } from "../src/billing.ts";
 import { placeOrder, type PlaceOrderInput } from "../src/orders.ts";
 import { cardSetupTarget, handleStripeEvent, nextPaymentTarget, rememberCardSetup, rememberPaymentIntent } from "../src/stripe.ts";
@@ -141,6 +142,9 @@ describe("Wiederkehrende Zahlungen", () => {
     await tx(db.pool, (c) => extendSubscriptions(c, "2026-03-31"));
     assert.equal(await endSubscription(db.pool, placed.orderId, "2026-02-27", "admin:test"), true);
     assert.equal(await endSubscription(db.pool, placed.orderId, "2026-05-01", "admin:test"), false);
+    // Die Verwaltung zeigt das Enddatum als Text (YYYY-MM-DD), nicht als Datumsobjekt.
+    const admin = { id: "00000000-0000-0000-0000-000000000000", email: "a@example.org", displayName: "Admin", role: "admin" as const, salesCode: null };
+    assert.equal((await orderDetail(db.pool, admin, placed.orderId))!.head.ends_on, "2026-02-27");
     await tx(db.pool, (c) => extendSubscriptions(c, "2026-12-31"));
     assert.deepEqual(
       (await due(placed.orderId)).map((r) => `${r.d} ${r.status}`),
