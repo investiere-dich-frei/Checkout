@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { CheckoutPageView } from "../../../../lib/checkout-page-view";
 import { pool } from "../../../../lib/db";
 import { todayBerlin } from "../../../../lib/format";
+import { checkCouponAction } from "./actions";
 import { CheckoutForm } from "./checkout-form";
 
 export const dynamic = "force-dynamic";
@@ -12,10 +13,10 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default async function CheckoutPage(props: {
   params: Promise<{ slug: string; option: string }>;
-  searchParams: Promise<{ v?: string }>;
+  searchParams: Promise<{ v?: string; gutschein?: string; coupon?: string }>;
 }) {
   const { slug, option } = await props.params;
-  const { v } = await props.searchParams;
+  const { v, gutschein, coupon } = await props.searchParams;
   if (!UUID.test(option)) notFound();
 
   const db = pool();
@@ -24,6 +25,9 @@ export default async function CheckoutPage(props: {
   if (!offer || !legal.agb || !legal.datenschutz || !legal.widerruf) notFound();
   // Ein unbekanntes Kürzel verhindert keinen Kauf; die Bestellung läuft dann ohne Vertrieb.
   const sellerCode = v && (await findSeller(db, v)) ? v.toLowerCase() : null;
+  // Gutschein aus dem Link (?gutschein=CODE, wie bei Thrivecart auch ?coupon=CODE) gleich einlösen.
+  const linkCode = (gutschein ?? coupon ?? "").trim();
+  const initialCoupon = linkCode ? await checkCouponAction(linkCode, offer.priceOptionId) : null;
   // Eine fehlerhafte Gestaltung darf den Verkauf nie verhindern.
   const content = await resolvePage(db, offer.productId).catch((err) => {
     console.error("Kaufseite: Gestaltung nicht lesbar, Vorgabe verwendet", (err as Error).message);
@@ -50,6 +54,7 @@ export default async function CheckoutPage(props: {
         sellerCode={sellerCode}
         purchaseDay={todayBerlin()}
         withdrawalText={legal.widerruf.content}
+        initialCoupon={initialCoupon}
       />
       }
     />

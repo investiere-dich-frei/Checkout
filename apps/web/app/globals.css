@@ -124,12 +124,12 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); }
 .summary-table .total td { padding-top: 12px; }
 
 /* Knöpfe: Dark Rose, Großbuchstaben mit Abstand wie im Brandbook (Subline) */
-button.order, .cp-cta, .button-link, .inline-form button, .form-actions button {
+button.order, .dash-custom button, .coupon-row button, .cp-cta, .button-link, .inline-form button, .form-actions button {
   display: inline-block; border: 0; border-radius: var(--radius); background: var(--accent); color: #fff; cursor: pointer;
   font-family: var(--font-body); font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; text-decoration: none;
   transition: background-color 0.15s, transform 0.15s;
 }
-button.order:hover, .cp-cta:hover, .button-link:hover, .inline-form button:hover, .form-actions button:hover { background: var(--accent-dark); color: #fff; }
+button.order:hover, .dash-custom button:hover, .coupon-row button:hover, .cp-cta:hover, .button-link:hover, .inline-form button:hover, .form-actions button:hover { background: var(--accent-dark); color: #fff; }
 button.order { width: 100%; padding: 18px 20px; font-size: 16px; box-shadow: 0 10px 24px -12px rgba(162, 103, 102, 0.8); }
 button.order:disabled, .form-actions button:disabled { opacity: 0.6; cursor: wait; }
 
@@ -339,3 +339,41 @@ main:has(.page-editor) .admin-body { max-width: 1600px; }
 .ed-preview-frame .cp-columns.cp-single { grid-template-columns: minmax(0, 620px); }
 .ed-form-placeholder .card { padding: 16px; }
 .notice-box { background: #fff7e0; border: 1px solid #e6c766; padding: 10px 12px; border-radius: var(--radius); }
+
+/* Dashboard (Verwaltung) */
+.dash h2 { margin-top: 1.5rem; }
+.dash-ranges { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; align-items: center; margin: 0.5rem 0 1rem; }
+.dash-custom { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+.dash-custom input { width: auto; }
+.dash-presets { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+.dash-presets a { padding: 0.3rem 0.7rem; border: 1px solid var(--border, var(--muted)); border-radius: 999px; text-decoration: none; color: var(--text); font-size: 0.9rem; }
+.dash-presets a[aria-current="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.dash-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; }
+.dash-tile { display: flex; flex-direction: column; gap: 0.2rem; padding: 0.9rem 1rem; border: 1px solid var(--border, var(--muted)); border-radius: var(--radius-lg, 10px); background: var(--surface); color: var(--text); text-decoration: none; }
+a.dash-tile:hover { border-color: var(--accent); }
+.dash-label { font-size: 0.85rem; color: var(--text); opacity: 0.75; }
+.dash-value { font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.dash-sub { font-size: 0.85rem; opacity: 0.85; }
+.dash-up { color: #1b7a3a; font-weight: 600; }
+.dash-down { color: var(--error); font-weight: 600; }
+.dash-vs { font-weight: 400; color: var(--text); opacity: 0.7; }
+.dash-chart { margin: 0; }
+.dash-chart svg { width: 100%; height: 200px; display: block; }
+.dash-bar path { fill: var(--accent); }
+.dash-bar:hover path { fill: var(--accent-text); }
+.dash-axis { stroke: var(--border, var(--muted)); stroke-width: 1; }
+.dash-tick { font-size: 11px; fill: var(--text); opacity: 0.7; }
+.dash-columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+
+/* Gutscheine (Kaufseite und Verwaltung) */
+.coupon-box { margin-bottom: 0.75rem; }
+.coupon-box summary { cursor: pointer; color: var(--accent-text); }
+.coupon-row { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+.coupon-row input { flex: 1; min-width: 0; text-transform: uppercase; }
+.coupon-applied { margin: 0; }
+.coupon-line td { color: var(--accent-text); }
+.coupon-products { max-height: 16rem; overflow-y: auto; border: 1px solid var(--border, var(--muted)); border-radius: 6px; padding: 0.5rem; margin-top: 0.5rem; }
+.coupon-products [hidden] { display: none; }
+.coupon-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; }
+.dash-custom button, .coupon-row button { padding: 11px 16px; font-size: 12px; }
+.coupon-row button:disabled { opacity: 0.6; cursor: default; }

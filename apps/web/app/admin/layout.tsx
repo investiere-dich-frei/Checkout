@@ -12,9 +12,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const user = await currentUser();
   const links = user
     ? [
-        { href: "/admin", label: "Übersicht" },
+        { href: "/admin", label: "Dashboard" },
         { href: "/admin/bestellungen", label: "Bestellungen" },
-        ...(canSeeAll(user) ? [{ href: "/admin/produkte", label: "Produkte" }] : []),
+        ...(canSeeAll(user) ? [{ href: "/admin/produkte", label: "Produkte" }, { href: "/admin/gutscheine", label: "Gutscheine" }] : []),
         { href: "/admin/kauflinks", label: "Kauflinks" },
         ...(user.role === "admin" ? [{ href: "/admin/seiten", label: "Kaufseiten" }] : []),
       ]
@@ -23,7 +23,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     <div className="admin">
       <header className="admin-top">
         <div className="admin-top-inner">
-          <a href="/admin" aria-label="Verwaltung – Übersicht">
+          <a href="/admin" aria-label="Verwaltung – Dashboard">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="site-logo" src="/marke/logo-bunt.png" alt="Investiere Dich Frei" />
           </a>

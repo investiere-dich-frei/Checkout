@@ -3,11 +3,11 @@
 import type { AmountBasis, PricePlan } from "@idf/core/pricing";
 import type { TaxCategory } from "@idf/core/tax";
 import { SOFORTSTART_TEXT } from "@idf/db/legal";
-import { useActionState, useState } from "react";
+import { useActionState, useState, useTransition } from "react";
 import { COUNTRIES } from "../../../../lib/countries";
 import { formatCents, formatDay, formatRate } from "../../../../lib/format";
 import { previewPrice } from "../../../../lib/price-preview";
-import { submitOrder, type CheckoutState } from "./actions";
+import { checkCouponAction, submitOrder, type CheckoutState, type CouponPreview } from "./actions";
 
 interface OfferProps {
   priceOptionId: string;
@@ -50,11 +50,31 @@ export function CheckoutForm(props: {
   sellerCode: string | null;
   purchaseDay: string;
   withdrawalText: string;
+  /** Gutschein aus dem Link (?gutschein=CODE), schon geprüft. */
+  initialCoupon?: CouponPreview | null;
 }) {
   const { offer } = props;
   const [state, action, pending] = useActionState<CheckoutState, FormData>(submitOrder, { errors: {}, message: null, values: {} });
   const [country, setCountry] = useState("DE");
   const [kind, setKind] = useState<"privat" | "unternehmen">("privat");
+  const [coupon, setCoupon] = useState<CouponPreview | null>(props.initialCoupon?.ok ? props.initialCoupon : null);
+  const [couponInput, setCouponInput] = useState(props.initialCoupon?.ok ? props.initialCoupon.code : "");
+  const [couponMessage, setCouponMessage] = useState<string | null>(props.initialCoupon && !props.initialCoupon.ok ? props.initialCoupon.message : null);
+  const [checking, startCheck] = useTransition();
+  const applied = coupon?.ok ? coupon : null;
+  const couponError = couponMessage ?? state.errors.coupon ?? null;
+
+  const applyCoupon = () =>
+    startCheck(async () => {
+      const r = await checkCouponAction(couponInput, offer.priceOptionId);
+      if (r.ok) {
+        setCoupon(r);
+        setCouponMessage(null);
+      } else {
+        setCoupon(null);
+        setCouponMessage(r.message);
+      }
+    });
 
   const p = previewPrice({
     plan: offer.plan,
@@ -64,6 +84,7 @@ export function CheckoutForm(props: {
     country,
     isBusiness: kind === "unternehmen",
     purchaseDay: props.purchaseDay,
+    discount: applied?.discount ?? null,
   });
   const money = (c: number) => formatCents(c, offer.currency);
   const interval = offer.plan.intervalMonths ? INTERVAL[offer.plan.intervalMonths] ?? `alle ${offer.plan.intervalMonths} Monate` : "";
@@ -73,6 +94,7 @@ export function CheckoutForm(props: {
     <form action={action} noValidate>
       <input type="hidden" name="price_option_id" value={offer.priceOptionId} />
       {props.sellerCode && <input type="hidden" name="seller" value={props.sellerCode} />}
+      <input type="hidden" name="coupon" value={applied?.code ?? ""} />
 
       <section className="card" aria-labelledby="kontakt">
         <h2 id="kontakt">Deine Angaben</h2>
@@ -112,8 +134,64 @@ export function CheckoutForm(props: {
 
       <section className="card" aria-labelledby="preis">
         <h2 id="preis">Deine Bestellung</h2>
+        <div className="coupon-box">
+          {applied ? (
+            <p className="coupon-applied" role="status">
+              Gutschein <strong>{applied.code}</strong> eingelöst: {applied.text}.{" "}
+              <button
+                type="button"
+                className="link-button"
+                onClick={() => {
+                  setCoupon(null);
+                  setCouponInput("");
+                }}
+              >
+                Entfernen
+              </button>
+            </p>
+          ) : (
+            <details open={!!couponError || !!couponInput}>
+              <summary>Gutscheincode einlösen</summary>
+              <div className="coupon-row">
+                <input
+                  id="coupon_input"
+                  aria-label="Gutscheincode"
+                  type="text"
+                  autoComplete="off"
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      applyCoupon();
+                    }
+                  }}
+                  aria-invalid={couponError ? true : undefined}
+                  aria-describedby={couponError ? "coupon-error" : undefined}
+                />
+                <button type="button" onClick={applyCoupon} disabled={checking || !couponInput.trim()}>
+                  {checking ? "Prüfe …" : "Einlösen"}
+                </button>
+              </div>
+              {couponError && (
+                <p className="error" id="coupon-error">
+                  {couponError}
+                </p>
+              )}
+            </details>
+          )}
+        </div>
         <table className="summary-table">
           <tbody>
+            {applied && p.savingsCents > 0 && (
+              <tr className="coupon-line">
+                <td>
+                  Gutschein {applied.code}
+                  {offer.plan.kind === "abo" && p.recurringSavingsCents > 0 && ` (auch − ${money(p.recurringSavingsCents)} bei jeder Folgezahlung)`}
+                </td>
+                <td>− {money(p.savingsCents)}</td>
+              </tr>
+            )}
             {later.length > 0 && (
               <tr>
                 <td>Heute fällig</td>
