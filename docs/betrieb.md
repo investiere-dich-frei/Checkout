@@ -25,7 +25,8 @@ Einrichten, jeweils mit `IDF_DB=idf_test` vor `infra/db/run-prod.sh`:
 2. `db:company:create` mit denselben Angaben wie in `idf`, Vorsilbe `TEST-`;
 3. `db:thrivecart:import` (nur Katalog, **nie** `db:thrivecart:history`);
 4. `db:configure users`, `ch-vat 810`, `tax` wie in `idf`;
-5. `db:grants`.
+5. `db:configure payments-mode test --company <id> --actor cli:christian` (nur in `idf_test`, ab Migration 0019);
+6. `db:grants`.
 
 Beim Go-live `checkout_database: idf` setzen und auf die Live-Schlüssel umstellen.
 
