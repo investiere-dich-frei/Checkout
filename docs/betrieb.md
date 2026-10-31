@@ -12,6 +12,24 @@ Die Anwendung läuft auf app-nbg1 (Ansible-Rolle `infra/ansible/roles/app`):
 - Die Rolle legt Ansible an (Variable `pg_app_password`), Zugang nur vom App-Server über das private Netz (TLS).
 - Die Rechte setzt `infra/db/grants-prod.sh` (packages/db/grants.sql). Nach jeder Migration ausführen.
 
+## Testphase mit idf_test
+
+Testkäufe laufen nie gegen `idf`: Jede verbuchte Zahlung erzeugt dort eine unveränderliche Rechnung
+im Kreis `IDF-`, auch mit Stripe-Testschlüsseln oder PayPal-Sandbox. Für die Testphase gibt es die
+Datenbank `idf_test` (Ansible legt sie an), ohne Kundendaten und mit eigenem Nummernkreis `TEST-`.
+Die Anwendung nutzt sie, solange `checkout_database: idf_test` in `group_vars/app/checkout.yml` steht.
+
+Einrichten, jeweils mit `IDF_DB=idf_test` vor `infra/db/run-prod.sh`:
+
+1. `db:migrate`;
+2. `db:company:create` mit denselben Angaben wie in `idf`, Vorsilbe `TEST-`;
+3. `db:thrivecart:import` (nur Katalog, **nie** `db:thrivecart:history`);
+4. `db:configure users`, `ch-vat 810`, `tax` wie in `idf`;
+5. `db:configure payments-mode test --company <id> --actor cli:christian` (nur in `idf_test`, ab Migration 0019);
+6. `db:grants`.
+
+Beim Go-live `checkout_database: idf` setzen und auf die Live-Schlüssel umstellen.
+
 ## Reihenfolge bis zum ersten Verkauf
 
 1. PR freigeben, dann `infra/db/migrate-prod.sh` (Migrationen ab 0008).
@@ -22,11 +40,11 @@ Die Anwendung läuft auf app-nbg1 (Ansible-Rolle `infra/ansible/roles/app`):
    - `outbound_webhook_url`, `outbound_webhook_secret` (n8n);
    - die Graph-Zugangsdaten gibt es schon (Alarm-Mails).
    - Absender der Kunden-E-Mails ist `buchhaltung@investieredichfrei.de` (`checkout_mail_from`, Entscheidung Christian 30.10.2026). Die Entra-App darf bisher nur als service@ senden: Postfach buchhaltung@ in den Exchange-Bereich „IDF Ueberwachung - nur service@“ aufnehmen (RBAC für Anwendungen), sonst lehnt Graph das Senden ab.
-3. DNS: `kasse.investieredichfrei.de` als A-Eintrag auf 2.31.89.112.
+3. DNS: `buchhaltung.investieredichfrei.de` als A-Eintrag auf 2.31.89.112.
 4. `checkout_ready: true` in `group_vars/app/checkout.yml`, dann `ansible-playbook site.yml`.
 5. `infra/db/grants-prod.sh`.
-6. Stripe: Webhook-Endpunkt `https://kasse.investieredichfrei.de/api/stripe/webhook` für `payment_intent.succeeded`.
-7. PayPal: Webhook `https://kasse.investieredichfrei.de/api/paypal/webhook` für `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.PENDING`, `PAYMENT.CAPTURE.DENIED`.
+6. Stripe: Webhook-Endpunkt `https://buchhaltung.investieredichfrei.de/api/stripe/webhook` für `payment_intent.succeeded`.
+7. PayPal: Webhook `https://buchhaltung.investieredichfrei.de/api/paypal/webhook` für `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.PENDING`, `PAYMENT.CAPTURE.DENIED`.
 8. Rechtstexte (AGB, Datenschutz, Widerrufsbelehrung) als Fassungen in `app.legal_text_versions` einspielen.
 9. Admin-Zugänge anlegen (Christian, Emilia, Julia; Liste in `infra/db/setup/admins.json`):
    `infra/db/run-prod.sh db:configure users $PWD/infra/db/setup/admins.json --actor cli:christian`.

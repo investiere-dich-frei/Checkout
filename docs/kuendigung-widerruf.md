@@ -56,7 +56,7 @@ select received_at, kind, full_name, contract_reference from app.contract_notice
   - Bestätigung des vorzeitigen Leistungsbeginns (§ 356 Abs. 5 BGB), falls erklärt;
   - Widerrufsbelehrung und AGB im Wortlaut der zugestimmten Fassung (dauerhafter Datenträger, § 312f BGB).
 - Mit jeder gebuchten Zahlung geht die Rechnung per E-Mail raus, genau einmal. Das PDF hängt sich an, sobald es erzeugt ist.
-- `PUBLIC_BASE_URL` setzt die Adresse für Links in E-Mails (z. B. `https://kasse.investieredichfrei.de`).
+- `PUBLIC_BASE_URL` setzt die Adresse für Links in E-Mails (z. B. `https://buchhaltung.investieredichfrei.de`).
 
 ## USt-IdNr.-Prüfung (VIES)
 
