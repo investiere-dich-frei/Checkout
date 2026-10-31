@@ -122,3 +122,4 @@ select id, received_at, paypal_order, outcome_note from app.paypal_events where 
 - Jeder Versuch steht unveränderbar in `app.charge_attempts`.
 - Ohne gespeicherte Zahlungsart zahlt die Kundin über die Bestellseite; die Seite zeigt fällige Raten automatisch an.
 - Der Lauf soll täglich am Morgen laufen (Timer auf dem App-Server) und gibt nur Zahlen aus.
+- Nur in der Testdatenbank `idf_test`: `pnpm einzug --stichtag JJJJ-MM-TT` zieht so ein, als wäre dieser Tag, und verlängert Abos bis dahin. Der Lauf bricht ab, wenn der Datenbankname kein „test“ enthält oder eine Gesellschaft nicht auf `payments-mode test` steht. Fälligkeiten per SQL zu ändern verhindert der GoBD-Schutz, und das bleibt so.
