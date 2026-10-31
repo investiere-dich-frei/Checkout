@@ -43,6 +43,8 @@
       - "--exclude=.next"
       - "--exclude=infra"
       - "--exclude=*.sops.yml"
+      # Schlüssel und lokale Hilfsordner vom Mac mini gehören nicht auf den App-Server.
+      - "--exclude=.pgbackrest-keys"
   register: app_code
 
 - name: Eigentümer des Codes
