@@ -124,12 +124,12 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); }
 .summary-table .total td { padding-top: 12px; }
 
 /* Knöpfe: Dark Rose, Großbuchstaben mit Abstand wie im Brandbook (Subline) */
-button.order, .cp-cta, .button-link, .inline-form button, .form-actions button {
+button.order, .dash-custom button, .coupon-row button, .cp-cta, .button-link, .inline-form button, .form-actions button {
   display: inline-block; border: 0; border-radius: var(--radius); background: var(--accent); color: #fff; cursor: pointer;
   font-family: var(--font-body); font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; text-decoration: none;
   transition: background-color 0.15s, transform 0.15s;
 }
-button.order:hover, .cp-cta:hover, .button-link:hover, .inline-form button:hover, .form-actions button:hover { background: var(--accent-dark); color: #fff; }
+button.order:hover, .dash-custom button:hover, .coupon-row button:hover, .cp-cta:hover, .button-link:hover, .inline-form button:hover, .form-actions button:hover { background: var(--accent-dark); color: #fff; }
 button.order { width: 100%; padding: 18px 20px; font-size: 16px; box-shadow: 0 10px 24px -12px rgba(162, 103, 102, 0.8); }
 button.order:disabled, .form-actions button:disabled { opacity: 0.6; cursor: wait; }
 
@@ -375,3 +375,5 @@ a.dash-tile:hover { border-color: var(--accent); }
 .coupon-products { max-height: 16rem; overflow-y: auto; border: 1px solid var(--border, var(--muted)); border-radius: 6px; padding: 0.5rem; margin-top: 0.5rem; }
 .coupon-products [hidden] { display: none; }
 .coupon-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; }
+.dash-custom button, .coupon-row button { padding: 11px 16px; font-size: 12px; }
+.coupon-row button:disabled { opacity: 0.6; cursor: default; }
