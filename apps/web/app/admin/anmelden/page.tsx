@@ -3,7 +3,7 @@ import { LoginForm } from "./login-form";
 export default async function LoginPage(props: { searchParams: Promise<{ abgelaufen?: string }> }) {
   const { abgelaufen } = await props.searchParams;
   return (
-    <section className="card">
+    <section className="card admin-login">
       <h1>Anmelden</h1>
       {abgelaufen && (
         <p className="error" role="alert">
