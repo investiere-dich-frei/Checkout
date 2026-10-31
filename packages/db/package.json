@@ -17,7 +17,8 @@
     "./admin": "./src/admin.ts",
     "./refunds": "./src/refunds.ts",
     "./webhooks": "./src/webhooks.ts",
-    "./legal": "./src/legal.ts"
+    "./legal": "./src/legal.ts",
+    "./products": "./src/products.ts"
   },
   "scripts": {
     "migrate": "tsx src/cli.ts",

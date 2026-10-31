@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { canSeeAll } from "@idf/db/admin";
 import { currentUser } from "../../lib/session";
 import { logoutAction } from "./actions";
 
@@ -14,6 +15,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         <nav className="admin-nav" aria-label="Verwaltung">
           <a href="/admin">Übersicht</a>
           <a href="/admin/bestellungen">Bestellungen</a>
+          {canSeeAll(user) && <a href="/admin/produkte">Produkte</a>}
           <a href="/admin/kauflinks">Kauflinks</a>
           <span className="note">
             {user.displayName} · {ROLE[user.role]}
