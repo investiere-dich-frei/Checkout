@@ -23,6 +23,13 @@ variable "db_server_type" {
   default     = "cx33"
 }
 
+# Klaus braucht wenig: Node-Dienst und Caddy. Kosten-OK Christian 31.10.2026 (rund 5 € im Monat).
+variable "bot_server_type" {
+  description = "Servertyp für den Teams-Bot Klaus"
+  type        = string
+  default     = "cx23"
+}
+
 variable "db_volume_size" {
   description = "Größe der Datenbank-Volumes in GB (lässt sich später vergrößern, nicht verkleinern)"
   type        = number

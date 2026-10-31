@@ -120,3 +120,40 @@ resource "hcloud_volume" "db_replica" {
   format    = "ext4"
   labels    = local.labels
 }
+
+# Klaus (Teams-Bot IDF-Wissen) auf eigenem kleinen Server, getrennt von der Kasse:
+# nicht im privaten Netz, keine Verbindung zu den Datenbankservern.
+resource "hcloud_firewall" "bot" {
+  name   = "idf-wissen-bot"
+  labels = { projekt = "idf-wissen", umgebung = "prod" }
+
+  rule {
+    direction  = "in"
+    protocol   = "tcp"
+    port       = "443"
+    source_ips = ["0.0.0.0/0", "::/0"]
+  }
+  rule {
+    direction  = "in"
+    protocol   = "tcp"
+    port       = "80"
+    source_ips = ["0.0.0.0/0", "::/0"]
+  }
+  rule {
+    direction  = "in"
+    protocol   = "tcp"
+    port       = "22"
+    source_ips = var.admin_ips
+  }
+}
+
+resource "hcloud_server" "bot" {
+  name         = "bot-nbg1"
+  server_type  = var.bot_server_type
+  image        = var.image
+  location     = "nbg1"
+  ssh_keys     = var.ssh_keys
+  firewall_ids = [hcloud_firewall.bot.id]
+  labels       = { projekt = "idf-wissen", umgebung = "prod", rolle = "bot" }
+  backups      = false # Der Bot hält keine Daten; Code und Index liegen auf dem Mac mini und in Supabase
+}

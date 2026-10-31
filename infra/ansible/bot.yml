@@ -1,0 +1,22 @@
+# Server bot-nbg1 für Klaus (Teams-Bot IDF-Wissen). Aufruf:
+#   ansible-playbook -i inventories/prod bot.yml
+# Grundeinrichtung wie die Kasse, dazu Docker. Keine Messfühler, keine Datenbank,
+# kein privates Netz. Den Bot selbst startet Docker Compose aus /opt/idf-wissen-bot.
+- name: Bot-Server
+  hosts: bot
+  become: true
+  roles: [base]
+  tasks:
+    - name: Docker
+      ansible.builtin.apt:
+        name: [docker.io, docker-cli, docker-compose]
+
+    - name: Verzeichnis für den Bot
+      ansible.builtin.file:
+        path: /opt/idf-wissen-bot
+        state: directory
+        mode: "0750"
+
+    - name: Firewall
+      ansible.builtin.include_role:
+        name: firewall

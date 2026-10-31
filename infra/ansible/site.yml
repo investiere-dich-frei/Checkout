@@ -1,7 +1,8 @@
-# Grundeinrichtung aller Server. Aufruf:
+# Grundeinrichtung der Kasse (App und Datenbanken). Aufruf:
 #   ansible-playbook -i inventories/prod site.yml
+# Der Bot-Server bot-nbg1 hat ein eigenes Playbook (bot.yml) und wird hier ausgelassen.
 - name: Basis für alle Server
-  hosts: all
+  hosts: all:!bot
   become: true
   roles: [base]
 
@@ -12,7 +13,7 @@
 
 # Nach der Datenbank, weil der PostgreSQL-Exporter eine Datenbankrolle braucht.
 - name: Messfühler für die Überwachung
-  hosts: all
+  hosts: all:!bot
   become: true
   roles: [exporter]
 
@@ -30,6 +31,6 @@
 
 # Zum Schluss, damit alle Dienste schon laufen, wenn die Firewall zugeht.
 - name: Firewall
-  hosts: all
+  hosts: all:!bot
   become: true
   roles: [firewall]
