@@ -43,7 +43,7 @@ Beim Go-live `checkout_database: idf` setzen und auf die Live-Schlüssel umstell
 3. DNS: `buchhaltung.investieredichfrei.de` als A-Eintrag auf 2.31.89.112.
 4. `checkout_ready: true` in `group_vars/app/checkout.yml`, dann `ansible-playbook site.yml`.
 5. `infra/db/grants-prod.sh`.
-6. Stripe: Webhook-Endpunkt `https://buchhaltung.investieredichfrei.de/api/stripe/webhook` für `payment_intent.succeeded`.
+6. Stripe: Webhook-Endpunkt `https://buchhaltung.investieredichfrei.de/api/stripe/webhook` für `payment_intent.succeeded` und `payment_intent.payment_failed`.
 7. PayPal: Webhook `https://buchhaltung.investieredichfrei.de/api/paypal/webhook` für `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.PENDING`, `PAYMENT.CAPTURE.DENIED`.
 8. Rechtstexte (AGB, Datenschutz, Widerrufsbelehrung) als Fassungen in `app.legal_text_versions` einspielen.
 9. Admin-Zugänge anlegen (Christian, Emilia, Julia; Liste in `infra/db/setup/admins.json`):

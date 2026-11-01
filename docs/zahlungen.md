@@ -43,7 +43,7 @@ Die Schlüssel kommen in die verschlüsselte Datei auf dem Server (SOPS), nie in
 | --- | --- |
 | `STRIPE_SECRET_KEY` | Stripe-Dashboard → Entwickler → API-Schlüssel (geheimer Schlüssel) |
 | `STRIPE_PUBLISHABLE_KEY` | ebenda (veröffentlichbarer Schlüssel) |
-| `STRIPE_WEBHOOK_SECRET` | Stripe-Dashboard → Entwickler → Webhooks → Endpunkt `https://<domain>/api/stripe/webhook`, Ereignis `payment_intent.succeeded` |
+| `STRIPE_WEBHOOK_SECRET` | Stripe-Dashboard → Entwickler → Webhooks → Endpunkt `https://<domain>/api/stripe/webhook`, Ereignisse `payment_intent.succeeded` und `payment_intent.payment_failed` |
 
 - Erst mit Testschlüsseln (`sk_test_…`) arbeiten.
 - Ohne Schlüssel zeigt die Bestellseite nur den Zahlplan; der Webhook antwortet mit 503.

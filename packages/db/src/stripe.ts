@@ -1,5 +1,5 @@
 import type pg from "pg";
-import { rememberPaymentMethod } from "./billing.ts";
+import { recordChargeAttempt, rememberPaymentMethod } from "./billing.ts";
 import { bookPayment, foreignPayload, NO_INVOICE, paymentsModeMismatch, type BookingOutcome, type Decision, type HandledEvent } from "./booking.ts";
 
 export type { HandledEvent } from "./booking.ts";
@@ -179,6 +179,8 @@ export interface StripeEventInput {
     /** Gespeicherte Zahlungsmethode (pm_…), wenn sie für spätere Einzüge freigegeben ist. */
     savedPaymentMethod?: string | null;
     stripeCustomer?: string | null;
+    /** Ablehnungscode bei payment_intent.payment_failed. */
+    errorCode?: string | null;
   };
 }
 
@@ -219,12 +221,41 @@ export async function handleStripeEvent(client: pg.ClientBase, event: StripeEven
   return { outcome: result.outcome, note: result.note, invoiceNumber: result.invoiceNumber, firstDelivery: true };
 }
 
+/**
+ * Eine eingereichte Abbuchung (Stripe meldete „processing“) ist später gescheitert. Ohne diese
+ * Meldung bliebe die Fälligkeit auf „eingereicht“ stehen: kein neuer Versuch, keine Mahnung.
+ * Zählt nur, wenn der letzte Einzugsversuch genau diese Zahlungsabsicht als eingereicht führt;
+ * abgelehnte Zahlungen auf der Kaufseite (Kundin ist dabei) ändern nichts.
+ */
+async function failedLater(client: pg.ClientBase, pi: NonNullable<StripeEventInput["paymentIntent"]>): Promise<Decision> {
+  const none = NO_INVOICE;
+  const last = await client.query<{ installment_id: string }>(
+    `select a.installment_id from app.stripe_payment_intents p
+       join lateral (select installment_id, provider_ref, outcome from app.charge_attempts
+                      where installment_id = p.installment_id order by attempted_at desc limit 1) a on true
+      where p.id = $1 and a.provider_ref = $1 and a.outcome = 'eingereicht'
+      for update of p`,
+    [pi.id],
+  );
+  const row = last.rows[0];
+  if (!row) return { outcome: "ignoriert", note: "Abgelehnt, kein offener eingereichter Einzug", ...none };
+  await recordChargeAttempt(client, {
+    installmentId: row.installment_id,
+    provider: "stripe",
+    providerRef: pi.id,
+    outcome: "abgelehnt",
+    errorCode: pi.errorCode ?? "payment_failed",
+  });
+  return { outcome: "ignoriert", note: `Eingereichte Abbuchung abgelehnt (${pi.errorCode ?? "ohne Code"}), als Fehlversuch vermerkt`, ...none };
+}
+
 async function decide(
   client: pg.ClientBase,
   event: StripeEventInput,
 ): Promise<Decision> {
   const none = NO_INVOICE;
   const pi = event.paymentIntent;
+  if (event.type === "payment_intent.payment_failed" && pi) return failedLater(client, pi);
   if (event.type !== "payment_intent.succeeded" || !pi) return { outcome: "ignoriert", note: null, ...none };
   if (pi.status !== "succeeded") return { outcome: "pruefen", note: `Status ${pi.status}`, ...none };
 

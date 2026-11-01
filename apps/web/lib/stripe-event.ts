@@ -17,6 +17,8 @@ export function toEventInput(event: Stripe.Event): StripeEventInput {
       // Nur Zahlungsmethoden, die die Kundin für spätere Einzüge freigegeben hat.
       savedPaymentMethod: pi.setup_future_usage === "off_session" ? idOf(pi.payment_method) : null,
       stripeCustomer: idOf(pi.customer),
+      // Nur der Ablehnungscode (z. B. insufficient_funds), keine Kundendaten.
+      errorCode: pi.last_payment_error?.decline_code ?? pi.last_payment_error?.code ?? null,
     },
   };
 }
