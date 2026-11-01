@@ -221,7 +221,7 @@ export async function invoicePdfs(db: Db, user: SessionUser, period: Period): Pr
   );
   if (rows.length > MAX_ZIP_FILES) throw new AccountingError(`Mehr als ${MAX_ZIP_FILES} Rechnungen im Zeitraum. Bitte kürzeren Zeitraum wählen.`);
   return rows.map((r) => ({
-    name: `${r.kind === "storno" ? "Stornorechnung" : "Rechnung"}-${r.invoice_number.replace(/[^A-Za-z0-9_-]/g, "_")}.pdf`,
+    name: `${r.kind === "storno" ? "Stornorechnung" : r.kind === "korrektur" ? "Rechnungskorrektur" : "Rechnung"}-${r.invoice_number.replace(/[^A-Za-z0-9_-]/g, "_")}.pdf`,
     data: r.pdf,
     date: r.issue_date,
   }));

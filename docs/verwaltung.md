@@ -58,11 +58,17 @@ Jede Änderung (Kündigung erledigt, Abo beendet) steht mit der handelnden Perso
 
 ## Erstattung und Storno
 
-- Auf der Bestelldetailseite gibt es je bezahlter Rechnung „Erstatten und stornieren“ (nur Admin, mit Grund und Rückfrage).
+- Auf der Bestelldetailseite gibt es je bezahlter Rechnung „Erstatten“ (nur Admin, mit Grund, optional Betrag, und Rückfrage).
+  - **Betrag leer**: Der ganze noch offene Betrag wird erstattet. Ist vorher nichts erstattet, entsteht eine Stornorechnung.
+  - **Betrag kleiner als offen (Teilerstattung)**: Es entsteht eine **Rechnungskorrektur** über den Teilbetrag, anteilig
+    je Position und Steuersatz, mit eigener Nummer im selben Kreis. Die Rate bleibt bezahlt, die Bestellung läuft weiter.
+    Weitere Teilerstattungen sind möglich, bis der Rechnungsbetrag erreicht ist; mit der letzten gilt die Rate als storniert.
+  - Nach einer Teilerstattung ist keine Stornorechnung mehr möglich, der Rest geht als weitere Korrektur.
+    Die Datenbank lässt nie mehr Erstattung oder Korrektur zu als den Rechnungsbetrag (Migration 0028).
 - Ablauf:
-  1. Die Erstattung wird als „angefordert“ festgehalten (`app.refunds`).
-  2. Der Server löst sie beim Anbieter aus (Stripe-Refund oder PayPal-Capture-Refund). Die Erstattungs-ID ist der Idempotenzschlüssel; ein Doppelklick erstattet nicht doppelt.
-  3. Erst nach Bestätigung entstehen Stornorechnung (voller Betrag, umgekehrte Positionen), PDF, E-Mail und eine Erstattungsbuchung. Die Rate wird „storniert“; ist nichts Bezahltes mehr übrig, ist die Bestellung „erstattet“.
+  1. Die Erstattung wird als „angefordert“ festgehalten (`app.refunds`, Spalte `scope` voll oder teil). Je Rechnung läuft höchstens eine gleichzeitig.
+  2. Der Server löst sie beim Anbieter aus (Stripe-Refund oder PayPal-Capture-Refund, bei Teilerstattung mit Betrag). Die Erstattungs-ID ist der Idempotenzschlüssel; ein Doppelklick erstattet nicht doppelt.
+  3. Erst nach Bestätigung entstehen Stornorechnung bzw. Rechnungskorrektur, PDF, E-Mail und eine Erstattungsbuchung. Ist die Rechnung damit ganz erstattet, wird die Rate „storniert“; ist nichts Bezahltes mehr übrig, ist die Bestellung „erstattet“.
   4. Lehnt der Anbieter ab, bleibt die Rechnung unverändert und die Erstattung „fehlgeschlagen“. Ein neuer Versuch ist möglich.
 - „Offene Raten entfallen lassen“ beendet eine Bestellung: offene Raten werden storniert, ein Abo endet heute. Bereits Bezahltes wird nur über die Erstattung zurückgezahlt.
 - Bei einem Widerruf: erst „Offene Raten entfallen lassen“, dann jede bezahlte Rechnung erstatten.

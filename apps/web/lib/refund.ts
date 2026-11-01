@@ -4,7 +4,7 @@ import type pg from "pg";
 import type Stripe from "stripe";
 import type { PaypalApi } from "./paypal";
 
-export type RefundResult = { ok: true; stornoNumber: string } | { ok: false; message: string };
+export type RefundResult = { ok: true; stornoNumber: string; scope: "voll" | "teil"; amountCents: number; currency: string } | { ok: false; message: string };
 
 async function inTx<T>(pool: pg.Pool, actor: string, fn: (c: pg.PoolClient) => Promise<T>): Promise<T> {
   const c = await pool.connect();
@@ -23,7 +23,8 @@ async function inTx<T>(pool: pg.Pool, actor: string, fn: (c: pg.PoolClient) => P
 }
 
 /**
- * Rechnung voll erstatten: anfordern, beim Anbieter auslösen, dann stornieren.
+ * Rechnung erstatten: anfordern, beim Anbieter auslösen, dann stornieren (voll) oder
+ * korrigieren (Teilbetrag). Ohne amountCents wird der ganze noch offene Betrag erstattet.
  * Die Erstattungs-ID dient dem Anbieter als Idempotenzschlüssel; ein Doppelklick
  * erstattet nicht doppelt.
  */
@@ -33,9 +34,10 @@ export async function refundInvoice(
   user: SessionUser,
   invoiceId: string,
   reason: string,
+  amountCents?: number,
 ): Promise<RefundResult> {
   const actor = `user:${user.id}`;
-  const req = await inTx(pool, actor, (c) => requestRefund(c, user, invoiceId, reason));
+  const req = await inTx(pool, actor, (c) => requestRefund(c, user, invoiceId, reason, amountCents));
   let providerRefundId: string;
   try {
     if (req.provider === "stripe") {
@@ -48,7 +50,11 @@ export async function refundInvoice(
       providerRefundId = r.id;
     } else if (req.provider === "paypal") {
       if (!apis.paypal) throw new Error("PayPal ist nicht eingerichtet");
-      const r = await apis.paypal.refundCapture(req.paymentRef, `erstattung-${req.refundId}`);
+      const r = await apis.paypal.refundCapture(
+        req.paymentRef,
+        `erstattung-${req.refundId}`,
+        req.scope === "teil" ? { amountCents: req.amountCents, currency: req.currency } : undefined,
+      );
       if (r.status !== "COMPLETED" && r.status !== "PENDING") throw Object.assign(new Error("abgelehnt"), { code: r.status });
       providerRefundId = r.id;
     } else {
@@ -61,5 +67,5 @@ export async function refundInvoice(
     return { ok: false, message: `Erstattung abgelehnt (${code}). Die Rechnung bleibt unverändert.` };
   }
   const done = await inTx(pool, actor, (c) => completeRefund(c, req.refundId, providerRefundId));
-  return { ok: true, stornoNumber: done.stornoNumber };
+  return { ok: true, stornoNumber: done.stornoNumber, scope: done.scope, amountCents: req.amountCents, currency: req.currency };
 }

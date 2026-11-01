@@ -7,7 +7,8 @@ Für alles, was nach einem Kauf außerhalb des Checkouts passieren muss, etwa de
 | Ereignis | Wann |
 | --- | --- |
 | `zahlung.eingegangen` | jede gebuchte Zahlung (`payment.first` ist bei der ersten Zahlung `true`) |
-| `zahlung.erstattet` | Erstattung bestätigt, Stornorechnung erstellt |
+| `zahlung.erstattet` | Erstattung bestätigt, Rechnung damit ganz erstattet (Stornorechnung oder letzte Korrektur) |
+| `zahlung.teilerstattet` | Teilerstattung bestätigt, Rechnungskorrektur erstellt; der Zugang bleibt bestehen |
 | `abo.beendet` | Abo nach Kündigung beendet (`ends_on` = letzter Tag) |
 | `abo.pausiert` | Abo pausiert (`starts_on`, `ends_on`; `ends_on` leer = unbefristet) |
 | `abo.fortgesetzt` | Pause beendet, Abo läuft ab `resumed_on` weiter |

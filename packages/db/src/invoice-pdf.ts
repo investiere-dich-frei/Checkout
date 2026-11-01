@@ -116,7 +116,7 @@ export async function renderInvoicePdf(d: InvoiceData): Promise<Uint8Array> {
   }
   y = Math.min(y, headY - buyer.length * 13) - 36;
 
-  text(d.kind === "storno" ? `Stornorechnung ${d.invoiceNumber}` : `Rechnung ${d.invoiceNumber}`, left, 16, bold);
+  text(`${d.kind === "storno" ? "Stornorechnung" : d.kind === "korrektur" ? "Rechnungskorrektur" : "Rechnung"} ${d.invoiceNumber}`, left, 16, bold);
   y -= 30;
 
   // Tabelle

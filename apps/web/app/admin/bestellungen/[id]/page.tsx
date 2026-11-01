@@ -189,8 +189,25 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
         {canChange(user) &&
           !h.is_manual &&
           d.invoices
-            .filter((i) => i.kind === "rechnung" && !d.invoices.some((s) => s.corrects_invoice_id === i.id))
-            .map((i) => <RefundForm key={i.id} orderId={id} invoiceId={i.id} invoiceNumber={i.invoice_number} />)}
+            .filter((i) => i.kind === "rechnung" && !d.invoices.some((s) => s.corrects_invoice_id === i.id && s.kind === "storno"))
+            .map((i) => {
+              const gross = Number(i.gross_cents);
+              // Rechnungskorrekturen (Teilerstattungen) haben negative Beträge.
+              const corrected = d.invoices.filter((s) => s.corrects_invoice_id === i.id).reduce((t, s) => t + Number(s.gross_cents), 0);
+              const left = gross + corrected;
+              if (left <= 0) return null;
+              return (
+                <RefundForm
+                  key={i.id}
+                  orderId={id}
+                  invoiceId={i.id}
+                  invoiceNumber={i.invoice_number}
+                  refundableCents={left}
+                  grossCents={gross}
+                  currency={h.currency}
+                />
+              );
+            })}
         {canChange(user) && d.invoices.length > 0 && (
           <details>
             <summary>Rechnung erneut per E-Mail senden</summary>
