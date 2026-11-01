@@ -10,7 +10,7 @@ import { markStoppedAction, takeoverAction } from "./actions";
 const day = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", dateStyle: "medium" });
 
 const ROUTE: Record<TakeoverRoute, { title: string; how: string }> = {
-  paypal: { title: "PayPal", how: "Bleibt bei PayPal. Der neue Checkout übernimmt nur die Abrechnung, die Kundin muss nichts tun. Übernahme folgt im nächsten Schritt." },
+  paypal: { title: "PayPal", how: "Bleibt bei PayPal. Der neue Checkout übernimmt nur die Abrechnung, die Kundin muss nichts tun." },
   stripe: { title: "Stripe (eigenes Konto)", how: "Karte liegt schon im eigenen Stripe-Konto. Umzug ohne Zutun der Kundin." },
   thrivepay: { title: "ThrivePay", how: "Stripe-Abo im eigenen Stripe-Konto, von Thrivecart gesteuert. Umzug ohne Zutun der Kundin." },
   unbekannt: { title: "Unbekannt", how: "Zahlungsweg nicht erkannt, einzeln ansehen." },
@@ -34,8 +34,10 @@ export default async function TakeoverPage(props: { searchParams: Promise<{ weg?
           Stand der Altdaten. {total} Abos und Ratenpläne laufen über Thrivecart, {d.summary.reduce((t, s) => t + s.takenOver, 0)} davon sind schon übernommen.
         </p>
         <p className="note">
-          „Übernehmen“ legt eine Bestellung im neuen System an, die mit der nächsten Zahlung beginnt, merkt die Karte aus Stripe und kündigt das Stripe-Abo
-          zum Ende der laufenden Periode. Danach in Thrivecart die Abrechnung beenden, ohne das Abo bei Stripe oder PayPal zu kündigen, und hier abhaken.
+          „Übernehmen“ legt eine Bestellung im neuen System an, die mit der nächsten Zahlung beginnt. Bei Stripe merkt es die Karte und kündigt das
+          Stripe-Abo zum Ende der laufenden Periode. PayPal-Abos buchen weiter bei PayPal ab; der neue Checkout verbucht die Zahlungen und stellt die
+          Rechnungen. Danach in Thrivecart die Abrechnung beenden, ohne das Abo bei Stripe oder PayPal zu kündigen (bei PayPal nie „Cancel“), und hier
+          abhaken.
         </p>
         <div className="table-scroll">
           <table className="admin-table">
@@ -126,15 +128,20 @@ export default async function TakeoverPage(props: { searchParams: Promise<{ weg?
                       </>
                     ) : (
                       canChange(user) &&
-                      (r.route === "stripe" || r.route === "thrivepay") &&
+                      r.route !== "unbekannt" &&
                       (r.status === "active" || r.status === "trial") && (
                         <ActionForm
                           action={takeoverAction}
                           className="inline-form"
                           submit="Übernehmen"
-                          confirm={`Abo von ${r.email} übernehmen? Das Stripe-Abo wird zum Ende der Periode gekündigt, danach bucht der neue Checkout ab.`}
+                          confirm={
+                            r.route === "paypal"
+                              ? `Abo von ${r.email} übernehmen? Es bucht weiter bei PayPal ab, die Rechnungen stellt ab der nächsten Zahlung der neue Checkout.`
+                              : `Abo von ${r.email} übernehmen? Das Stripe-Abo wird zum Ende der Periode gekündigt, danach bucht der neue Checkout ab.`
+                          }
                         >
                           <input type="hidden" name="subscription_id" value={r.subscriptionId} />
+                          <input type="hidden" name="route" value={r.route} />
                           <label>
                             <input type="checkbox" name="vat_id_verified" /> USt-IdNr. geprüft
                           </label>

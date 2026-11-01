@@ -94,5 +94,14 @@ sein (dann Reverse Charge). Jede Übernahme steht in `app.thrivecart_takeovers` 
 Ende in Thrivecart wird einmal nachgetragen) und im Audit-Log. Meldungen an n8n tragen
 `order.thrivecart_takeover`, damit kein neuer Kurszugang entsteht (siehe `docs/webhooks.md`).
 
-PayPal-Abos lassen sich erst übernehmen, wenn ihre Zahlungen per PayPal-Meldung verbucht werden
-(nächster Schritt). Die Datenbank schließt übernommene PayPal-Abos schon jetzt vom eigenen Einzug aus.
+### PayPal-Abos übernehmen
+
+„Übernehmen“ bei einem PayPal-Abo liest das Abo bei PayPal (muss aktiv sein und mit dem PayPal-Zugang der
+Kasse lesbar) und legt die Bestellung ab der nächsten Abbuchung laut PayPal an. Das Abo bleibt bei PayPal und
+bucht weiter selbst ab; die Kasse zieht nie selbst ein. Jede Zahlung wird verbucht, sobald sie bei PayPal
+abgeschlossen ist: per PayPal-Meldung (`PAYMENT.SALE.COMPLETED`) und zur Sicherheit im täglichen Lauf
+(`pnpm einzug` fragt bei jedem übernommenen Abo mit fälliger Zahlung die Zahlungen ab). Jede Zahlung genau
+einmal, auf die älteste offene Fälligkeit (±5 Tage), bei genau passendem Betrag; sonst „prüfen“. Zahlungen
+aus der Zeit vor dem Umzug bleiben bei Thrivecart. In Thrivecart danach nur die Abrechnung beenden, nie
+„Cancel“ (kündigt das PayPal-Abo mit). Erstattungen und Kündigungen übernommener PayPal-Abos laufen noch
+nicht über die Kasse.

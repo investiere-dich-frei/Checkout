@@ -4,11 +4,14 @@ import type { SessionUser } from "../src/auth.ts";
 import { dueCharges, extendSubscriptions, manualChargeTarget } from "../src/billing.ts";
 import {
   createTakeover,
+  handlePaypalAboPayment,
   intervalMonths,
   markThrivecartStopped,
   takeoverOfOrder,
   takeoverOverview,
+  paypalAbosToSync,
   takeoverRoute,
+  type PaypalAboPayment,
   type TakeoverInput,
 } from "../src/takeover.ts";
 import { enqueueWebhook } from "../src/webhooks.ts";
@@ -67,6 +70,7 @@ describe("Abo-Umzug: Übernahme einzelner Abos", () => {
     db = await createTestDb();
     const q = async (sql: string, params: unknown[] = []) => (await db.pool.query(sql, params)).rows[0].id as string;
     const company = await q(`insert into app.companies (legal_name, street, postal_code, city) values ('Test GmbH', 'Teststr. 1', '10115', 'Berlin') returning id`);
+    await db.pool.query(`insert into app.invoice_number_series (company_id, prefix, next_value) values ($1, 'T-', 1)`, [company]);
     const adminId = await q(`insert into app.users (email, display_name, role) values ('a@example.org', 'Admin', 'admin') returning id`);
     admin = { id: adminId, email: "a@example.org", displayName: "Admin", role: "admin", salesCode: null };
     const product = await q(
@@ -204,5 +208,44 @@ describe("Abo-Umzug: Übernahme einzelner Abos", () => {
     const o = (await takeoverOverview(db.pool, admin))!;
     const row = o.rows.find((x) => x.subscriptionId === "11")!;
     assert.deepEqual([row.takenOverOrderId, row.thrivecartStopped], [orderId, true]);
+  });
+
+  it("verbucht Zahlungen übernommener PayPal-Abos genau einmal auf die passende Fälligkeit", async () => {
+    const pay = (over: Partial<PaypalAboPayment>) =>
+      tx(db.pool, (c) =>
+        handlePaypalAboPayment(c, {
+          subscriptionId: "I-PAYPAL",
+          transactionId: "SALE1",
+          status: "COMPLETED",
+          amountCents: 9900,
+          currency: "EUR",
+          paidAt: new Date("2026-12-01T08:00:00Z"),
+          live: true,
+          source: "abfrage",
+          ...over,
+        }),
+      );
+    // Fremde und alte Zahlungen bleiben bei Thrivecart.
+    assert.equal((await pay({ subscriptionId: "I-FREMD", transactionId: "F1" })).outcome, "ignoriert");
+    assert.equal((await pay({ transactionId: "ALT", paidAt: new Date("2026-09-01T08:00:00Z") })).outcome, "ignoriert");
+    // Ausstehend: nicht festgehalten, kommt später erneut.
+    assert.equal((await pay({ transactionId: "SALE1", status: "PENDING" })).outcome, "ignoriert");
+    assert.equal((await pay({ transactionId: "FALSCH", amountCents: 9800 })).outcome, "pruefen");
+    assert.deepEqual(await paypalAbosToSync(db.pool, "2026-11-30"), []);
+    assert.deepEqual(await paypalAbosToSync(db.pool, "2026-12-01"), [{ subscriptionId: "I-PAYPAL", from: "2026-11-26" }]);
+
+    const first = await pay({});
+    assert.equal(first.outcome, "gebucht");
+    assert.match(first.invoiceNumber!, /^T-/);
+    // Dieselbe Zahlung aus dem Webhook: nichts Neues.
+    const again = await pay({ source: "webhook" });
+    assert.deepEqual([again.outcome, again.firstDelivery], ["gebucht", false]);
+    const t = await db.pool.query(`select order_id from app.thrivecart_takeovers where subscription_id = 13`);
+    const inst = await db.pool.query(`select seq, status from app.order_installments where order_id = $1 order by seq`, [t.rows[0].order_id]);
+    assert.deepEqual(inst.rows, [{ seq: 1, status: "bezahlt" }]);
+    assert.deepEqual(await paypalAbosToSync(db.pool, "2026-12-05"), []);
+    // Nächste Zahlung (3 Monate später) kommt erst nach dem Verlängern als Fälligkeit dazu.
+    await tx(db.pool, (c) => extendSubscriptions(c, "2027-03-01"));
+    assert.equal((await pay({ transactionId: "SALE2", paidAt: new Date("2027-02-28T23:30:00Z") })).outcome, "gebucht");
   });
 });

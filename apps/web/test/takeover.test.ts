@@ -3,7 +3,8 @@ import { after, before, describe, it } from "node:test";
 import type { SessionUser } from "@idf/db/auth";
 import type Stripe from "stripe";
 import { createTestDb, type TestDb } from "../../../packages/db/test/helpers.ts";
-import { stripeSource, takeOverStripeSubscription } from "../lib/takeover";
+import type { PaypalApi } from "../lib/paypal";
+import { aboPaymentFromSale, stripeSource, syncPaypalAbos, takeOverPaypalSubscription, takeOverStripeSubscription } from "../lib/takeover";
 
 // Ausgedachte Gesellschaft, Produkt und Kundin; Stripe ist nachgebaut.
 describe("Abo-Umzug über Stripe", () => {
@@ -48,6 +49,7 @@ describe("Abo-Umzug über Stripe", () => {
     db = await createTestDb();
     const q = async (sql: string, params: unknown[] = []) => (await db.pool.query(sql, params)).rows[0].id as string;
     const company = await q(`insert into app.companies (legal_name, street, postal_code, city) values ('Test GmbH', 'Teststr. 1', '10115', 'Berlin') returning id`);
+    await db.pool.query(`insert into app.invoice_number_series (company_id, prefix, next_value) values ($1, 'T-', 1)`, [company]);
     const adminId = await q(`insert into app.users (email, display_name, role) values ('a@example.org', 'Admin', 'admin') returning id`);
     admin = { id: adminId, email: "a@example.org", displayName: "Admin", role: "admin", salesCode: null };
     const product = await q(
@@ -96,7 +98,44 @@ describe("Abo-Umzug über Stripe", () => {
     assert.equal(a.rows[0].actor, `user:${admin.id}`);
   });
 
-  it("lässt PayPal-Abos noch nicht zu", async () => {
-    await assert.rejects(takeOverStripeSubscription(db.pool, fakeStripe(sub()).api, admin, { subscriptionId: "2", today }), /PayPal-Abos/);
+  it("nimmt PayPal-Abos nicht über den Stripe-Weg", async () => {
+    await assert.rejects(takeOverStripeSubscription(db.pool, fakeStripe(sub()).api, admin, { subscriptionId: "2", today }), /PayPal-Abo/);
+  });
+
+  it("PayPal-Abo: übernimmt ab der nächsten Abbuchung und verbucht die Zahlung aus der Abfrage", async () => {
+    const calls: string[] = [];
+    const api = {
+      getSubscription: async () => ({ id: "I-ABC", status: "ACTIVE", billing_info: { next_billing_time: "2026-11-20T10:00:00Z" } }),
+      subscriptionTransactions: async (id: string) => {
+        calls.push(id);
+        return [
+          { id: "SALE-ALT", status: "COMPLETED", amount_with_breakdown: { gross_amount: { currency_code: "EUR", value: "49.00" } }, time: "2026-10-20T10:00:00Z" },
+          { id: "SALE-1", status: "COMPLETED", amount_with_breakdown: { gross_amount: { currency_code: "EUR", value: "49.00" } }, time: "2026-11-20T10:05:00Z" },
+        ];
+      },
+    } as unknown as PaypalApi;
+    const r = await takeOverPaypalSubscription(db.pool, api, admin, { subscriptionId: "2", today });
+    assert.equal(r.firstDueOn, "2026-11-20");
+    assert.deepEqual(await syncPaypalAbos(db.pool, api, "2026-11-19", true), { abos: 0, booked: 0, review: 0, errors: 0 });
+    assert.deepEqual(await syncPaypalAbos(db.pool, api, "2026-11-20", true), { abos: 1, booked: 1, review: 0, errors: 0 });
+    assert.deepEqual(calls, ["I-ABC"]);
+    const inst = await db.pool.query(`select status from app.order_installments where order_id = $1`, [r.orderId]);
+    assert.deepEqual(inst.rows, [{ status: "bezahlt" }]);
+  });
+
+  it("liest Abo-Zahlungen aus der PayPal-Meldung", () => {
+    const sale = { id: "S1", state: "completed", amount: { total: "49.00", currency: "EUR" }, billing_agreement_id: "I-ABC", create_time: "2026-11-20T10:05:00Z" };
+    assert.deepEqual(aboPaymentFromSale("PAYMENT.SALE.COMPLETED", sale, true), {
+      subscriptionId: "I-ABC",
+      transactionId: "S1",
+      status: "COMPLETED",
+      amountCents: 4900,
+      currency: "EUR",
+      paidAt: new Date("2026-11-20T10:05:00Z"),
+      live: true,
+      source: "webhook",
+    });
+    assert.equal(aboPaymentFromSale("PAYMENT.CAPTURE.COMPLETED", sale, true), null);
+    assert.equal(aboPaymentFromSale("PAYMENT.SALE.COMPLETED", { ...sale, billing_agreement_id: undefined }, true), null);
   });
 });

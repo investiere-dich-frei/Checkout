@@ -2,8 +2,9 @@ import pg from "pg";
 import Stripe from "stripe";
 import { runCharging } from "../lib/charging";
 import { todayBerlin } from "../lib/format";
-import { paypal } from "../lib/paypal";
+import { isPaypalLive, paypal } from "../lib/paypal";
 import { assertTestDatabase, parseStichtag } from "../lib/stichtag";
+import { syncPaypalAbos } from "../lib/takeover";
 
 // Täglicher Einzug fälliger Raten und Abo-Zahlungen. Läuft per Timer auf dem App-Server.
 // Gibt nur Zahlen aus, keine Kundendaten.
@@ -33,7 +34,11 @@ try {
   const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, { maxNetworkRetries: 2 }) : null;
   const run = await runCharging(pool, { stripe, paypal: paypal() }, stichtag ?? todayBerlin());
   console.log("Einzug:", run);
-  process.exitCode = run.errors ? 1 : 0;
+  // Übernommene PayPal-Abos bucht PayPal selbst ab; hier werden ihre Zahlungen verbucht.
+  const api = paypal();
+  const abo = api ? await syncPaypalAbos(pool, api, stichtag ?? todayBerlin(), isPaypalLive()) : null;
+  if (abo) console.log("PayPal-Abos:", abo);
+  process.exitCode = run.errors || abo?.errors ? 1 : 0;
 } finally {
   await pool.end();
 }

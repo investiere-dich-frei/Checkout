@@ -1,6 +1,8 @@
 import { handlePaypalCapture } from "@idf/db/paypal";
+import { handlePaypalAboPayment } from "@idf/db/takeover";
 import { transaction } from "../../../../lib/db";
-import { captureFromWebhook, paypal, type PaypalWebhookEvent } from "../../../../lib/paypal";
+import { captureFromWebhook, isPaypalLive, paypal, type PaypalSale, type PaypalWebhookEvent } from "../../../../lib/paypal";
+import { aboPaymentFromSale } from "../../../../lib/takeover";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +24,14 @@ export async function POST(request: Request): Promise<Response> {
     return Response.json({ error: "Prüfung nicht möglich" }, { status: 502 });
   }
   if (!valid) return Response.json({ error: "Signatur ungültig" }, { status: 400 });
+
+  // Zahlung eines aus Thrivecart übernommenen PayPal-Abos (bucht PayPal selbst ab).
+  const abo = aboPaymentFromSale(event.event_type, event.resource as PaypalSale | undefined, isPaypalLive());
+  if (abo) {
+    const h = await transaction("system:paypal-abo", (c) => handlePaypalAboPayment(c, abo));
+    if (h.outcome === "pruefen" && h.firstDelivery) console.error(`PayPal-Abozahlung nicht verbucht, bitte prüfen: ${event.id} (${h.note ?? "ohne Hinweis"})`);
+    return Response.json({ outcome: h.outcome });
+  }
 
   const input = captureFromWebhook(event);
   const handled = await transaction("system:paypal", (c) => handlePaypalCapture(c, input));
