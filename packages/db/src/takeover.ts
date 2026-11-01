@@ -4,6 +4,7 @@ import type pg from "pg";
 import { canChange, canSeeAll } from "./admin.ts";
 import type { SessionUser } from "./auth.ts";
 import { rememberPaymentMethod } from "./billing.ts";
+import { bookPayment, foreignPayload, NO_INVOICE, paymentsModeMismatch, type Decision, type HandledEvent } from "./booking.ts";
 import { manualPriceOption } from "./manual-orders.ts";
 
 /**
@@ -343,4 +344,129 @@ export async function takeoverOfOrder(db: Db, orderId: string) {
     [orderId],
   );
   return rows[0] ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Zahlungen übernommener PayPal-Abos verbuchen
+// ---------------------------------------------------------------------------
+
+/** So viele Tage darf PayPal vor oder nach der Fälligkeit abbuchen (Zeitzonen, Wochenende, Wiederholung). */
+export const PAYPAL_ABO_SLACK_DAYS = 5;
+
+export interface PaypalAboPayment {
+  /** PayPal-Abo (I-…). */
+  subscriptionId: string;
+  /** Zahlung bei PayPal (Sale-/Transaktions-ID); dieselbe im Webhook und in der Abfrage. */
+  transactionId: string;
+  /** COMPLETED, DECLINED, PENDING, REFUNDED, PARTIALLY_REFUNDED … */
+  status: string;
+  amountCents: number;
+  currency: string;
+  paidAt: Date;
+  /** false bei Zahlungen aus der PayPal-Sandbox. */
+  live: boolean;
+  /** Woher die Meldung kam: Webhook oder tägliche Abfrage. */
+  source: "webhook" | "abfrage";
+}
+
+const addDays = (day: string, n: number) => {
+  const d = new Date(`${day}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+};
+
+/**
+ * Zahlung eines übernommenen PayPal-Abos verbuchen. Läuft in der Transaktion des Aufrufers.
+ * Je Zahlung genau einmal (gleiche ID aus Webhook und Abfrage). Gebucht wird auf die älteste
+ * offene Fälligkeit, wenn Betrag und Währung genau passen. Zahlungen aus der Zeit vor dem Umzug
+ * gehören zu Thrivecart und werden nur als „ignoriert“ abgelegt.
+ */
+export async function handlePaypalAboPayment(client: pg.ClientBase, input: PaypalAboPayment): Promise<HandledEvent> {
+  const eventId = `abo-zahlung:${input.transactionId}`;
+  const seen = await client.query<{ outcome: HandledEvent["outcome"]; outcome_note: string | null; invoice_number: string | null }>(
+    `select e.outcome, e.outcome_note, i.invoice_number from app.paypal_events e left join app.invoices i on i.id = e.invoice_id where e.id = $1`,
+    [eventId],
+  );
+  if (seen.rows[0]) return { outcome: seen.rows[0].outcome, note: seen.rows[0].outcome_note, invoiceNumber: seen.rows[0].invoice_number, firstDelivery: false };
+
+  const r = await decidePaypalAbo(client, input);
+  // Nur Ergebnisse festhalten, die sich nicht mehr ändern: eine ausstehende Zahlung kommt später erneut.
+  if (r.outcome === "ignoriert" && r.note === PENDING_NOTE) return { outcome: r.outcome, note: r.note, invoiceNumber: null, firstDelivery: true };
+  await client.query(
+    `insert into app.paypal_events (id, type, paypal_order, capture_id, outcome, outcome_note, invoice_id, payload)
+     values ($1, $2, null, $3, $4, $5, $6, $7)`,
+    [
+      eventId,
+      `abo-zahlung:${input.source}`,
+      input.transactionId,
+      r.outcome,
+      r.note,
+      r.invoiceId,
+      JSON.stringify(
+        r.foreign
+          ? foreignPayload(eventId, "abo-zahlung")
+          : { subscription_id: input.subscriptionId, status: input.status, amount_cents: input.amountCents, currency: input.currency, paid_at: input.paidAt },
+      ),
+    ],
+  );
+  return { outcome: r.outcome, note: r.note, invoiceNumber: r.invoiceNumber, firstDelivery: true };
+}
+
+const PENDING_NOTE = "Zahlung bei PayPal noch nicht abgeschlossen";
+
+async function decidePaypalAbo(client: pg.ClientBase, input: PaypalAboPayment): Promise<Decision> {
+  const t = (
+    await client.query<{ order_id: string; first_due_on: string; order_status: string; currency: string }>(
+      `select t.order_id, t.first_due_on::text, o.status order_status, o.currency
+         from app.thrivecart_takeovers t join app.orders o on o.id = t.order_id
+        where t.route = 'paypal' and t.remote_subscription_id = $1`,
+      [input.subscriptionId],
+    )
+  ).rows[0];
+  // PayPal-Abos, die (noch) nicht übernommen sind, rechnet weiter Thrivecart ab.
+  if (!t) return { outcome: "ignoriert", note: "PayPal-Abo nicht übernommen", ...NO_INVOICE, foreign: true };
+  const status = input.status.toUpperCase();
+  if (status === "PENDING") return { outcome: "ignoriert", note: PENDING_NOTE, ...NO_INVOICE };
+  if (status === "DECLINED" || status === "FAILED") return { outcome: "ignoriert", note: `Zahlung bei PayPal ${status}`, ...NO_INVOICE };
+  const paidDay = berlinDay(input.paidAt);
+  if (paidDay < addDays(t.first_due_on, -PAYPAL_ABO_SLACK_DAYS)) {
+    return { outcome: "ignoriert", note: "Zahlung aus der Zeit vor dem Umzug (Thrivecart)", ...NO_INVOICE };
+  }
+  if (status !== "COMPLETED") return { outcome: "pruefen", note: `Status ${status}`, ...NO_INVOICE };
+  if (t.order_status === "storniert" || t.order_status === "erstattet") return { outcome: "pruefen", note: "Bestellung ist beendet", ...NO_INVOICE };
+  const known = await client.query(`select 1 from app.payments where provider = 'paypal' and provider_ref = $1`, [input.transactionId]);
+  if (known.rowCount) return { outcome: "schon_gebucht", note: null, ...NO_INVOICE };
+
+  const inst = (
+    await client.query<{ id: string; gross_cents: string }>(
+      `select id, gross_cents from app.order_installments
+        where order_id = $1 and status in ('offen', 'fehlgeschlagen') and due_date <= $2::date
+        order by seq limit 1`,
+      [t.order_id, addDays(paidDay, PAYPAL_ABO_SLACK_DAYS)],
+    )
+  ).rows[0];
+  if (!inst) return { outcome: "pruefen", note: "Keine offene Fälligkeit zu dieser PayPal-Zahlung", ...NO_INVOICE };
+  const mismatch = await paymentsModeMismatch(client, inst.id, input.live);
+  if (mismatch) return mismatch;
+  const currency = input.currency.toUpperCase();
+  if (currency !== t.currency || input.amountCents !== Number(inst.gross_cents)) {
+    return { outcome: "pruefen", note: `Erhalten ${input.amountCents} ${currency}, erwartet ${inst.gross_cents} ${t.currency}`, ...NO_INVOICE };
+  }
+  return bookPayment(client, { installmentId: inst.id, provider: "paypal", providerRef: input.transactionId, paidAt: input.paidAt });
+}
+
+/** Übernommene PayPal-Abos mit offener, fälliger Zahlung, und ab wann bei PayPal nachgesehen wird. */
+export async function paypalAbosToSync(db: Db, today: string): Promise<{ subscriptionId: string; from: string }[]> {
+  const { rows } = await db.query<{ remote_subscription_id: string; from_day: string }>(
+    `select t.remote_subscription_id, (min(i.due_date) - $2::int)::text from_day
+       from app.thrivecart_takeovers t
+       join app.orders o on o.id = t.order_id
+       join app.order_installments i on i.order_id = t.order_id
+      where t.route = 'paypal' and o.status not in ('storniert', 'erstattet')
+        and i.status in ('offen', 'fehlgeschlagen') and i.due_date <= $1::date
+      group by t.remote_subscription_id
+      order by t.remote_subscription_id`,
+    [today, PAYPAL_ABO_SLACK_DAYS],
+  );
+  return rows.map((r) => ({ subscriptionId: r.remote_subscription_id, from: r.from_day }));
 }

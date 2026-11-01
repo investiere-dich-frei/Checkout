@@ -78,6 +78,29 @@ export class PaypalApi {
     return (await res.json()) as T;
   }
 
+  private async get<T>(path: string): Promise<T> {
+    const res = await this.fetchFn(`${this.config.baseUrl}${path}`, {
+      method: "GET",
+      headers: { authorization: `Bearer ${await this.accessToken()}`, "content-type": "application/json" },
+    });
+    if (!res.ok) throw new PaypalError(`PayPal antwortet mit ${res.status} auf ${path.split("?")[0]}`, res.status);
+    return (await res.json()) as T;
+  }
+
+  /** PayPal-Abo (I-…) lesen: Status und nächste Abbuchung. */
+  getSubscription(id: string): Promise<PaypalSubscription> {
+    if (!/^I-[A-Z0-9]{6,30}$/.test(id)) throw new PaypalError("Ungültige PayPal-Abo-ID", 400);
+    return this.get(`/v1/billing/subscriptions/${id}`);
+  }
+
+  /** Zahlungen eines PayPal-Abos im Zeitraum. */
+  async subscriptionTransactions(id: string, from: Date, to: Date): Promise<PaypalSubscriptionTransaction[]> {
+    if (!/^I-[A-Z0-9]{6,30}$/.test(id)) throw new PaypalError("Ungültige PayPal-Abo-ID", 400);
+    const q = new URLSearchParams({ start_time: from.toISOString(), end_time: to.toISOString() });
+    const r = await this.get<{ transactions?: PaypalSubscriptionTransaction[] }>(`/v1/billing/subscriptions/${id}/transactions?${q}`);
+    return r.transactions ?? [];
+  }
+
   /** PayPal-Bestellung für eine Fälligkeit anlegen. */
   createOrder(input: {
     installmentId: string;
@@ -173,6 +196,28 @@ export class PaypalApi {
     });
     return res.verification_status === "SUCCESS";
   }
+}
+
+export interface PaypalSubscription {
+  id: string;
+  status: string;
+  billing_info?: { next_billing_time?: string };
+}
+
+export interface PaypalSubscriptionTransaction {
+  id: string;
+  status: string;
+  amount_with_breakdown?: { gross_amount?: { currency_code: string; value: string } };
+  time?: string;
+}
+
+/** Sale aus der Webhook-Meldung PAYMENT.SALE.* eines PayPal-Abos. */
+export interface PaypalSale {
+  id: string;
+  state: string;
+  amount: { total: string; currency: string };
+  billing_agreement_id?: string;
+  create_time?: string;
 }
 
 export interface PaypalCapture {
