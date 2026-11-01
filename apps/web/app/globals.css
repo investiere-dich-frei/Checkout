@@ -407,6 +407,81 @@ body:has(.checkout-page) .site-footer-inner { max-width: 980px; width: 90%; padd
   .float input:placeholder-shown { padding: 11.66px; }
 }
 
+/*
+ * Mehr Tiefe (Wunsch Christian 01.11.2026, Vorbild Homepage): weiches Licht im
+ * Hintergrund, mehrschichtige Schatten, versetzte Rahmen hinter Bildern, schwebende
+ * Karten und Knöpfe, die beim Darüberfahren leicht anheben.
+ */
+.checkout-page {
+  --depth-1: 0 1px 2px rgba(54, 54, 54, 0.06), 0 4px 12px rgba(54, 54, 54, 0.06);
+  --depth-2: 0 2px 4px rgba(54, 54, 54, 0.05), 0 12px 28px rgba(54, 54, 54, 0.10), 0 32px 64px -16px rgba(54, 54, 54, 0.18);
+  --depth-3: 0 4px 8px rgba(54, 54, 54, 0.05), 0 24px 48px rgba(54, 54, 54, 0.12), 0 60px 120px -30px rgba(162, 103, 102, 0.35);
+  background:
+    radial-gradient(1100px 700px at 12% 8%, rgba(255, 255, 255, 0.75), transparent 60%),
+    radial-gradient(900px 900px at 95% 55%, rgba(255, 204, 204, 0.35), transparent 60%),
+    radial-gradient(800px 700px at 5% 92%, rgba(210, 158, 159, 0.22), transparent 60%),
+    var(--muted);
+}
+.cp-hero::before { box-shadow: 0 30px 80px rgba(162, 103, 102, 0.35), inset 0 10px 30px rgba(0, 0, 0, 0.08); }
+
+/* Bilder: Schatten und versetzter Rahmen */
+.cp-hero-image { box-shadow: var(--depth-3); }
+.cp-hero-media::before {
+  content: ""; position: absolute; inset: 22px -22px -22px 22px; border: 2px solid var(--accent-light); border-radius: 18px; z-index: 0; pointer-events: none;
+}
+.cp-middle-media { position: relative; }
+.cp-middle-media::before {
+  content: ""; position: absolute; inset: -18px 18px 18px -18px; background: var(--soft-rose); opacity: 0.45; border-radius: 18px; z-index: 0;
+}
+.cp-middle-media .cp-image, .cp-content .cp-image { position: relative; z-index: 1; border-radius: 14px; box-shadow: var(--depth-2); }
+
+/* Aufzählung als schwebende, halbtransparente Karte */
+.cp-middle-split > div:last-child {
+  background: rgba(255, 255, 255, 0.62); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 18px; padding: 32px; box-shadow: var(--depth-2);
+}
+
+/* Bestellbox: mehrschichtiger Schatten, Lichtkante oben, Zusammenfassung schwebt */
+.cp-checkout {
+  box-shadow: var(--depth-3);
+  background: linear-gradient(180deg, #dbadae 0%, var(--cart) 140px, var(--cart) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+.cp-checkout section[aria-labelledby="preis"] { box-shadow: var(--depth-1); }
+.cp-checkout input[type="text"], .cp-checkout input[type="email"], .cp-checkout select { box-shadow: 0 1px 2px rgba(54, 54, 54, 0.06), inset 0 1px 2px rgba(54, 54, 54, 0.04); }
+.cp-checkout input:focus, .cp-checkout select:focus { box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.7), 0 4px 12px rgba(54, 54, 54, 0.10); }
+
+/* Knöpfe heben sich ab und beim Darüberfahren leicht an */
+.cp-cta, .cp-checkout button.order {
+  box-shadow: 0 2px 4px rgba(162, 103, 102, 0.25), 0 12px 28px -8px rgba(162, 103, 102, 0.65);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+.checkout-page .cp-cta:hover, .checkout-page button.order:hover:not(:disabled) {
+  background: var(--accent-dark); transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(162, 103, 102, 0.25), 0 18px 36px -10px rgba(162, 103, 102, 0.75);
+}
+
+/* Emilia: weicher Kreis hinter dem Foto, Foto mit Schattenkante */
+.cp-bottom { background: transparent; }
+.cp-person > img { position: relative; z-index: 1; filter: drop-shadow(0 24px 40px rgba(54, 54, 54, 0.18)); }
+.cp-bottom .cp-person { position: relative; }
+.cp-bottom .cp-person:has(> img)::before {
+  content: ""; position: absolute; left: 4%; top: 12%; width: 42%; aspect-ratio: 1; border-radius: 50%; z-index: 0;
+  background: radial-gradient(circle at 35% 30%, #fff 0%, var(--soft-rose) 55%, var(--accent-light) 100%); opacity: 0.55;
+}
+.cp-quote { background: rgba(255, 255, 255, 0.6); border-radius: 18px; padding: 24px 28px; box-shadow: var(--depth-1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cp-cta, .cp-checkout button.order { transition: none; }
+  .checkout-page .cp-cta:hover, .checkout-page button.order:hover:not(:disabled) { transform: none; }
+}
+@media (max-width: 560px) {
+  .cp-hero-media::before { inset: 14px -12px -14px 14px; }
+  .cp-middle-media::before { inset: -10px 10px 10px -10px; }
+  .cp-middle-split > div:last-child { padding: 22px; }
+  .cp-checkout { box-shadow: none; border: 0; }
+}
+
 /* Editor der Kaufseiten */
 main:has(.page-editor) .admin-body { max-width: 1600px; }
 .page-editor { display: grid; grid-template-columns: minmax(340px, 480px) 1fr; gap: 24px; align-items: start; }
