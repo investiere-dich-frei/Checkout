@@ -294,7 +294,7 @@ body:has(.checkout-page) { background: var(--muted); }
 .cp-checkout .cp-heading { font-size: 26px; line-height: 1.1; }
 .cp-checkout .cp-text, .cp-checkout .cp-trust li { font-size: 15px; }
 .cp-checkout .card { background: none; box-shadow: none; padding: 0; margin: 0 0 40px; border-radius: 0; border: 0; }
-.cp-checkout .card + .card { border-top: 0; padding-top: 0; }
+.cp-checkout .card + .card { border-top: 0; }
 .cp-checkout .card h2 { font-family: var(--font-body); font-size: 20px; font-weight: 700; padding-bottom: 20px; margin: 0; line-height: 1.3; }
 .cp-checkout legend { color: var(--text); text-transform: none; letter-spacing: normal; font-size: 14px; }
 .cp-checkout .grid { grid-template-columns: 1fr; gap: 21px; }
@@ -481,6 +481,13 @@ body:has(.checkout-page) .site-footer-inner { max-width: 980px; width: 90%; padd
   .cp-middle-split > div:last-child { padding: 22px; }
   .cp-checkout { box-shadow: none; border: 0; }
 }
+
+/* Rückmeldung Christian 01.11.2026: Zusammenfassung mit mehr Luft oben, Zustimmung kontrastreicher */
+.cp-checkout section[aria-labelledby="preis"] { padding: 28px 24px 24px; }
+.cp-checkout section[aria-labelledby="preis"] h2 { padding-top: 2px; }
+.cp-checkout .check, .cp-checkout .note, .cp-checkout details summary, .cp-checkout .radio-row label { color: #2b2b2b; font-weight: 500; }
+.cp-checkout .check a, .cp-checkout .note a { color: #2b2b2b; font-weight: 600; }
+.cp-checkout input[type="checkbox"] { border-color: #8f7a79; }
 
 /* Editor der Kaufseiten */
 main:has(.page-editor) .admin-body { max-width: 1600px; }
