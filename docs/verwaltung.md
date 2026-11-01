@@ -119,3 +119,15 @@ Kartenzahlung gibt es „Karte bzw. Zahlungsart ändern“: neue Zahlungsart per
 abgebucht), sie gilt ab dann für die Einzüge. Ist eine fällige Rate fehlgeschlagen, wird sie direkt danach
 mit der neuen Karte eingezogen (Audit-Log: `kundin:kundenbereich`). PayPal-Abos verwaltet die Kundin in
 ihrem PayPal-Konto.
+
+## Buchhaltung (Admin, Prüfung)
+
+Unter **Buchhaltung** wählt man einen Zeitraum (Vorschläge: Vormonat, Quartale, Jahr). Grundlage sind die
+ausgestellten Rechnungen nach Rechnungsdatum, mit dem Stand bei Ausstellung; Stornorechnungen zählen
+negativ im Zeitraum ihrer Ausstellung. Alt-Rechnungen aus Thrivecart sind nicht enthalten.
+
+- **Steuerbericht** je Land, Steuersatz, Hinweis (steuerfrei, Reverse Charge) und Kundenart. Zeilen mit
+  „OSS“ (EU-Ausland, Privatkundin, mit Umsatzsteuer) gehören in die OSS-Meldung beim BZSt.
+- **Rechnungsliste (CSV)**: eine Zeile je Rechnungsposition mit Kundin, Land, USt-IdNr., Satz, Netto,
+  USt, Brutto, Zahlungsart und Zahlungsreferenz. Semikolon, Dezimalkomma, UTF-8 mit BOM (Excel, DATEV).
+- **Steuerbericht (CSV)** und **alle Rechnungs-PDFs (ZIP)**, höchstens 2.000 Rechnungen je ZIP.
