@@ -1,6 +1,7 @@
 "use server";
 
 import { canChange } from "@idf/db/admin";
+import { PauseError, pauseSubscription, resumeSubscription } from "@idf/db/billing";
 import { resendInvoiceMail } from "@idf/db/customer-mails";
 import { CustomerError, updateCustomerContact } from "@idf/db/customers";
 import { revalidatePath } from "next/cache";
@@ -86,4 +87,34 @@ export async function chargeNowAction(_prev: FormState, form: FormData): Promise
     console.error("Einzug von Hand fehlgeschlagen", (err as Error).message);
     return { message: "Einzug nicht möglich. Bitte später erneut versuchen." };
   }
+}
+
+export async function pauseSubscriptionAction(_prev: FormState, form: FormData): Promise<FormState> {
+  const user = await requireUser();
+  if (!canChange(user)) return { message: "Keine Berechtigung." };
+  const orderId = text(form, "order_id");
+  const startsOn = text(form, "starts_on");
+  const endsOn = text(form, "ends_on") || null;
+  const day = /^\d{4}-\d{2}-\d{2}$/;
+  if (!day.test(startsOn) || (endsOn && !day.test(endsOn))) return { message: "Bitte gültige Daten angeben." };
+  try {
+    const n = await transaction(`user:${user.id}`, (c) =>
+      pauseSubscription(c, { orderId, startsOn, endsOn, reason: text(form, "reason"), actor: `user:${user.id}`, today: todayBerlin() }),
+    );
+    revalidatePath(`/admin/bestellungen/${orderId}`);
+    return { ok: true, message: `Pausiert.${n ? ` ${n} Zahlung${n === 1 ? " entfällt" : "en entfallen"}.` : ""}` };
+  } catch (err) {
+    if (err instanceof PauseError) return { message: err.message };
+    console.error("Pause nicht gespeichert", (err as Error).message);
+    return { message: "Pausieren nicht möglich. Bitte später erneut versuchen." };
+  }
+}
+
+export async function resumeSubscriptionAction(_prev: FormState, form: FormData): Promise<FormState> {
+  const user = await requireUser();
+  if (!canChange(user)) return { message: "Keine Berechtigung." };
+  const orderId = text(form, "order_id");
+  const ok = await transaction(`user:${user.id}`, (c) => resumeSubscription(c, { orderId, actor: `user:${user.id}`, today: todayBerlin() }));
+  revalidatePath(`/admin/bestellungen/${orderId}`);
+  return ok ? { ok: true, message: "Fortgesetzt. Die nächste Zahlung wird zum Fälligkeitstag eingezogen." } : { message: "Es ist keine Pause offen." };
 }

@@ -1,10 +1,11 @@
 import { canChange, canSeeAll, orderDetail } from "@idf/db/admin";
+import { listPauses } from "@idf/db/billing";
 import { notFound } from "next/navigation";
 import { pool } from "../../../../lib/db";
 import { formatCents, formatDay, formatRate, todayBerlin } from "../../../../lib/format";
 import { requireUser } from "../../../../lib/session";
 import { cancelOrderAction, endSubscriptionAction } from "../../actions";
-import { chargeNowAction, resendInvoiceAction } from "../../kunden/actions";
+import { chargeNowAction, pauseSubscriptionAction, resendInvoiceAction, resumeSubscriptionAction } from "../../kunden/actions";
 import { ActionForm } from "../../produkte/forms";
 import { RefundForm } from "./refund-form";
 
@@ -20,6 +21,10 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
   const h = d.head;
   const name = h.company_name || [h.first_name, h.last_name].filter(Boolean).join(" ");
   const today = todayBerlin();
+  const pauses = h.is_abo ? await listPauses(pool(), id) : [];
+  const openPause = pauses.find((p) => !p.endedBy && (p.endsOn === null || p.endsOn >= today));
+  const pauseText = (p: { startsOn: string; endsOn: string | null }) =>
+    p.endsOn !== null && p.endsOn < p.startsOn ? `${formatDay(p.startsOn)} (aufgehoben)` : `${formatDay(p.startsOn)} bis ${p.endsOn ? formatDay(p.endsOn) : "auf Weiteres"}`;
 
   return (
     <>
@@ -102,6 +107,39 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
             <button type="submit">Offene Raten entfallen lassen (Bestellung beenden)</button>
           </form>
         )}
+        {h.is_abo && pauses.length > 0 && (
+          <>
+            <h3>Pausen</h3>
+            <ul>
+              {pauses.map((p) => (
+                <li key={p.id}>
+                  {pauseText(p)}
+                  {p.reason && <> · {p.reason}</>}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+        {h.is_abo && canChange(user) && !h.ends_on && h.status !== "storniert" && h.status !== "erstattet" &&
+          (openPause ? (
+            <ActionForm action={resumeSubscriptionAction} className="inline-form" submit="Pause beenden, Abo fortsetzen" confirm="Pause beenden? Ab heute fällige Zahlungen werden wieder eingezogen.">
+              <input type="hidden" name="order_id" value={id} />
+            </ActionForm>
+          ) : (
+            <details>
+              <summary>Abo pausieren</summary>
+              <p className="note">Zahlungen, die in die Pause fallen, entfallen. Danach läuft das Abo zum bisherigen Rhythmus weiter. Ohne Enddatum bis zum Fortsetzen.</p>
+              <ActionForm action={pauseSubscriptionAction} className="inline-form" submit="Pausieren">
+                <input type="hidden" name="order_id" value={id} />
+                <label htmlFor="starts_on">Ab</label>
+                <input id="starts_on" name="starts_on" type="date" min={today} defaultValue={today} required />
+                <label htmlFor="pause_ends_on">Bis einschließlich (optional)</label>
+                <input id="pause_ends_on" name="ends_on" type="date" min={today} />
+                <label htmlFor="reason">Grund (optional)</label>
+                <input id="reason" name="reason" type="text" placeholder="z. B. Elternzeit" />
+              </ActionForm>
+            </details>
+          ))}
         {h.is_abo && (
           <p>
             {h.ends_on ? (

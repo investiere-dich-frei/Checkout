@@ -43,6 +43,12 @@ Unter `/admin` (nur mit Anmeldung).
   die gespeicherte Zahlungsart einziehen, auch nach drei Fehlversuchen des täglichen Laufs. Nicht vor
   Fälligkeit, nicht solange ein Einzug unterwegs ist, nicht bei Bestellungen per Rechnung. Der Versuch steht
   mit der klickenden Person im Audit-Log; die Rechnung entsteht wie sonst, wenn der Anbieter bestätigt.
+- **Abo pausieren** (nur Admin, Bestellseite, nur Abos): ab einem Tag (frühestens heute) bis einschließlich
+  eines Tages oder unbefristet. Fälligkeiten in der Pause werden „erlassen“ (kein Einzug, keine Rechnung;
+  Betrag und Termin bleiben stehen), danach läuft das Abo im bestellten Rhythmus weiter. „Pause beenden“
+  setzt ab heute fort; eine noch nicht begonnene Pause wird aufgehoben. Pausen werden nie gelöscht
+  (`app.subscription_pauses`, Migration 0025), n8n bekommt `abo.pausiert` und `abo.fortgesetzt`.
+  Raten- und Anzahlungspläne lassen sich nicht pausieren.
 
 Jede Änderung (Kündigung erledigt, Abo beendet) steht mit der handelnden Person im Audit-Log.
 
