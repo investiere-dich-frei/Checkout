@@ -64,6 +64,7 @@ const BLOCKED: Record<string, string> = {
   per_rechnung: "Diese Bestellung wird per Überweisung bezahlt.",
   bestellung_beendet: "Die Bestellung ist storniert oder erstattet.",
   keine_zahlungsart: "Es ist keine Zahlungsart gespeichert. Die Kundin muss über die Bestellseite zahlen.",
+  paypal_abo: "Dieses Abo bucht PayPal selbst ab. Die Zahlung kommt von PayPal.",
   anbieter_fehlt: "Der Zahlungsanbieter ist auf dem Server nicht eingerichtet.",
 };
 

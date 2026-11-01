@@ -99,7 +99,7 @@ export function paymentNote(input: {
 }
 
 /** Verdeckte Preisoption des Produkts für vereinbarte Beträge; wird beim ersten Mal angelegt. */
-async function manualPriceOption(client: pg.ClientBase, productId: string): Promise<string> {
+export async function manualPriceOption(client: pg.ClientBase, productId: string): Promise<string> {
   await client.query(
     `insert into app.price_options (product_id, label, kind, currency, amount_cents, amount_basis, active, manual_only)
      values ($1, 'Manuelle Bestellung (Betrag laut Rechnung)', 'einmal', 'EUR', 0, 'brutto', false, true)
