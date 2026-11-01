@@ -107,6 +107,9 @@ export async function recordInstallmentPayment(client: pg.ClientBase, input: Pay
   if (inst.order_status === "storniert" || inst.order_status === "erstattet") {
     throw new PaymentError(`Bestellung ist ${inst.order_status}`);
   }
+  // Rechnungskauf: Die Rechnung gibt es schon; Zahlungen verbucht die Verwaltung von Hand.
+  const manual = await client.query(`select 1 from app.manual_orders where order_id = $1`, [inst.order_id]);
+  if (manual.rowCount) throw new PaymentError("Bestellung per Rechnung: Zahlung nur per Überweisung");
 
   const payment = await client.query<{ id: string }>(
     `insert into app.payments (order_id, provider, provider_ref, status, currency, amount_cents, paid_at)

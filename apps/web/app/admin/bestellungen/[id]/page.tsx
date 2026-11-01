@@ -28,6 +28,12 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
           Bestellung {id} · {dateTime.format(h.created_at)} · Status {h.status}
           {h.seller && <> · Vertrieb: {h.seller}</>}
         </p>
+        {h.is_manual && (
+          <p className="notice-box">
+            Bestellung per Rechnung (Überweisung). Zahlungen, Storno und Rückzahlung laufen über{" "}
+            <a href={`/admin/manuell/${id}`}>Manuelle Bestellungen</a>.
+          </p>
+        )}
         <h2>Kundin</h2>
         <p>
           {name}
@@ -71,7 +77,7 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
             ))}
           </tbody>
         </table>
-        {canChange(user) && d.installments.some((i) => i.status === "offen" || i.status === "fehlgeschlagen") && (
+        {canChange(user) && !h.is_manual && d.installments.some((i) => i.status === "offen" || i.status === "fehlgeschlagen") && (
           <form action={cancelOrderAction} className="inline-form">
             <input type="hidden" name="order_id" value={id} />
             <button type="submit">Offene Raten entfallen lassen (Bestellung beenden)</button>
@@ -114,6 +120,7 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
           </table>
         )}
         {canChange(user) &&
+          !h.is_manual &&
           d.invoices
             .filter((i) => i.kind === "rechnung" && !d.invoices.some((s) => s.corrects_invoice_id === i.id))
             .map((i) => <RefundForm key={i.id} orderId={id} invoiceId={i.id} invoiceNumber={i.invoice_number} />)}

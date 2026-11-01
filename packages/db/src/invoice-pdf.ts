@@ -46,7 +46,7 @@ const safe = (s: string) => s.replace(/[  ]/g, " ").replace(/[–—]/g, "-")
 
 function wrap(text: string, font: PDFFont, size: number, width: number): string[] {
   const out: string[] = [];
-  for (const para of safe(text).split("\n")) {
+  for (const para of text.split("\n").map(safe)) {
     let line = "";
     for (const word of para.split(" ")) {
       const next = line ? `${line} ${word}` : word;

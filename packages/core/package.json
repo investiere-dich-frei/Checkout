@@ -5,7 +5,8 @@
   "exports": {
     "./tax": "./src/tax.ts",
     "./pricing": "./src/pricing.ts",
-    "./discount": "./src/discount.ts"
+    "./discount": "./src/discount.ts",
+    "./manual-plan": "./src/manual-plan.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",

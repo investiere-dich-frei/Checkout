@@ -49,6 +49,8 @@ export async function nextPaymentTarget(
        join app.price_options po on po.id = it.price_option_id
       where i.order_id = $1 and i.status in ('offen', 'fehlgeschlagen') and i.due_date <= $2
         and o.status not in ('storniert', 'erstattet')
+        -- Bestellung per Rechnung: Bezahlt wird per Überweisung, nicht auf der Bestellseite.
+        and not exists (select 1 from app.manual_orders m where m.order_id = o.id)
       order by i.seq
       limit 1`,
     [orderId, dueBy],
@@ -97,6 +99,7 @@ export async function cardSetupTarget(client: pg.Pool | pg.ClientBase, orderId: 
        join app.customers c on c.id = o.customer_id
        join app.order_installments i on i.order_id = o.id
       where o.id = $1 and o.status not in ('storniert', 'erstattet') and i.status in ('offen', 'fehlgeschlagen')
+        and not exists (select 1 from app.manual_orders m where m.order_id = o.id)
         and not exists (select 1 from app.order_installments b where b.order_id = o.id and b.status = 'bezahlt')
         and not exists (select 1 from app.saved_payment_methods s where s.customer_id = o.customer_id and s.revoked_at is null)
       order by i.seq

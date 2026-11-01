@@ -94,6 +94,8 @@ export async function dueCharges(client: Db, today: string): Promise<DueCharge[]
       -- Ab der zweiten Zahlung; bei Probezeit ohne Anzahlung (erste Zahlung 0) auch die erste.
       where i.status in ('offen', 'fehlgeschlagen') and (i.seq > 1 or po.amount_cents = 0) and i.due_date <= $1
         and o.status not in ('storniert', 'erstattet')
+        -- Bestellungen per Rechnung zahlt die Kundin selbst per Überweisung.
+        and not exists (select 1 from app.manual_orders m where m.order_id = o.id)
       order by i.due_date, i.id`,
     [today],
   );

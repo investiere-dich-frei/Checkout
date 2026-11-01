@@ -155,3 +155,132 @@ export async function enqueueInvoiceMail(client: pg.ClientBase, invoiceId: strin
   );
   return mail.rows[0]!.id;
 }
+
+const MODEL_TEXT: Record<string, string> = {
+  einmal: "Einmalzahlung",
+  anzahlung_rest: "Anzahlung und Restzahlung",
+  anzahlung_raten: "Anzahlung und Raten",
+  raten: "Ratenzahlung",
+};
+
+/**
+ * Manuelle Bestellung: Rechnung vorab mit Zahlungsplan und Bankverbindung. Die Mail ist zugleich
+ * die Vertragsbestätigung auf einem dauerhaften Datenträger, deshalb mit Widerrufsbelehrung und AGB
+ * im Wortlaut der Fassung, die zur Bestellung gehört. Das PDF hängt der Postausgang an.
+ */
+export async function enqueueManualInvoiceMail(client: pg.ClientBase, orderId: string): Promise<string> {
+  const { rows } = await client.query(
+    `select m.invoice_id, m.payment_model, m.pay_by::text pay_by, i.invoice_number, i.gross_cents, o.currency, p.name product, p.immediate_access,
+            ((o.created_at at time zone 'Europe/Berlin')::date + $2::int)::text access_from,
+            cu.email, cu.first_name, cu.last_name, cu.company_name,
+            co.legal_name, co.street, co.postal_code, co.city, co.vat_id, co.register_info, co.bank_name, co.iban, co.bic,
+            agb.content agb_text, agb.version agb_version, wid.content widerruf_text, wid.version widerruf_version,
+            dsg.version datenschutz_version
+       from app.manual_orders m
+       join app.invoices i on i.id = m.invoice_id
+       join app.orders o on o.id = m.order_id
+       join app.customers cu on cu.id = o.customer_id
+       join app.companies co on co.id = o.company_id
+       join app.order_items it on it.order_id = o.id
+       join app.price_options po on po.id = it.price_option_id
+       join app.products p on p.id = po.product_id
+       join app.legal_text_versions agb on agb.id = o.agb_version_id
+       join app.legal_text_versions wid on wid.id = o.withdrawal_version_id
+       join app.legal_text_versions dsg on dsg.id = o.privacy_version_id
+      where m.order_id = $1`,
+    [orderId, ACCESS_DELAY_DAYS],
+  );
+  const o = rows[0];
+  if (!o) throw new Error("Manuelle Bestellung gibt es nicht");
+  const inst = await client.query<{ seq: number; due: string; gross_cents: string; status: string }>(
+    `select seq, greatest(due_date, $2::date)::text due, gross_cents, status from app.order_installments where order_id = $1 order by seq`,
+    [orderId, o.pay_by],
+  );
+  const open = inst.rows.filter((i) => i.status !== "bezahlt");
+  const lines = [
+    salutation(o),
+    "",
+    `vielen Dank für deine Bestellung bei ${o.legal_name}. Anbei deine Rechnung ${o.invoice_number} über ${euro(Number(o.gross_cents), o.currency)} für ${o.product}.`,
+    "",
+  ];
+  if (open.length === 0) {
+    lines.push("Der Betrag ist bereits bezahlt. Danke!");
+  } else {
+    if (o.payment_model === "einmal") {
+      lines.push(`Bitte überweise den Betrag bis zum ${day(open[0]!.due)}.`);
+    } else {
+      lines.push(`Zahlungsplan (${MODEL_TEXT[o.payment_model] ?? o.payment_model}):`);
+      for (const i of inst.rows) {
+        lines.push(`- ${i.seq}. Zahlung: ${euro(Number(i.gross_cents), o.currency)}, ${i.status === "bezahlt" ? "bezahlt" : `fällig ${i.seq === 1 ? "bis" : "am"} ${day(i.due)}`}`);
+      }
+    }
+    lines.push(
+      "",
+      "Bankverbindung",
+      `Kontoinhaber: ${o.legal_name}`,
+      ...(o.bank_name ? [`Bank: ${o.bank_name}`] : []),
+      `IBAN: ${String(o.iban).replace(/(.{4})/g, "$1 ").trim()}`,
+      ...(o.bic ? [`BIC: ${o.bic}`] : []),
+      `Verwendungszweck: ${o.invoice_number}`,
+    );
+  }
+  lines.push(
+    "",
+    "Dein Start",
+    o.immediate_access
+      ? "Deinen Zugang bekommst du, sobald deine Zahlung eingegangen ist."
+      : `Deinen Zugang bekommst du, sobald deine ${o.payment_model === "einmal" ? "" : "erste "}Zahlung eingegangen ist, frühestens am ${day(o.access_from)}, am Tag nach Ablauf der Widerrufsfrist.`,
+    "",
+    "Kündigen oder widerrufen kannst du jederzeit über die Links „Verträge hier kündigen“ und „Vertrag widerrufen“ auf unseren Bestellseiten.",
+    "",
+    `Widerrufsbelehrung (Fassung ${o.widerruf_version})`,
+    "",
+    o.widerruf_text,
+    "",
+    `Allgemeine Geschäftsbedingungen (Fassung ${o.agb_version})`,
+    "",
+    o.agb_text,
+    "",
+    `Es gilt unsere Datenschutzerklärung in der Fassung ${o.datenschutz_version}.`,
+    "",
+    companyFooter(o),
+  );
+  const mail = await client.query<{ id: string }>(
+    `insert into app.mail_outbox (purpose, to_address, subject, body_text, related_id) values ('rechnung', $1, $2, $3, $4) returning id`,
+    [String(o.email).trim().toLowerCase(), `Deine Rechnung ${o.invoice_number}`, lines.join("\n"), o.invoice_id],
+  );
+  return mail.rows[0]!.id;
+}
+
+/** Manuelle Bestellung storniert: Stornorechnung an die Kundin, mit Hinweis zur Rückzahlung. */
+export async function enqueueManualStornoMail(client: pg.ClientBase, orderId: string): Promise<string> {
+  const { rows } = await client.query(
+    `select m.storno_invoice_id, m.refund_due_cents, s.invoice_number storno_number, s.issue_date::text storno_date, i.invoice_number,
+            o.currency, s.customer_snapshot, s.company_snapshot
+       from app.manual_orders m
+       join app.invoices s on s.id = m.storno_invoice_id
+       join app.invoices i on i.id = m.invoice_id
+       join app.orders o on o.id = m.order_id
+      where m.order_id = $1`,
+    [orderId],
+  );
+  const o = rows[0];
+  if (!o) throw new Error("Storno gibt es nicht");
+  const refund = Number(o.refund_due_cents ?? 0);
+  const lines = [
+    salutation(o.customer_snapshot),
+    "",
+    `wir haben deine Rechnung ${o.invoice_number} storniert. Anbei die Stornorechnung ${o.storno_number} vom ${day(o.storno_date)}.`,
+    "",
+    refund > 0
+      ? `Die bereits gezahlten ${euro(refund, o.currency)} überweisen wir dir auf das Konto zurück, von dem du gezahlt hast.`
+      : "Du musst nichts mehr bezahlen.",
+    "",
+    companyFooter(o.company_snapshot),
+  ];
+  const mail = await client.query<{ id: string }>(
+    `insert into app.mail_outbox (purpose, to_address, subject, body_text, related_id) values ('rechnung', $1, $2, $3, $4) returning id`,
+    [String(o.customer_snapshot.email).trim().toLowerCase(), `Deine Stornorechnung ${o.storno_number}`, lines.join("\n"), o.storno_invoice_id],
+  );
+  return mail.rows[0]!.id;
+}

@@ -22,7 +22,8 @@
     "./coupons": "./src/coupons.ts",
     "./dashboard": "./src/dashboard.ts",
     "./checkout-pages": "./src/checkout-pages.ts",
-    "./checkout-page-content": "./src/checkout-page-content.ts"
+    "./checkout-page-content": "./src/checkout-page-content.ts",
+    "./manual-orders": "./src/manual-orders.ts"
   },
   "scripts": {
     "migrate": "tsx src/cli.ts",
