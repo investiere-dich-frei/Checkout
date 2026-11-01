@@ -28,7 +28,8 @@
     "./takeover": "./src/takeover.ts",
     "./customer-portal": "./src/customer-portal.ts",
     "./accounting": "./src/accounting.ts",
-    "./dunning": "./src/dunning.ts"
+    "./dunning": "./src/dunning.ts",
+    "./team": "./src/team.ts"
   },
   "scripts": {
     "migrate": "tsx src/cli.ts",
