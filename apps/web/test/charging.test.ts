@@ -4,7 +4,7 @@ import { placeOrder, type PlaceOrderInput } from "@idf/db/orders";
 import { handleStripeEvent, nextPaymentTarget, rememberPaymentIntent } from "@idf/db/stripe";
 import type Stripe from "stripe";
 import { createTestDb, tx, type TestDb } from "../../../packages/db/test/helpers.ts";
-import { runCharging } from "../lib/charging";
+import { chargeNow, runCharging } from "../lib/charging";
 import type { PaypalApi } from "../lib/paypal";
 
 // Ausgedachte Gesellschaft, Produkte und Kundinnen; Stripe und PayPal sind nachgebaut.
@@ -167,5 +167,42 @@ describe("Täglicher Einzug", () => {
     assert.deepEqual(paid.map((r) => r.status), ["offen", "bezahlt", "offen"]);
     const mail = (await db.pool.query(`select count(*)::int n from app.mail_outbox m join app.invoices i on i.id = m.related_id where i.order_id = $1`, [placed.orderId])).rows[0].n;
     assert.equal(mail, 1);
+  });
+
+  it("zieht eine Rate von Hand sofort ein, auch nach drei Fehlversuchen, aber nie vor Fälligkeit oder doppelt", async () => {
+    const order = await placeAndPayFirst("hand@example.org", "pm_hand");
+    let declining = true;
+    let n = 0;
+    const fakeStripe = {
+      paymentIntents: {
+        create: async (params: Record<string, unknown>) => ({ id: `pi_hand_${++n}`, amount: params.amount, currency: params.currency }),
+        confirm: async (id: string) => {
+          if (declining) throw Object.assign(new Error("declined"), { type: "StripeCardError", decline_code: "card_declined" });
+          return { id, status: "succeeded" };
+        },
+      },
+    } as unknown as Stripe;
+    const rate = async (seq: number) =>
+      (await db.pool.query(`select id from app.order_installments where order_id = $1 and seq = $2`, [order, seq])).rows[0].id as string;
+    const second = await rate(2);
+    const third = await rate(3);
+
+    // Drei Fehlversuche: Der tägliche Lauf gibt danach auf. Die Wartezeit zählt ab dem echten Versuchstag.
+    const plus = (days: number) => new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
+    for (const day of [plus(0), plus(3), plus(7)]) await runCharging(db.pool, { stripe: fakeStripe, paypal: null }, day);
+    const count = async () => (await db.pool.query(`select count(*)::int n from app.charge_attempts where installment_id = $1`, [second])).rows[0].n;
+    assert.equal(await count(), 3);
+
+    assert.deepEqual(await chargeNow(db.pool, { stripe: fakeStripe, paypal: null }, third, "2026-10-08", "user:test"), { ok: false, reason: "noch_nicht_faellig" });
+    assert.deepEqual(await chargeNow(db.pool, { stripe: null, paypal: null }, second, plus(7), "user:test"), { ok: false, reason: "anbieter_fehlt" });
+
+    declining = false;
+    assert.deepEqual(await chargeNow(db.pool, { stripe: fakeStripe, paypal: null }, second, plus(7), "user:test"), { ok: true, outcome: "eingereicht" });
+    assert.equal(await count(), 4);
+    // Solange der Einzug unterwegs ist, kein zweiter.
+    assert.deepEqual(await chargeNow(db.pool, { stripe: fakeStripe, paypal: null }, second, plus(7), "user:test"), { ok: false, reason: "unterwegs" });
+    // Im Audit-Log steht die Person, die geklickt hat.
+    const actor = (await db.pool.query(`select actor from app.audit_log where table_name = 'charge_attempts' order by id desc limit 1`)).rows[0].actor;
+    assert.equal(actor, "user:test");
   });
 });

@@ -112,7 +112,7 @@ export async function enqueueOrderConfirmation(client: pg.ClientBase, orderId: s
 }
 
 /** Rechnung per E-Mail. Das PDF hängt der Postausgang über related_id an, sobald es erzeugt ist. */
-export async function enqueueInvoiceMail(client: pg.ClientBase, invoiceId: string): Promise<string> {
+export async function enqueueInvoiceMail(client: pg.ClientBase, invoiceId: string, toAddress?: string): Promise<string> {
   const { rows } = await client.query(
     `select i.invoice_number, i.kind, c.invoice_number corrects_number, i.issue_date::text, i.currency, i.net_cents,
             i.tax_cents, i.gross_cents, i.customer_snapshot, i.company_snapshot
@@ -147,7 +147,7 @@ export async function enqueueInvoiceMail(client: pg.ClientBase, invoiceId: strin
   const mail = await client.query<{ id: string }>(
     `insert into app.mail_outbox (purpose, to_address, subject, body_text, related_id) values ('rechnung', $1, $2, $3, $4) returning id`,
     [
-      String(cu.email).trim().toLowerCase(),
+      String(toAddress ?? cu.email).trim().toLowerCase(),
       `${inv.kind === "storno" ? "Deine Stornorechnung" : "Deine Rechnung"} ${inv.invoice_number}`,
       lines.join("\n"),
       invoiceId,
@@ -168,7 +168,7 @@ const MODEL_TEXT: Record<string, string> = {
  * die Vertragsbestätigung auf einem dauerhaften Datenträger, deshalb mit Widerrufsbelehrung und AGB
  * im Wortlaut der Fassung, die zur Bestellung gehört. Das PDF hängt der Postausgang an.
  */
-export async function enqueueManualInvoiceMail(client: pg.ClientBase, orderId: string): Promise<string> {
+export async function enqueueManualInvoiceMail(client: pg.ClientBase, orderId: string, toAddress?: string): Promise<string> {
   const { rows } = await client.query(
     `select m.invoice_id, m.payment_model, m.pay_by::text pay_by, i.invoice_number, i.gross_cents, o.currency, p.name product, p.immediate_access,
             ((o.created_at at time zone 'Europe/Berlin')::date + $2::int)::text access_from,
@@ -247,13 +247,13 @@ export async function enqueueManualInvoiceMail(client: pg.ClientBase, orderId: s
   );
   const mail = await client.query<{ id: string }>(
     `insert into app.mail_outbox (purpose, to_address, subject, body_text, related_id) values ('rechnung', $1, $2, $3, $4) returning id`,
-    [String(o.email).trim().toLowerCase(), `Deine Rechnung ${o.invoice_number}`, lines.join("\n"), o.invoice_id],
+    [String(toAddress ?? o.email).trim().toLowerCase(), `Deine Rechnung ${o.invoice_number}`, lines.join("\n"), o.invoice_id],
   );
   return mail.rows[0]!.id;
 }
 
 /** Manuelle Bestellung storniert: Stornorechnung an die Kundin, mit Hinweis zur Rückzahlung. */
-export async function enqueueManualStornoMail(client: pg.ClientBase, orderId: string): Promise<string> {
+export async function enqueueManualStornoMail(client: pg.ClientBase, orderId: string, toAddress?: string): Promise<string> {
   const { rows } = await client.query(
     `select m.storno_invoice_id, m.refund_due_cents, s.invoice_number storno_number, s.issue_date::text storno_date, i.invoice_number,
             o.currency, s.customer_snapshot, s.company_snapshot
@@ -280,7 +280,25 @@ export async function enqueueManualStornoMail(client: pg.ClientBase, orderId: st
   ];
   const mail = await client.query<{ id: string }>(
     `insert into app.mail_outbox (purpose, to_address, subject, body_text, related_id) values ('rechnung', $1, $2, $3, $4) returning id`,
-    [String(o.customer_snapshot.email).trim().toLowerCase(), `Deine Stornorechnung ${o.storno_number}`, lines.join("\n"), o.storno_invoice_id],
+    [String(toAddress ?? o.customer_snapshot.email).trim().toLowerCase(), `Deine Stornorechnung ${o.storno_number}`, lines.join("\n"), o.storno_invoice_id],
   );
   return mail.rows[0]!.id;
+}
+
+/**
+ * Rechnung oder Stornorechnung erneut per E-Mail schicken, mit demselben Text wie beim ersten Versand
+ * und dem PDF als Anhang. Die Rechnung selbst bleibt unverändert; der neue Versand steht im Postausgang.
+ */
+export async function resendInvoiceMail(client: pg.ClientBase, invoiceId: string, toAddress?: string): Promise<string> {
+  const to = toAddress?.trim() || undefined;
+  if (to && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) throw new Error("Bitte eine gültige E-Mail-Adresse angeben.");
+  const { rows } = await client.query<{ order_id: string; manual_invoice: boolean; manual_storno: boolean }>(
+    `select m.order_id, m.invoice_id = $1 manual_invoice, coalesce(m.storno_invoice_id = $1, false) manual_storno
+       from app.manual_orders m where m.invoice_id = $1 or m.storno_invoice_id = $1`,
+    [invoiceId],
+  );
+  const m = rows[0];
+  if (m?.manual_invoice) return enqueueManualInvoiceMail(client, m.order_id, to);
+  if (m?.manual_storno) return enqueueManualStornoMail(client, m.order_id, to);
+  return enqueueInvoiceMail(client, invoiceId, to);
 }

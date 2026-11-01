@@ -1,9 +1,12 @@
-import { canChange, orderDetail } from "@idf/db/admin";
+import { canChange, canSeeAll, orderDetail } from "@idf/db/admin";
+import { listPauses } from "@idf/db/billing";
 import { notFound } from "next/navigation";
 import { pool } from "../../../../lib/db";
 import { formatCents, formatDay, formatRate, todayBerlin } from "../../../../lib/format";
 import { requireUser } from "../../../../lib/session";
 import { cancelOrderAction, endSubscriptionAction } from "../../actions";
+import { chargeNowAction, pauseSubscriptionAction, resendInvoiceAction, resumeSubscriptionAction } from "../../kunden/actions";
+import { ActionForm } from "../../produkte/forms";
 import { RefundForm } from "./refund-form";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -17,6 +20,11 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
   if (!d) notFound();
   const h = d.head;
   const name = h.company_name || [h.first_name, h.last_name].filter(Boolean).join(" ");
+  const today = todayBerlin();
+  const pauses = h.is_abo ? await listPauses(pool(), id) : [];
+  const openPause = pauses.find((p) => !p.endedBy && (p.endsOn === null || p.endsOn >= today));
+  const pauseText = (p: { startsOn: string; endsOn: string | null }) =>
+    p.endsOn !== null && p.endsOn < p.startsOn ? `${formatDay(p.startsOn)} (aufgehoben)` : `${formatDay(p.startsOn)} bis ${p.endsOn ? formatDay(p.endsOn) : "auf Weiteres"}`;
 
   return (
     <>
@@ -36,7 +44,7 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
         )}
         <h2>Kundin</h2>
         <p>
-          {name}
+          {canSeeAll(user) ? <a href={`/admin/kunden/${h.customer_id}`}>{name}</a> : name}
           <br />
           {h.email}
           <br />
@@ -77,12 +85,61 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
             ))}
           </tbody>
         </table>
+        {canChange(user) &&
+          !h.is_manual &&
+          d.installments
+            .filter((i) => (i.status === "offen" || i.status === "fehlgeschlagen") && i.due_date <= today)
+            .map((i) => (
+              <ActionForm
+                key={i.id}
+                action={chargeNowAction}
+                className="inline-form"
+                submit={`Rate ${i.seq} jetzt abbuchen`}
+                confirm={`Rate ${i.seq} über ${formatCents(Number(i.gross_cents), h.currency)} jetzt von der gespeicherten Zahlungsart abbuchen?`}
+              >
+                <input type="hidden" name="order_id" value={id} />
+                <input type="hidden" name="installment_id" value={i.id} />
+              </ActionForm>
+            ))}
         {canChange(user) && !h.is_manual && d.installments.some((i) => i.status === "offen" || i.status === "fehlgeschlagen") && (
           <form action={cancelOrderAction} className="inline-form">
             <input type="hidden" name="order_id" value={id} />
             <button type="submit">Offene Raten entfallen lassen (Bestellung beenden)</button>
           </form>
         )}
+        {h.is_abo && pauses.length > 0 && (
+          <>
+            <h3>Pausen</h3>
+            <ul>
+              {pauses.map((p) => (
+                <li key={p.id}>
+                  {pauseText(p)}
+                  {p.reason && <> · {p.reason}</>}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+        {h.is_abo && canChange(user) && !h.ends_on && h.status !== "storniert" && h.status !== "erstattet" &&
+          (openPause ? (
+            <ActionForm action={resumeSubscriptionAction} className="inline-form" submit="Pause beenden, Abo fortsetzen" confirm="Pause beenden? Ab heute fällige Zahlungen werden wieder eingezogen.">
+              <input type="hidden" name="order_id" value={id} />
+            </ActionForm>
+          ) : (
+            <details>
+              <summary>Abo pausieren</summary>
+              <p className="note">Zahlungen, die in die Pause fallen, entfallen. Danach läuft das Abo zum bisherigen Rhythmus weiter. Ohne Enddatum bis zum Fortsetzen.</p>
+              <ActionForm action={pauseSubscriptionAction} className="inline-form" submit="Pausieren">
+                <input type="hidden" name="order_id" value={id} />
+                <label htmlFor="starts_on">Ab</label>
+                <input id="starts_on" name="starts_on" type="date" min={today} defaultValue={today} required />
+                <label htmlFor="pause_ends_on">Bis einschließlich (optional)</label>
+                <input id="pause_ends_on" name="ends_on" type="date" min={today} />
+                <label htmlFor="reason">Grund (optional)</label>
+                <input id="reason" name="reason" type="text" placeholder="z. B. Elternzeit" />
+              </ActionForm>
+            </details>
+          ))}
         {h.is_abo && (
           <p>
             {h.ends_on ? (
@@ -124,6 +181,18 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
           d.invoices
             .filter((i) => i.kind === "rechnung" && !d.invoices.some((s) => s.corrects_invoice_id === i.id))
             .map((i) => <RefundForm key={i.id} orderId={id} invoiceId={i.id} invoiceNumber={i.invoice_number} />)}
+        {canChange(user) && d.invoices.length > 0 && (
+          <details>
+            <summary>Rechnung erneut per E-Mail senden</summary>
+            {d.invoices.map((i) => (
+              <ActionForm key={i.id} action={resendInvoiceAction} className="inline-form" submit={`${i.invoice_number} senden`}>
+                <input type="hidden" name="invoice_id" value={i.id} />
+                <label htmlFor={`to-${i.id}`}>An</label>
+                <input id={`to-${i.id}`} name="to" type="email" defaultValue={h.email} />
+              </ActionForm>
+            ))}
+          </details>
+        )}
       </section>
 
       {(d.notices.length > 0 || d.attempts.length > 0) && (
