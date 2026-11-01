@@ -377,3 +377,12 @@ a.dash-tile:hover { border-color: var(--accent); }
 .coupon-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; }
 .dash-custom button, .coupon-row button { padding: 11px 16px; font-size: 12px; }
 .coupon-row button:disabled { opacity: 0.6; cursor: default; }
+
+/* Filter der Bestellliste */
+.filter-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px 12px; margin: 8px 0 16px; align-items: end; }
+.filter-form label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.filter-form input, .filter-form select { padding: 8px 10px; font-size: 14px; }
+.filter-form .filter-wide { grid-column: 1 / -1; }
+.filter-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+.filter-actions button { padding: 11px 16px; font-size: 12px; background: var(--accent); color: #fff; border: 0; border-radius: 6px; cursor: pointer; }
+.filter-actions button:hover { background: var(--accent-dark); }

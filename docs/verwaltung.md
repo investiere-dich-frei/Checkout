@@ -20,7 +20,11 @@ Unter `/admin` (nur mit Anmeldung).
 ## Seiten
 
 - **Übersicht**: offene Kündigungen und Widerrufe, Zahlungen zur Prüfung, dreimal gescheiterte Einzüge, neueste Bestellungen.
-- **Bestellungen**: Suche nach Name, E-Mail, Produkt oder Bestellnummer; Detailseite mit Zahlplan, Rechnungen (PDF), Kündigungen und Einzugsversuchen.
+- **Bestellungen**: Suche nach Name, E-Mail, Produkt oder Bestellnummer, dazu Filter nach Bestellzeitraum, Lage
+  (überfällig, pausiert, Abos, Ratenpläne, Einmalzahlung), Status, Zahlungsart, Produkt, Land und (nur Admin, Prüfung)
+  Vertrieb. Die Filter stehen in der Adresse, die Ansicht lässt sich also als Lesezeichen speichern. Admin und Prüfung
+  können die gefilterte Liste als CSV herunterladen (höchstens 10.000 Zeilen). Detailseite mit Zahlplan, Rechnungen
+  (PDF), Kündigungen und Einzugsversuchen.
 - **Manuelle Bestellungen**: Rechnung vorab, Zahlung per Überweisung, mit Zahlung verbuchen, Storno und Rückzahlung; siehe [manuelle-bestellungen.md](manuelle-bestellungen.md).
 - **Kauflinks**: alle freigeschalteten Angebote mit dem Kürzel der angemeldeten Person.
 - **Kunden** (Admin, Prüfung): Suche nach Name, E-Mail, Firma oder Ort. Eine Kundin ist die Gruppe aller

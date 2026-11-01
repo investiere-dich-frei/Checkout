@@ -25,7 +25,30 @@ export interface OrderRow {
   seller: string | null;
 }
 
-export async function listOrders(db: Db, user: SessionUser, opts: { limit?: number; offset?: number; search?: string } = {}): Promise<OrderRow[]> {
+export interface OrderFilter {
+  search?: string;
+  /** Bestelltag von/bis (Europe/Berlin), YYYY-MM-DD. */
+  from?: string;
+  to?: string;
+  status?: string;
+  productId?: string;
+  country?: string;
+  /** stripe, paypal, ueberweisung (manuelle Bestellung) oder keine (noch nichts bezahlt). */
+  payment?: string;
+  sellerId?: string;
+  /** Lage: ueberfaellig (fällige Rate offen oder fehlgeschlagen), pausiert, abo, raten, einmal. */
+  state?: string;
+}
+
+const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
+const UUID_RE = /^[0-9a-f-]{36}$/i;
+
+export async function listOrders(
+  db: Db,
+  user: SessionUser,
+  opts: OrderFilter & { limit?: number; offset?: number; today?: string } = {},
+): Promise<OrderRow[]> {
+  const f = (v: string | undefined, re?: RegExp) => (v && v.trim() && (!re || re.test(v.trim())) ? v.trim() : null);
   const { rows } = await db.query(
     `select o.id, o.created_at, o.status, coalesce(nullif(c.company_name, ''), concat_ws(' ', c.first_name, c.last_name)) customer_name,
             c.email, p.name product, po.label option, o.currency, o.total_gross_cents,
@@ -40,9 +63,46 @@ export async function listOrders(db: Db, user: SessionUser, opts: { limit?: numb
       where ($1::boolean or o.seller_user_id = $2)
         and ($3::text is null or c.email ilike '%' || $3 || '%' or p.name ilike '%' || $3 || '%'
              or concat_ws(' ', c.first_name, c.last_name, c.company_name) ilike '%' || $3 || '%' or o.id::text = $3)
+        and ($6::date is null or (o.created_at at time zone 'Europe/Berlin')::date >= $6::date)
+        and ($7::date is null or (o.created_at at time zone 'Europe/Berlin')::date <= $7::date)
+        and ($8::text is null or o.status = $8)
+        and ($9::uuid is null or p.id = $9)
+        and ($10::text is null or upper(c.country) = upper($10))
+        and ($11::text is null
+             or ($11 = 'ueberweisung' and exists (select 1 from app.manual_orders m where m.order_id = o.id))
+             or ($11 = 'keine' and not exists (select 1 from app.payments pay where pay.order_id = o.id)
+                 and not exists (select 1 from app.manual_orders m where m.order_id = o.id))
+             or exists (select 1 from app.payments pay where pay.order_id = o.id and pay.provider = $11))
+        and ($12::uuid is null or o.seller_user_id = $12)
+        and ($13::text is null
+             or ($13 = 'ueberfaellig' and o.status not in ('storniert', 'erstattet') and exists (
+                   select 1 from app.order_installments i where i.order_id = o.id and i.due_date < $14::date and i.status in ('offen', 'fehlgeschlagen')))
+             or ($13 = 'pausiert' and exists (
+                   select 1 from app.subscription_pauses sp where sp.order_id = o.id and sp.starts_on <= $14::date
+                      and (sp.ends_on is null or sp.ends_on >= $14::date)))
+             or ($13 = 'abo' and exists (select 1 from app.subscription_terms t where t.order_id = o.id))
+             or ($13 = 'raten' and not exists (select 1 from app.subscription_terms t where t.order_id = o.id)
+                 and (select count(*) from app.order_installments i where i.order_id = o.id) > 1)
+             or ($13 = 'einmal' and not exists (select 1 from app.subscription_terms t where t.order_id = o.id)
+                 and (select count(*) from app.order_installments i where i.order_id = o.id) = 1))
       order by o.created_at desc
       limit $4 offset $5`,
-    [canSeeAll(user), user.id, opts.search?.trim() || null, opts.limit ?? 50, opts.offset ?? 0],
+    [
+      canSeeAll(user),
+      user.id,
+      f(opts.search),
+      opts.limit ?? 50,
+      opts.offset ?? 0,
+      f(opts.from, DAY_RE),
+      f(opts.to, DAY_RE),
+      f(opts.status),
+      f(opts.productId, UUID_RE),
+      f(opts.country, /^[A-Za-z]{2}$/),
+      f(opts.payment),
+      canSeeAll(user) ? f(opts.sellerId, UUID_RE) : null,
+      f(opts.state),
+      opts.today ?? new Date().toISOString().slice(0, 10),
+    ],
   );
   return rows.map((r) => ({
     id: r.id,
@@ -57,6 +117,27 @@ export async function listOrders(db: Db, user: SessionUser, opts: { limit?: numb
     paidCents: Number(r.paid),
     seller: r.seller,
   }));
+}
+
+/** Auswahllisten für die Filter der Bestellliste. */
+export async function orderFilterOptions(db: Db, user: SessionUser) {
+  const [products, sellers, countries] = await Promise.all([
+    db.query<{ id: string; name: string }>(
+      `select distinct p.id, p.name from app.products p join app.price_options po on po.product_id = p.id
+         join app.order_items it on it.price_option_id = po.id join app.orders o on o.id = it.order_id
+        where $1::boolean or o.seller_user_id = $2 order by p.name`,
+      [canSeeAll(user), user.id],
+    ),
+    canSeeAll(user)
+      ? db.query<{ id: string; display_name: string }>(`select id, display_name from app.users where role in ('admin', 'vertrieb', 'freelancer') order by display_name`)
+      : Promise.resolve({ rows: [] as { id: string; display_name: string }[] }),
+    db.query<{ country: string }>(
+      `select distinct upper(c.country) country from app.orders o join app.customers c on c.id = o.customer_id
+        where $1::boolean or o.seller_user_id = $2 order by 1`,
+      [canSeeAll(user), user.id],
+    ),
+  ]);
+  return { products: products.rows, sellers: sellers.rows, countries: countries.rows.map((r) => r.country) };
 }
 
 export async function orderDetail(db: Db, user: SessionUser, orderId: string) {
