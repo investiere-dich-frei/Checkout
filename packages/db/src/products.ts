@@ -94,6 +94,9 @@ export interface ProductDetail {
   taxConfirmedBy: string | null;
   immediateAccess: boolean;
   thrivecartProductId: number | null;
+  /** Kurszugang und HubSpot wie bei diesem Produkt (nur für Produkte ohne Thrivecart-Nummer). */
+  accessLikeProductId: string | null;
+  accessLikeName: string | null;
   createdAt: Date;
   options: PriceOptionRow[];
 }
@@ -233,10 +236,11 @@ export async function getProduct(db: Db, user: SessionUser, productId: string): 
   if (!/^[0-9a-f-]{36}$/i.test(productId)) return null;
   const head = (
     await db.query(
-      `select p.*, c.legal_name company_name, u.display_name confirmed_by_name
+      `select p.*, c.legal_name company_name, u.display_name confirmed_by_name, al.name access_like_name
          from app.products p
          join app.companies c on c.id = p.company_id
          left join app.users u on u.id = p.tax_confirmed_by
+         left join app.products al on al.id = p.access_like_product_id
         where p.id = $1`,
       [productId],
     )
@@ -263,6 +267,8 @@ export async function getProduct(db: Db, user: SessionUser, productId: string): 
     taxConfirmedBy: head.confirmed_by_name,
     immediateAccess: head.immediate_access,
     thrivecartProductId: num(head.thrivecart_product_id),
+    accessLikeProductId: head.access_like_product_id,
+    accessLikeName: head.access_like_name,
     createdAt: head.created_at,
     options: rows.map((o) => ({
       id: o.id,
@@ -281,6 +287,38 @@ export async function getProduct(db: Db, user: SessionUser, productId: string): 
       sold: o.sold,
     })),
   };
+}
+
+/** Produkte mit Thrivecart-Nummer, deren Kurszuordnung ein neues Produkt übernehmen kann. */
+export async function listAccessTemplates(db: Db): Promise<{ id: string; label: string }[]> {
+  const { rows } = await db.query<{ id: string; name: string; internal_label: string | null; thrivecart_product_id: string }>(
+    `select id, name, internal_label, thrivecart_product_id from app.products
+      where thrivecart_product_id is not null order by name, thrivecart_product_id`,
+  );
+  return rows.map((r) => ({ id: r.id, label: `${r.name}${r.internal_label ? ` (${r.internal_label})` : ""} · Thrivecart ${r.thrivecart_product_id}` }));
+}
+
+/**
+ * Kurszugang und HubSpot-Deal wie bei einem bestehenden Produkt. Nur für Produkte ohne eigene
+ * Thrivecart-Nummer; die Vorlage muss eine haben. null hebt die Zuordnung auf.
+ */
+export async function setAccessLike(client: pg.ClientBase, user: SessionUser, productId: string, likeId: string | null): Promise<void> {
+  requireChange(user);
+  const cur = (
+    await client.query<{ thrivecart_product_id: string | null; access_like_product_id: string | null }>(
+      `select thrivecart_product_id, access_like_product_id from app.products where id = $1 for update`,
+      [productId],
+    )
+  ).rows[0];
+  if (!cur) throw new ProductError("Produkt gibt es nicht.");
+  if ((cur.access_like_product_id ?? null) === likeId) return;
+  if (likeId !== null) {
+    if (cur.thrivecart_product_id !== null) throw new ProductError("Dieses Produkt hat schon eine eigene Zuordnung aus Thrivecart.");
+    if (likeId === productId) throw new ProductError("Ein Produkt kann nicht sich selbst als Vorlage haben.");
+    const like = (await client.query(`select thrivecart_product_id from app.products where id = $1`, [likeId])).rows[0];
+    if (!like || like.thrivecart_product_id === null) throw new ProductError("Als Vorlage geht nur ein Produkt aus Thrivecart.");
+  }
+  await client.query(`update app.products set access_like_product_id = $2 where id = $1`, [productId, likeId]);
 }
 
 /** Gesellschaften, für die Produkte angelegt werden können (heute nur die GmbH). */

@@ -38,10 +38,18 @@ export interface ProductValues {
   internalLabel: string;
   taxCategory: string;
   immediateAccess: boolean;
+  /** Kurszuordnung wie bei diesem Produkt (id), leer = keine. */
+  accessLike?: string;
 }
 
 /** Felder eines Produkts. Bei neuen Produkten wird die Adresse aus dem Namen vorgeschlagen. */
-export function ProductFields(props: { values: ProductValues; isNew: boolean; companies?: { id: string; name: string }[] }) {
+export function ProductFields(props: {
+  values: ProductValues;
+  isNew: boolean;
+  companies?: { id: string; name: string }[];
+  /** Vorlagen für die Kurszuordnung; nur bei Produkten ohne Thrivecart-Nummer. */
+  accessTemplates?: { id: string; label: string }[];
+}) {
   const [name, setName] = useState(props.values.name);
   const [slug, setSlug] = useState(props.values.slug);
   const [slugTouched, setSlugTouched] = useState(!props.isNew);
@@ -120,6 +128,22 @@ export function ProductFields(props: { values: ProductValues; isNew: boolean; co
           Sofortzugang am Kauftag, ohne Sofortstart-Häkchen im Checkout (wie bei Masterclass Essential)
         </label>
       </div>
+      {props.accessTemplates && (
+        <div className="field">
+          <label htmlFor="access_like_product_id">Kurszugang und HubSpot wie bei</label>
+          <select id="access_like_product_id" name="access_like_product_id" defaultValue={props.values.accessLike ?? ""}>
+            <option value="">Keine Zuordnung (n8n schaltet keinen Kurs frei)</option>
+            {props.accessTemplates.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+          <p className="note">
+            Nach dem Kauf legt n8n den HubSpot-Deal an und schaltet in LearningSuite dieselben Kurse frei wie bei diesem Produkt.
+          </p>
+        </div>
+      )}
     </>
   );
 }

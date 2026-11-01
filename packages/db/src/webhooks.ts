@@ -21,7 +21,10 @@ async function orderPayload(client: pg.ClientBase, orderId: string) {
             jsonb_build_object('id', c.id, 'email', c.email, 'first_name', c.first_name, 'last_name', c.last_name,
                                'company_name', c.company_name, 'street', c.street, 'postal_code', c.postal_code, 'city', c.city,
                                'country', c.country, 'hubspot_contact_id', c.hubspot_contact_id) customer,
-            jsonb_build_object('id', p.id, 'name', p.name, 'slug', p.slug, 'thrivecart_product_id', p.thrivecart_product_id,
+            jsonb_build_object('id', p.id, 'name', p.name, 'slug', p.slug,
+                               -- Neue Produkte übernehmen die Kurszuordnung ihrer Vorlage (Verwaltung → Produkt).
+                               'thrivecart_product_id', coalesce(p.thrivecart_product_id, al.thrivecart_product_id),
+                               'access_like_product_id', p.access_like_product_id,
                                'external_refs', p.external_refs) product,
             jsonb_build_object('id', po.id, 'label', po.label, 'kind', po.kind, 'interval_months', po.interval_months,
                                'thrivecart_option_id', po.thrivecart_option_id) price_option,
@@ -35,6 +38,7 @@ async function orderPayload(client: pg.ClientBase, orderId: string) {
        join app.order_items it on it.order_id = o.id
        join app.price_options po on po.id = it.price_option_id
        join app.products p on p.id = po.product_id
+       left join app.products al on al.id = p.access_like_product_id
        left join app.users u on u.id = o.seller_user_id
       where o.id = $1`,
     [orderId, ACCESS_DELAY_DAYS],
