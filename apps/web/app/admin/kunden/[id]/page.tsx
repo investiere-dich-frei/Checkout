@@ -5,7 +5,7 @@ import { pool } from "../../../../lib/db";
 import { formatCents } from "../../../../lib/format";
 import { requireUser } from "../../../../lib/session";
 import { ActionForm } from "../../produkte/forms";
-import { updateCustomerAction } from "../actions";
+import { sendPortalLinkAction, updateCustomerAction } from "../actions";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const day = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", dateStyle: "medium" });
@@ -180,6 +180,19 @@ export default async function CustomerPage(props: { params: Promise<{ id: string
               </div>
             </>
           )}
+        </section>
+      )}
+
+      {canChange(user) && (
+        <section className="card">
+          <h2>Kundenbereich</h2>
+          <p className="note">
+            Schickt der Kundin einen Link zu ihrem Kundenbereich (Bestellungen, Rechnungen, Karte ändern), gültig 7 Tage. Selbst anfordern kann sie ihn
+            unter /konto.
+          </p>
+          <ActionForm action={sendPortalLinkAction} className="inline-form" submit="Link zum Kundenbereich schicken">
+            <input type="hidden" name="email" value={p.email} />
+          </ActionForm>
         </section>
       )}
 

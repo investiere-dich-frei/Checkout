@@ -25,7 +25,8 @@
     "./checkout-page-content": "./src/checkout-page-content.ts",
     "./manual-orders": "./src/manual-orders.ts",
     "./customers": "./src/customers.ts",
-    "./takeover": "./src/takeover.ts"
+    "./takeover": "./src/takeover.ts",
+    "./customer-portal": "./src/customer-portal.ts"
   },
   "scripts": {
     "migrate": "tsx src/cli.ts",

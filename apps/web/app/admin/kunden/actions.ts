@@ -3,6 +3,7 @@
 import { canChange } from "@idf/db/admin";
 import { PauseError, pauseSubscription, resumeSubscription } from "@idf/db/billing";
 import { resendInvoiceMail } from "@idf/db/customer-mails";
+import { requestPortalLink } from "@idf/db/customer-portal";
 import { CustomerError, updateCustomerContact } from "@idf/db/customers";
 import { revalidatePath } from "next/cache";
 import { chargeNow } from "../../../lib/charging";
@@ -11,6 +12,7 @@ import { todayBerlin } from "../../../lib/format";
 import { paypal } from "../../../lib/paypal";
 import { requireUser } from "../../../lib/session";
 import { stripe } from "../../../lib/stripe";
+import { portalBaseUrl } from "../../konto/actions";
 import type { FormState } from "../produkte/actions";
 
 const text = (form: FormData, key: string) => String(form.get(key) ?? "");
@@ -118,4 +120,13 @@ export async function resumeSubscriptionAction(_prev: FormState, form: FormData)
   const ok = await transaction(`user:${user.id}`, (c) => resumeSubscription(c, { orderId, actor: `user:${user.id}`, today: todayBerlin() }));
   revalidatePath(`/admin/bestellungen/${orderId}`);
   return ok ? { ok: true, message: "Fortgesetzt. Die nächste Zahlung wird zum Fälligkeitstag eingezogen." } : { message: "Es ist keine Pause offen." };
+}
+
+export async function sendPortalLinkAction(_prev: FormState, form: FormData): Promise<FormState> {
+  const user = await requireUser();
+  if (!canChange(user)) return { message: "Keine Berechtigung." };
+  const email = text(form, "email");
+  const base = await portalBaseUrl();
+  const ok = await transaction(`user:${user.id}`, (c) => requestPortalLink(c, email, base, `user:${user.id}`));
+  return ok ? { ok: true, message: `Link zum Kundenbereich geht in den nächsten Minuten an ${email}.` } : { message: "Zu dieser Adresse gibt es keine Kundin." };
 }

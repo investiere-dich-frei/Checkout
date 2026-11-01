@@ -55,7 +55,7 @@ export function PaymentForm(props: { publishableKey: string; clientSecret: strin
   );
 }
 
-function Setup(props: { orderId: string }) {
+function Setup(props: { orderId: string; returnPath?: string }) {
   const stripe = useStripe();
   const elements = useElements();
   const [busy, setBusy] = useState(false);
@@ -68,7 +68,7 @@ function Setup(props: { orderId: string }) {
     setError(null);
     const { error } = await stripe.confirmSetup({
       elements,
-      confirmParams: { return_url: `${window.location.origin}/bestellung/${props.orderId}` },
+      confirmParams: { return_url: `${window.location.origin}${props.returnPath ?? `/bestellung/${props.orderId}`}` },
     });
     setError(error.message ?? "Das Hinterlegen hat nicht geklappt. Bitte versuche es noch einmal.");
     setBusy(false);
@@ -90,7 +90,7 @@ function Setup(props: { orderId: string }) {
 }
 
 /** Probezeit ohne Anzahlung: Zahlungsart hinterlegen, ohne dass heute etwas abgebucht wird. */
-export function CardSetupForm(props: { publishableKey: string; clientSecret: string; orderId: string }) {
+export function CardSetupForm(props: { publishableKey: string; clientSecret: string; orderId: string; returnPath?: string }) {
   const stripePromise = useMemo<Promise<Stripe | null>>(() => loadStripe(props.publishableKey), [props.publishableKey]);
   return (
     <Elements
@@ -101,7 +101,7 @@ export function CardSetupForm(props: { publishableKey: string; clientSecret: str
         appearance: { theme: "stripe", variables: { colorPrimary: "#a26766", fontFamily: "Raleway, Helvetica Neue, Arial, sans-serif" } },
       }}
     >
-      <Setup orderId={props.orderId} />
+      <Setup orderId={props.orderId} returnPath={props.returnPath} />
     </Elements>
   );
 }
