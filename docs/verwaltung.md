@@ -21,6 +21,7 @@ Unter `/admin` (nur mit Anmeldung).
 
 - **Übersicht**: offene Kündigungen und Widerrufe, Zahlungen zur Prüfung, dreimal gescheiterte Einzüge, neueste Bestellungen.
 - **Bestellungen**: Suche nach Name, E-Mail, Produkt oder Bestellnummer; Detailseite mit Zahlplan, Rechnungen (PDF), Kündigungen und Einzugsversuchen.
+- **Manuelle Bestellungen**: Rechnung vorab, Zahlung per Überweisung, mit Zahlung verbuchen, Storno und Rückzahlung; siehe [manuelle-bestellungen.md](manuelle-bestellungen.md).
 - **Kauflinks**: alle freigeschalteten Angebote mit dem Kürzel der angemeldeten Person.
 
 Jede Änderung (Kündigung erledigt, Abo beendet) steht mit der handelnden Person im Audit-Log.

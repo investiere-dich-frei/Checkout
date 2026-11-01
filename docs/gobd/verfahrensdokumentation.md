@@ -36,6 +36,7 @@ Bestellung → Zahlung → Rechnung → Auszahlung des Zahlungsanbieters.
 - Eine ausgestellte Rechnung wird nie geändert und nie gelöscht.
 - Fehler werden durch eine Stornorechnung über den vollen Betrag korrigiert, danach folgt eine neue Rechnung.
 - Je Rechnung ist höchstens ein Storno möglich.
+- Manuelle Bestellungen (Rechnung vorab, Überweisung): Die Rechnung über den Gesamtbetrag entsteht beim Anlegen, Zahlungen werden ohne weitere Rechnung zugeordnet. Storno nur über Stornorechnung über den vollen Betrag; gezahltes Geld wird als Rückzahlung gebucht. Siehe `docs/manuelle-bestellungen.md`.
 
 ### 3.4 Steuerangaben
 
