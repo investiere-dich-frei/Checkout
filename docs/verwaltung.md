@@ -62,3 +62,12 @@ Jede Änderung (Kündigung erledigt, Abo beendet) steht mit der handelnden Perso
   4. Lehnt der Anbieter ab, bleibt die Rechnung unverändert und die Erstattung „fehlgeschlagen“. Ein neuer Versuch ist möglich.
 - „Offene Raten entfallen lassen“ beendet eine Bestellung: offene Raten werden storniert, ein Abo endet heute. Bereits Bezahltes wird nur über die Erstattung zurückgezahlt.
 - Bei einem Widerruf: erst „Offene Raten entfallen lassen“, dann jede bezahlte Rechnung erstatten.
+
+## Abo-Umzug aus Thrivecart
+
+Unter **Abo-Umzug** (Admin, Prüfung) stehen alle Thrivecart-Abos und Ratenpläne, die noch laufen
+(aktiv, pausiert, überfällig, Probezeit), aus den Altdaten. Nur lesen. Je Abo der Umzugsweg nach
+Zahlungsanbieter: PayPal-Abos bleiben bei PayPal (nur die Abrechnung zieht um), Stripe im eigenen Konto
+zieht ohne Zutun der Kundin um, ThrivePay hängt davon ab, wem das Stripe-Konto gehört. Die Übersicht zählt
+außerdem Ratenpläne mit höchstens drei offenen Zahlungen (können in Thrivecart auslaufen), Abos ohne
+Anbieter-ID und ohne zugeordnetes Produkt.
