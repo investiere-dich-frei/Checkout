@@ -8,7 +8,7 @@ import { ACCESS_DELAY_DAYS } from "./legal.ts";
  * über „<Zeitstempel>.<Inhalt>“, damit der Empfänger (n8n) Fälschungen erkennt.
  */
 
-export type WebhookEvent = "zahlung.eingegangen" | "zahlung.erstattet" | "zahlung.teilerstattet" | "abo.beendet" | "bestellung.beendet" | "abo.pausiert" | "abo.fortgesetzt";
+export type WebhookEvent = "zahlung.eingegangen" | "zahlung.erstattet" | "zahlung.teilerstattet" | "zahlung.fehlgeschlagen" | "abo.beendet" | "bestellung.beendet" | "abo.pausiert" | "abo.fortgesetzt";
 
 /** Bestellung mit Kundin und Produkt, wie sie Empfänger für Kurszugang und CRM brauchen. */
 async function orderPayload(client: pg.ClientBase, orderId: string) {

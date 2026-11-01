@@ -1,5 +1,6 @@
 import { canChange, canSeeAll, orderDetail } from "@idf/db/admin";
 import { listPauses } from "@idf/db/billing";
+import { dunningNoticesOfOrder } from "@idf/db/dunning";
 import { takeoverOfOrder } from "@idf/db/takeover";
 import { notFound } from "next/navigation";
 import { pool } from "../../../../lib/db";
@@ -11,6 +12,12 @@ import { ActionForm } from "../../produkte/forms";
 import { RefundForm } from "./refund-form";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const DUNNING_LABELS: Record<string, string> = {
+  erinnerung: "Erinnerung vor Abbuchung",
+  fehlgeschlagen: "Abbuchung fehlgeschlagen",
+  letzte_mahnung: "Letzte Mahnung",
+  karte_ablauf: "Karte läuft ab",
+};
 const dateTime = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", dateStyle: "medium", timeStyle: "short" });
 
 export default async function OrderAdminPage(props: { params: Promise<{ id: string }> }) {
@@ -24,6 +31,7 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
   const today = todayBerlin();
   const pauses = h.is_abo ? await listPauses(pool(), id) : [];
   const takeover = await takeoverOfOrder(pool(), id);
+  const dunning = await dunningNoticesOfOrder(pool(), id);
   const openPause = pauses.find((p) => !p.endedBy && (p.endsOn === null || p.endsOn >= today));
   const pauseText = (p: { startsOn: string; endsOn: string | null }) =>
     p.endsOn !== null && p.endsOn < p.startsOn ? `${formatDay(p.startsOn)} (aufgehoben)` : `${formatDay(p.startsOn)} bis ${p.endsOn ? formatDay(p.endsOn) : "auf Weiteres"}`;
@@ -222,7 +230,7 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
         )}
       </section>
 
-      {(d.notices.length > 0 || d.attempts.length > 0) && (
+      {(d.notices.length > 0 || d.attempts.length > 0 || dunning.length > 0) && (
         <section className="card">
           {d.notices.length > 0 && (
             <>
@@ -245,6 +253,19 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
                   <li key={idx}>
                     Rate {a.seq} · {dateTime.format(a.attempted_at)} · {a.provider} · {a.outcome}
                     {a.error_code && ` (${a.error_code})`}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          {dunning.length > 0 && (
+            <>
+              <h2>Erinnerungen und Mahnungen</h2>
+              <ul>
+                {dunning.map((n, idx) => (
+                  <li key={idx}>
+                    {DUNNING_LABELS[n.kind] ?? n.kind}
+                    {n.seq !== null && ` · Rate ${n.seq}`} · {dateTime.format(n.created_at)} · {n.sent_at ? "verschickt" : "im Postausgang"}
                   </li>
                 ))}
               </ul>

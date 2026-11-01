@@ -6,17 +6,17 @@ import { ACCESS_DELAY_DAYS, SOFORTSTART_TEXT, SOFORTSTART_VERSION } from "./lega
  * (siehe mail-outbox.ts), in derselben Transaktion wie ihr Anlass.
  */
 
-const euro = (cents: number, currency: string) =>
+export const euro = (cents: number, currency: string) =>
   new Intl.NumberFormat("de-DE", { style: "currency", currency }).format(cents / 100);
-const day = (d: string) => d.split("-").reverse().join(".");
+export const day = (d: string) => d.split("-").reverse().join(".");
 const percent = (bp: number) => `${(bp / 100).toLocaleString("de-DE")} %`;
 
-function salutation(c: { first_name: string | null; last_name: string | null; company_name: string | null }): string {
+export function salutation(c: { first_name: string | null; last_name: string | null; company_name: string | null }): string {
   const name = [c.first_name, c.last_name].filter(Boolean).join(" ") || c.company_name;
   return name ? `Hallo ${name},` : "Hallo,";
 }
 
-function companyFooter(co: { legal_name: string; street: string; postal_code: string; city: string; vat_id: string | null; register_info: string | null }) {
+export function companyFooter(co: { legal_name: string; street: string; postal_code: string; city: string; vat_id: string | null; register_info: string | null }) {
   return [co.legal_name, co.street, `${co.postal_code} ${co.city}`, co.vat_id ? `USt-IdNr.: ${co.vat_id}` : null, co.register_info]
     .filter(Boolean)
     .join("\n");

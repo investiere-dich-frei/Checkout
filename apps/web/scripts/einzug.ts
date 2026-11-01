@@ -1,6 +1,7 @@
 import pg from "pg";
 import Stripe from "stripe";
 import { runCharging } from "../lib/charging";
+import { runDunning } from "../lib/dunning";
 import { todayBerlin } from "../lib/format";
 import { isPaypalLive, paypal } from "../lib/paypal";
 import { assertTestDatabase, parseStichtag } from "../lib/stichtag";
@@ -38,7 +39,18 @@ try {
   const api = paypal();
   const abo = api ? await syncPaypalAbos(pool, api, stichtag ?? todayBerlin(), isPaypalLive()) : null;
   if (abo) console.log("PayPal-Abos:", abo);
-  process.exitCode = run.errors || abo?.errors ? 1 : 0;
+  // Mahnwesen nach dem Einzug, damit Ablehnungen von heute gleich gemeldet werden.
+  const base = process.env.PUBLIC_BASE_URL;
+  let dunningErrors = 0;
+  if (base) {
+    const dunning = await runDunning(pool, stripe, stichtag ?? todayBerlin(), base);
+    console.log("Mahnwesen:", dunning);
+    dunningErrors = dunning.errors;
+  } else {
+    console.error("PUBLIC_BASE_URL fehlt: Mahnwesen übersprungen (Links zum Kundenbereich brauchen die Adresse).");
+    dunningErrors = 1;
+  }
+  process.exitCode = run.errors || abo?.errors || dunningErrors ? 1 : 0;
 } finally {
   await pool.end();
 }

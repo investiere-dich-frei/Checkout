@@ -27,7 +27,8 @@
     "./customers": "./src/customers.ts",
     "./takeover": "./src/takeover.ts",
     "./customer-portal": "./src/customer-portal.ts",
-    "./accounting": "./src/accounting.ts"
+    "./accounting": "./src/accounting.ts",
+    "./dunning": "./src/dunning.ts"
   },
   "scripts": {
     "migrate": "tsx src/cli.ts",
