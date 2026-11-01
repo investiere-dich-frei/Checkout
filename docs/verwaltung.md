@@ -105,3 +105,17 @@ einmal, auf die älteste offene Fälligkeit (±5 Tage), bei genau passendem Betr
 aus der Zeit vor dem Umzug bleiben bei Thrivecart. In Thrivecart danach nur die Abrechnung beenden, nie
 „Cancel“ (kündigt das PayPal-Abo mit). Erstattungen und Kündigungen übernommener PayPal-Abos laufen noch
 nicht über die Kasse.
+
+## Kundenbereich (für Kundinnen)
+
+Unter `/konto` fordert eine Kundin mit ihrer E-Mail-Adresse einen Link an (höchstens dreimal je Stunde,
+bei unbekannter Adresse passiert nichts, die Seite meldet trotzdem dasselbe). Aus der Verwaltung schickt
+„Link zum Kundenbereich schicken“ auf der Kundenseite denselben Link. Er gilt 7 Tage; gespeichert wird
+nur sein Hash (`app.customer_portal_links`, Migration 0027).
+
+Im Kundenbereich stehen alle Bestellungen zur Adresse mit Zahlplan und Rechnungs-PDFs, Abos und Raten, die
+noch über Thrivecart laufen (nur zur Info), und die Links zu Kündigung und Widerruf. Bei Raten und Abos mit
+Kartenzahlung gibt es „Karte bzw. Zahlungsart ändern“: neue Zahlungsart per Stripe (SetupIntent, nichts wird
+abgebucht), sie gilt ab dann für die Einzüge. Ist eine fällige Rate fehlgeschlagen, wird sie direkt danach
+mit der neuen Karte eingezogen (Audit-Log: `kundin:kundenbereich`). PayPal-Abos verwaltet die Kundin in
+ihrem PayPal-Konto.

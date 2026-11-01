@@ -64,7 +64,7 @@ export async function preparePayment(api: Stripe | null, orderId: string): Promi
   return { state: "bereit", target, clientSecret: intent.client_secret };
 }
 
-async function ensureStripeCustomer(
+export async function ensureStripeCustomer(
   api: Stripe,
   who: { customerId: string; stripeCustomerId: string | null; email: string; name: string },
 ): Promise<string> {
