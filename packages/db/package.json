@@ -29,7 +29,8 @@
     "./customer-portal": "./src/customer-portal.ts",
     "./accounting": "./src/accounting.ts",
     "./dunning": "./src/dunning.ts",
-    "./team": "./src/team.ts"
+    "./team": "./src/team.ts",
+    "./throttle": "./src/throttle.ts"
   },
   "scripts": {
     "migrate": "tsx src/cli.ts",

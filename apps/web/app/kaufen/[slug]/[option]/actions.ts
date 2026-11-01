@@ -11,6 +11,8 @@ import { redirect } from "next/navigation";
 import { parseCheckoutForm, type FieldErrors } from "../../../../lib/checkout-form";
 import { pool, transaction } from "../../../../lib/db";
 import { todayBerlin } from "../../../../lib/format";
+import { clientIp, guardCouponCheck, guardOrder } from "../../../../lib/order-guard";
+import { createChallenge } from "../../../../lib/pow";
 import { checkVatId, splitVatId, type ViesResult } from "../../../../lib/vies";
 
 export interface CheckoutState {
@@ -18,6 +20,8 @@ export interface CheckoutState {
   message: string | null;
   /** Eingaben zurück an das Formular, damit nach einem Fehler nichts verloren geht. */
   values: Record<string, string>;
+  /** Neue Rechenaufgabe für den nächsten Versuch (jede gilt nur einmal). */
+  challenge: string;
 }
 
 const KEPT_FIELDS = ["first_name", "last_name", "company_name", "email", "street", "postal_code", "city", "vat_id", "coupon"];
@@ -28,6 +32,9 @@ export type CouponPreview = { ok: true; code: string; discount: Discount; text: 
 export async function checkCouponAction(code: string, priceOptionId: string): Promise<CouponPreview> {
   if (!code.trim()) return { ok: false, message: "Bitte einen Gutscheincode eingeben." };
   try {
+    if (!(await guardCouponCheck(pool(), clientIp((await headers()).get("x-forwarded-for"))))) {
+      return { ok: false, message: "Zu viele Versuche. Bitte versuche es später noch einmal." };
+    }
     const r = await findCoupon(pool(), code, priceOptionId);
     if (!r.ok) return r;
     const d = r.coupon.discount;
@@ -43,9 +50,23 @@ export async function checkCouponAction(code: string, priceOptionId: string): Pr
 }
 
 export async function submitOrder(_prev: CheckoutState, form: FormData): Promise<CheckoutState> {
+  // Bei Erfolg leitet placeFromForm weiter; jede Rückmeldung bekommt eine neue Rechenaufgabe.
+  return { ...(await placeFromForm(form)), challenge: createChallenge() };
+}
+
+async function placeFromForm(form: FormData): Promise<Omit<CheckoutState, "challenge">> {
   const values = Object.fromEntries(KEPT_FIELDS.map((k) => [k, String(form.get(k) ?? "")]));
   const parsed = parseCheckoutForm(form);
   if (!parsed.ok) return { errors: parsed.errors, message: "Bitte prüfe die markierten Angaben.", values };
+
+  // Schutz gegen Kartentests: Rechenaufgabe und Grenzen je IP- und E-Mail-Adresse.
+  const guard = await guardOrder(pool(), {
+    challenge: String(form.get("pow_challenge") ?? ""),
+    nonce: String(form.get("pow_nonce") ?? ""),
+    ip: clientIp((await headers()).get("x-forwarded-for")),
+    email: parsed.value.customer.email,
+  });
+  if (!guard.ok) return { errors: {}, message: guard.message, values };
 
   const priceOptionId = String(form.get("price_option_id") ?? "");
   const sellerCode = String(form.get("seller") ?? "");
