@@ -34,11 +34,7 @@ export async function requestPortalLink(client: pg.ClientBase, email: string, ba
     );
     if (recent.rows[0]!.n >= PORTAL_LINKS_PER_HOUR) return false;
   }
-  const t = randomBytes(32).toString("base64url");
-  await client.query(
-    `insert into app.customer_portal_links (email_key, token_hash, expires_at, created_by) values ($1, $2, now() + $3 * interval '1 day', $4)`,
-    [key, hash(t), PORTAL_LINK_DAYS, createdBy],
-  );
+  const t = await createPortalToken(client, key, createdBy);
   const name = [c.first_name, c.last_name].filter(Boolean).join(" ") || c.company_name;
   await client.query(`insert into app.mail_outbox (purpose, to_address, subject, body_text) values ('kundenbereich', $1, $2, $3)`, [
     key,
@@ -53,6 +49,17 @@ export async function requestPortalLink(client: pg.ClientBase, email: string, ba
     ].join("\n"),
   ]);
   return true;
+}
+
+/** Neuen Link-Schlüssel anlegen (nur der Hash wird gespeichert) und zurückgeben, ohne E-Mail. */
+export async function createPortalToken(client: pg.ClientBase, email: string, createdBy: string, days = PORTAL_LINK_DAYS): Promise<string> {
+  const key = email.trim().toLowerCase();
+  const t = randomBytes(32).toString("base64url");
+  await client.query(
+    `insert into app.customer_portal_links (email_key, token_hash, expires_at, created_by) values ($1, $2, now() + $3 * interval '1 day', $4)`,
+    [key, hash(t), days, createdBy],
+  );
+  return t;
 }
 
 /** E-Mail-Adresse (klein) zum Link, oder null, wenn er unbekannt oder abgelaufen ist. */

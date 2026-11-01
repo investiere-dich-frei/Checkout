@@ -73,6 +73,25 @@ Jede Änderung (Kündigung erledigt, Abo beendet) steht mit der handelnden Perso
 - „Offene Raten entfallen lassen“ beendet eine Bestellung: offene Raten werden storniert, ein Abo endet heute. Bereits Bezahltes wird nur über die Erstattung zurückgezahlt.
 - Bei einem Widerruf: erst „Offene Raten entfallen lassen“, dann jede bezahlte Rechnung erstatten.
 
+## Mahnwesen (automatisch)
+
+Der tägliche Einzug (`pnpm einzug`, Timer auf dem App-Server) verschickt danach diese E-Mails, jede höchstens einmal
+(`app.dunning_notices`, festgeschrieben). Jede enthält einen persönlichen Link zum Kundenbereich (14 Tage gültig),
+über den die Kundin die Karte ändert; eine fehlgeschlagene Rate wird nach dem Wechsel gleich abgebucht.
+
+| E-Mail | Wann |
+| --- | --- |
+| Erinnerung | 7 Tage vor einer automatischen Abbuchung, nur bei Abständen ab 3 Monaten (Quartal, Jahr) |
+| Abbuchung fehlgeschlagen | nach jedem abgelehnten Versuch, mit Datum des nächsten Versuchs (nach 3, dann 4 Tagen) |
+| Zahlungsart fehlt | Rate fällig, aber keine Karte hinterlegt |
+| Letzte Mahnung | nach dem dritten abgelehnten Versuch; danach wird nicht mehr automatisch abgebucht |
+| Karte läuft ab | die Karte gilt nicht mehr bis zur nächsten Abbuchung (Ablaufdatum wird bei Stripe gelesen, nur Marke, letzte vier Ziffern, Monat/Jahr) |
+
+Nicht gemahnt werden Bestellungen per Rechnung, übernommene PayPal-Abos (PayPal mahnt selbst), pausierte und beendete
+Bestellungen sowie Fehlversuche, die älter als 7 Tage sind. Die Bestellseite zeigt alle verschickten Erinnerungen und
+Mahnungen. Bei „fehlgeschlagen“ und „letzte Mahnung“ geht die Meldung `zahlung.fehlgeschlagen` an n8n.
+Der Lauf braucht `PUBLIC_BASE_URL` für die Links.
+
 ## Abo-Umzug aus Thrivecart
 
 Unter **Abo-Umzug** (Admin, Prüfung) stehen alle Thrivecart-Abos und Ratenpläne, die noch laufen
