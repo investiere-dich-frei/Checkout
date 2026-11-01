@@ -125,6 +125,56 @@ export async function dueCharges(client: Db, today: string): Promise<DueCharge[]
   return result;
 }
 
+/** Warum eine Rate gerade nicht von Hand eingezogen werden kann. */
+export type ManualChargeBlock = "nicht_gefunden" | "nicht_offen" | "noch_nicht_faellig" | "unterwegs" | "per_rechnung" | "bestellung_beendet" | "keine_zahlungsart";
+
+/**
+ * Eine offene oder fehlgeschlagene Rate sofort einziehen (Knopf in der Verwaltung), ohne die
+ * Wartezeit und die Höchstzahl des täglichen Laufs. Nie, solange ein Einzug unterwegs ist,
+ * vor der Fälligkeit oder bei Bestellungen per Rechnung.
+ */
+export async function manualChargeTarget(db: Db, installmentId: string, today: string): Promise<{ ok: true; charge: DueCharge } | { ok: false; reason: ManualChargeBlock }> {
+  const { rows } = await db.query(
+    `select i.id, i.order_id, i.seq, i.due_date::text, i.gross_cents, i.status, o.status order_status, o.currency, o.customer_id,
+            coalesce(a.n, 0) attempts, a.last_outcome,
+            exists (select 1 from app.manual_orders mo where mo.order_id = o.id) manual,
+            m.provider, m.ref, m.provider_customer
+       from app.order_installments i
+       join app.orders o on o.id = i.order_id
+       left join lateral (
+         select count(*)::int n, (array_agg(outcome order by attempted_at desc))[1] last_outcome
+           from app.charge_attempts x where x.installment_id = i.id) a on true
+       left join lateral (
+         select provider, ref, provider_customer from app.saved_payment_methods s
+          where s.customer_id = o.customer_id and s.revoked_at is null
+          order by s.created_at desc limit 1) m on true
+      where i.id = $1`,
+    [installmentId],
+  );
+  const r = rows[0];
+  if (!r) return { ok: false, reason: "nicht_gefunden" };
+  if (r.status !== "offen" && r.status !== "fehlgeschlagen") return { ok: false, reason: "nicht_offen" };
+  if (r.order_status === "storniert" || r.order_status === "erstattet") return { ok: false, reason: "bestellung_beendet" };
+  if (r.manual) return { ok: false, reason: "per_rechnung" };
+  if (r.due_date > today) return { ok: false, reason: "noch_nicht_faellig" };
+  if (r.last_outcome === "eingereicht") return { ok: false, reason: "unterwegs" };
+  if (!r.provider) return { ok: false, reason: "keine_zahlungsart" };
+  return {
+    ok: true,
+    charge: {
+      installmentId: r.id,
+      orderId: r.order_id,
+      seq: r.seq,
+      dueDate: r.due_date,
+      grossCents: Number(r.gross_cents),
+      currency: r.currency,
+      customerId: r.customer_id,
+      attempts: Number(r.attempts),
+      method: { provider: r.provider, ref: r.ref, providerCustomer: r.provider_customer },
+    },
+  };
+}
+
 /** Einzugsversuch festhalten. Bei Ablehnung wird die Fälligkeit als fehlgeschlagen markiert. */
 export async function recordChargeAttempt(
   client: Db,

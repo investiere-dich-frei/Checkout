@@ -1,4 +1,5 @@
-import { dueCharges, extendSubscriptions, recordChargeAttempt, type DueCharge } from "@idf/db/billing";
+import { AsyncLocalStorage } from "node:async_hooks";
+import { dueCharges, extendSubscriptions, manualChargeTarget, recordChargeAttempt, type DueCharge, type ManualChargeBlock } from "@idf/db/billing";
 import { handlePaypalCapture, rememberPaypalOrder } from "@idf/db/paypal";
 import { rememberPaymentIntent } from "@idf/db/stripe";
 import type pg from "pg";
@@ -20,11 +21,15 @@ export interface ChargeRun {
   errors: number;
 }
 
+// Handelnde Stelle fürs Audit-Log: der tägliche Lauf oder die Person, die in der Verwaltung klickt.
+const actorStore = new AsyncLocalStorage<string>();
+
 async function inTx<T>(pool: pg.Pool, fn: (c: pg.PoolClient) => Promise<T>): Promise<T> {
+  const actor = actorStore.getStore() ?? "system:einzug";
   const c = await pool.connect();
   try {
     await c.query("begin");
-    await c.query(`select set_config('app.actor', 'system:einzug', true)`);
+    await c.query(`select set_config('app.actor', $1, true)`, [actor]);
     const r = await fn(c);
     await c.query("commit");
     return r;
@@ -144,4 +149,34 @@ export async function runCharging(pool: pg.Pool, apis: { stripe: Stripe | null; 
     }
   }
   return run;
+}
+
+export type ChargeNowResult =
+  | { ok: true; outcome: "eingereicht" | "gebucht" | "abgelehnt" | "fehler" }
+  | { ok: false; reason: ManualChargeBlock | "anbieter_fehlt" };
+
+/**
+ * Eine Rate sofort einziehen (Knopf „jetzt erneut abbuchen“ in der Verwaltung). Gleicher Weg wie der
+ * tägliche Lauf: Versuch wird festgehalten, die Buchung kommt über den Webhook bzw. die PayPal-Antwort.
+ */
+export async function chargeNow(
+  pool: pg.Pool,
+  apis: { stripe: Stripe | null; paypal: PaypalApi | null },
+  installmentId: string,
+  today: string,
+  actor: string,
+): Promise<ChargeNowResult> {
+  return actorStore.run(actor, () => chargeNowInner(pool, apis, installmentId, today));
+}
+
+async function chargeNowInner(pool: pg.Pool, apis: { stripe: Stripe | null; paypal: PaypalApi | null }, installmentId: string, today: string): Promise<ChargeNowResult> {
+  const t = await manualChargeTarget(pool, installmentId, today);
+  if (!t.ok) return t;
+  const run: ChargeRun = { extended: 0, due: 1, submitted: 0, booked: 0, declined: 0, withoutMethod: 0, errors: 0 };
+  const m = t.charge.method!;
+  if (m.provider === "stripe" && apis.stripe) await chargeStripe(pool, apis.stripe, t.charge, run);
+  else if (m.provider === "paypal" && apis.paypal) await chargePaypal(pool, apis.paypal, t.charge, run);
+  else return { ok: false, reason: "anbieter_fehlt" };
+  const outcome = run.booked ? "gebucht" : run.submitted ? "eingereicht" : run.declined ? "abgelehnt" : "fehler";
+  return { ok: true, outcome };
 }
