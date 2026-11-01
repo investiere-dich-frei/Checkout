@@ -26,7 +26,8 @@
     "./manual-orders": "./src/manual-orders.ts",
     "./customers": "./src/customers.ts",
     "./takeover": "./src/takeover.ts",
-    "./customer-portal": "./src/customer-portal.ts"
+    "./customer-portal": "./src/customer-portal.ts",
+    "./accounting": "./src/accounting.ts"
   },
   "scripts": {
     "migrate": "tsx src/cli.ts",
