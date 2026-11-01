@@ -40,4 +40,4 @@ Nicht automatisch: Mahnung und Storno nach Fristablauf. Überfällige Rechnungen
 ## Bankverbindung
 
 `app.companies.bank_name`, `iban`, `bic`. Migration 0023 trägt die Bankverbindung aus den bisherigen n8n-Rechnungen ein
-(Hannoversche Volksbank). Sie kommt über den Schnappschuss der Gesellschaft unverändert in jede Rechnung.
+(Hannoversche Volksbank). Sie kommt über den Schnappschuss der Gesellschaft unverändert in jede Rechnung. Migration 0024 ergänzt die BIC VOHADE2HXXX (von Christian am 01.11.2026 bestätigtes Konto, BLZ 25190001).
