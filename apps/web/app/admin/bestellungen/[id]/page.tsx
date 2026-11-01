@@ -1,5 +1,6 @@
 import { canChange, canSeeAll, orderDetail } from "@idf/db/admin";
 import { listPauses } from "@idf/db/billing";
+import { takeoverOfOrder } from "@idf/db/takeover";
 import { notFound } from "next/navigation";
 import { pool } from "../../../../lib/db";
 import { formatCents, formatDay, formatRate, todayBerlin } from "../../../../lib/format";
@@ -22,6 +23,7 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
   const name = h.company_name || [h.first_name, h.last_name].filter(Boolean).join(" ");
   const today = todayBerlin();
   const pauses = h.is_abo ? await listPauses(pool(), id) : [];
+  const takeover = await takeoverOfOrder(pool(), id);
   const openPause = pauses.find((p) => !p.endedBy && (p.endsOn === null || p.endsOn >= today));
   const pauseText = (p: { startsOn: string; endsOn: string | null }) =>
     p.endsOn !== null && p.endsOn < p.startsOn ? `${formatDay(p.startsOn)} (aufgehoben)` : `${formatDay(p.startsOn)} bis ${p.endsOn ? formatDay(p.endsOn) : "auf Weiteres"}`;
@@ -40,6 +42,14 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
           <p className="notice-box">
             Bestellung per Rechnung (Überweisung). Zahlungen, Storno und Rückzahlung laufen über{" "}
             <a href={`/admin/manuell/${id}`}>Manuelle Bestellungen</a>.
+          </p>
+        )}
+        {takeover && (
+          <p className="notice-box">
+            Aus Thrivecart übernommen (Abo {takeover.subscription_id}, {takeover.route === "paypal" ? "PayPal" : "Stripe"} {takeover.remote_subscription_id}).
+            Zahlungen vor dem {formatDay(takeover.first_due_on)} stehen in Thrivecart.
+            {takeover.remaining_payments ? ` Beim Umzug waren noch ${takeover.remaining_payments} Raten offen.` : ""}
+            {takeover.thrivecart_stopped_at ? " Abrechnung in Thrivecart beendet." : " Abrechnung in Thrivecart noch nicht als beendet abgehakt (Verwaltung → Abo-Umzug)."}
           </p>
         )}
         <h2>Kundin</h2>

@@ -66,8 +66,33 @@ Jede Änderung (Kündigung erledigt, Abo beendet) steht mit der handelnden Perso
 ## Abo-Umzug aus Thrivecart
 
 Unter **Abo-Umzug** (Admin, Prüfung) stehen alle Thrivecart-Abos und Ratenpläne, die noch laufen
-(aktiv, pausiert, überfällig, Probezeit), aus den Altdaten. Nur lesen. Je Abo der Umzugsweg nach
-Zahlungsanbieter: PayPal-Abos bleiben bei PayPal (nur die Abrechnung zieht um), Stripe im eigenen Konto
-zieht ohne Zutun der Kundin um, ThrivePay hängt davon ab, wem das Stripe-Konto gehört. Die Übersicht zählt
-außerdem Ratenpläne mit höchstens drei offenen Zahlungen (können in Thrivecart auslaufen), Abos ohne
-Anbieter-ID und ohne zugeordnetes Produkt.
+(aktiv, pausiert, überfällig, Probezeit), aus den Altdaten. Je Abo der Umzugsweg nach Zahlungsanbieter:
+PayPal-Abos bleiben bei PayPal (nur die Abrechnung zieht um), Stripe klassisch und ThrivePay liegen im
+eigenen Stripe-Konto und ziehen ohne Zutun der Kundin um. Die Übersicht zählt außerdem Ratenpläne mit
+höchstens drei offenen Zahlungen (können in Thrivecart auslaufen), Abos ohne Anbieter-ID, ohne
+zugeordnetes Produkt und schon übernommene.
+
+### Abo übernehmen (Stripe und ThrivePay, nur Admin)
+
+„Übernehmen“ in der Zeile eines laufenden Abos:
+
+1. liest das Stripe-Abo: Stripe-Kunde, Standardkarte, Ende der laufenden Periode;
+2. legt eine Bestellung im neuen System an, die mit der nächsten Zahlung (Periodenende, Berliner Tag)
+   beginnt. Betrag und Rhythmus wie in Thrivecart, Steuer nach Produkt und Land wie bei jedem Kauf.
+   Ratenplan: die noch offenen Raten werden festgeschrieben. Abo ohne Ende: erste Fälligkeit plus
+   festgeschriebene Bedingungen, weitere legt der tägliche Lauf an. Keine Rechnung beim Umzug; die erste
+   Rechnung im Kreis IDF-n kommt mit der ersten Zahlung;
+3. merkt die Karte für den täglichen Einzug (bei übernommenen Bestellungen schon ab der ersten Rate);
+4. kündigt das Stripe-Abo zum Ende der Periode, damit nicht doppelt abgebucht wird. Scheitert das,
+   wird nichts angelegt.
+
+Danach in Thrivecart die Abrechnung beenden, ohne das Abo bei Stripe oder PayPal zu kündigen, und in der
+Zeile „In Thrivecart beendet“ abhaken. Nicht übernommen werden: pausierte und überfällige Abos, Abos ohne
+zugeordnetes Produkt oder ohne bestätigte Steuer, wöchentliche oder unbekannte Rhythmen und Abos, deren
+nächste Zahlung heute oder früher ist. Hat die Kundin eine USt-IdNr., muss „USt-IdNr. geprüft“ angehakt
+sein (dann Reverse Charge). Jede Übernahme steht in `app.thrivecart_takeovers` (festgeschrieben, nur das
+Ende in Thrivecart wird einmal nachgetragen) und im Audit-Log. Meldungen an n8n tragen
+`order.thrivecart_takeover`, damit kein neuer Kurszugang entsteht (siehe `docs/webhooks.md`).
+
+PayPal-Abos lassen sich erst übernehmen, wenn ihre Zahlungen per PayPal-Meldung verbucht werden
+(nächster Schritt). Die Datenbank schließt übernommene PayPal-Abos schon jetzt vom eigenen Einzug aus.

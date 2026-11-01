@@ -25,7 +25,11 @@ async function orderPayload(client: pg.ClientBase, orderId: string) {
                                'external_refs', p.external_refs) product,
             jsonb_build_object('id', po.id, 'label', po.label, 'kind', po.kind, 'interval_months', po.interval_months,
                                'thrivecart_option_id', po.thrivecart_option_id) price_option,
-            u.sales_code seller
+            u.sales_code seller,
+            -- Aus Thrivecart übernommen: Kurszugang besteht schon, der Empfänger legt keinen neuen an.
+            (select jsonb_build_object('subscription_id', t.subscription_id, 'route', t.route,
+                                       'remote_subscription_id', t.remote_subscription_id, 'first_due_on', t.first_due_on)
+               from app.thrivecart_takeovers t where t.order_id = o.id) thrivecart_takeover
        from app.orders o
        join app.customers c on c.id = o.customer_id
        join app.order_items it on it.order_id = o.id

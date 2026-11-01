@@ -96,8 +96,13 @@ export async function dueCharges(client: Db, today: string): Promise<DueCharge[]
        join app.order_items it on it.id = i.order_item_id
        join app.price_options po on po.id = it.price_option_id
       -- Ab der zweiten Zahlung; bei Probezeit ohne Anzahlung (erste Zahlung 0) auch die erste.
-      where i.status in ('offen', 'fehlgeschlagen') and (i.seq > 1 or po.amount_cents = 0) and i.due_date <= $1
+      where i.status in ('offen', 'fehlgeschlagen') and i.due_date <= $1
+        and (i.seq > 1 or po.amount_cents = 0
+             -- Aus Thrivecart übernommen: Die Karte liegt schon vor, auch die erste Zahlung wird eingezogen.
+             or exists (select 1 from app.thrivecart_takeovers t where t.order_id = o.id))
         and o.status not in ('storniert', 'erstattet')
+        -- Übernommene PayPal-Abos bucht PayPal selbst ab; die Zahlung kommt per Meldung von PayPal.
+        and not exists (select 1 from app.thrivecart_takeovers t where t.order_id = o.id and t.route = 'paypal')
         -- Bestellungen per Rechnung zahlt die Kundin selbst per Überweisung.
         and not exists (select 1 from app.manual_orders m where m.order_id = o.id)
         -- Nie während einer Pause (die Fälligkeiten darin sind ohnehin erlassen).
@@ -133,7 +138,15 @@ export async function dueCharges(client: Db, today: string): Promise<DueCharge[]
 }
 
 /** Warum eine Rate gerade nicht von Hand eingezogen werden kann. */
-export type ManualChargeBlock = "nicht_gefunden" | "nicht_offen" | "noch_nicht_faellig" | "unterwegs" | "per_rechnung" | "bestellung_beendet" | "keine_zahlungsart";
+export type ManualChargeBlock =
+  | "nicht_gefunden"
+  | "nicht_offen"
+  | "noch_nicht_faellig"
+  | "unterwegs"
+  | "per_rechnung"
+  | "bestellung_beendet"
+  | "keine_zahlungsart"
+  | "paypal_abo";
 
 /**
  * Eine offene oder fehlgeschlagene Rate sofort einziehen (Knopf in der Verwaltung), ohne die
@@ -145,6 +158,7 @@ export async function manualChargeTarget(db: Db, installmentId: string, today: s
     `select i.id, i.order_id, i.seq, i.due_date::text, i.gross_cents, i.status, o.status order_status, o.currency, o.customer_id,
             coalesce(a.n, 0) attempts, a.last_outcome,
             exists (select 1 from app.manual_orders mo where mo.order_id = o.id) manual,
+            exists (select 1 from app.thrivecart_takeovers t where t.order_id = o.id and t.route = 'paypal') paypal_abo,
             m.provider, m.ref, m.provider_customer
        from app.order_installments i
        join app.orders o on o.id = i.order_id
@@ -163,6 +177,7 @@ export async function manualChargeTarget(db: Db, installmentId: string, today: s
   if (r.status !== "offen" && r.status !== "fehlgeschlagen") return { ok: false, reason: "nicht_offen" };
   if (r.order_status === "storniert" || r.order_status === "erstattet") return { ok: false, reason: "bestellung_beendet" };
   if (r.manual) return { ok: false, reason: "per_rechnung" };
+  if (r.paypal_abo) return { ok: false, reason: "paypal_abo" };
   if (r.due_date > today) return { ok: false, reason: "noch_nicht_faellig" };
   if (r.last_outcome === "eingereicht") return { ok: false, reason: "unterwegs" };
   if (!r.provider) return { ok: false, reason: "keine_zahlungsart" };

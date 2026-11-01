@@ -20,6 +20,8 @@ Für den Kurszugang trägt die Bestellung außerdem (Widerruf und Sofortstart, S
 - `sofortstart_at`: Zeitpunkt, zu dem die Kundin den Sofortstart verlangt hat, sonst `null`;
 - `access_from`: Tag, ab dem der Zugang freigeschaltet wird (`YYYY-MM-DD`). Mit Sofortstart oder bei Produkten mit Sofortzugang (Masterclass Essential, Thrivecart 166) der Kauftag, sonst Kauftag + 15 Tage. n8n schaltet frühestens an diesem Tag frei, wie beim Thrivecart-Kauf ohne Häkchen.
 
+Aus Thrivecart übernommene Abos (Abo-Umzug) tragen `order.thrivecart_takeover` mit `subscription_id`, `route` (`paypal`, `stripe`, `thrivepay`), `remote_subscription_id` und `first_due_on`, sonst `null`. Die Kundin hat ihren Zugang schon aus dem Thrivecart-Kauf. n8n legt für solche Bestellungen keinen neuen Zugang an und schickt keine Willkommensmail, verbucht die Zahlung aber wie gewohnt (HubSpot).
+
 ## Zustellung
 
 - Die Ereignisse entstehen in derselben Transaktion wie ihr Anlass (`app.webhook_outbox`).
