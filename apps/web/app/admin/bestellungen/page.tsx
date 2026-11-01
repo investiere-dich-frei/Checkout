@@ -1,33 +1,77 @@
-import { listOrders } from "@idf/db/admin";
+import { canSeeAll, listOrders, orderFilterOptions } from "@idf/db/admin";
 import { searchLegacyOrders } from "@idf/db/customers";
 import { pool } from "../../../lib/db";
-import { formatCents } from "../../../lib/format";
+import { formatCents, todayBerlin } from "../../../lib/format";
+import { filterQuery, PAYMENT_LABELS, readOrderFilter, STATE_LABELS, STATUS_LABELS, type FilterParams } from "../../../lib/order-filter";
 import { requireUser } from "../../../lib/session";
 import { OrderTable } from "../order-table";
 
 const day = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", dateStyle: "medium" });
+const PAGE = 50;
 
-export default async function OrdersPage(props: { searchParams: Promise<{ q?: string; seite?: string }> }) {
+export default async function OrdersPage(props: { searchParams: Promise<FilterParams & { seite?: string }> }) {
   const user = await requireUser();
-  const { q, seite } = await props.searchParams;
+  const params = await props.searchParams;
+  const { q, seite } = params;
   const page = Math.max(1, Number(seite) || 1);
-  const [orders, legacy] = await Promise.all([
-    listOrders(pool(), user, { search: q, limit: 50, offset: (page - 1) * 50 }),
-    page === 1 && q ? searchLegacyOrders(pool(), user, q) : Promise.resolve([]),
+  const filter = readOrderFilter(params);
+  const filtered = Object.keys(filter).some((k) => k !== "search");
+  const [orders, legacy, options] = await Promise.all([
+    listOrders(pool(), user, { ...filter, today: todayBerlin(), limit: PAGE, offset: (page - 1) * PAGE }),
+    page === 1 && q && !filtered ? searchLegacyOrders(pool(), user, q) : Promise.resolve([]),
+    orderFilterOptions(pool(), user),
   ]);
+  const admin = canSeeAll(user);
+  const select = (name: keyof FilterParams, label: string, entries: [string, string][]) => (
+    <label>
+      {label}
+      <select name={name} defaultValue={params[name] ?? ""}>
+        <option value="">Alle</option>
+        {entries.map(([v, l]) => (
+          <option key={v} value={v}>
+            {l}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
   return (
     <>
       <section className="card">
         <h1>Bestellungen</h1>
-        <form className="inline-form" role="search">
-          <label htmlFor="q">Suche nach Name, E-Mail, Produkt oder Bestellnummer</label>
-          <input id="q" name="q" type="search" defaultValue={q ?? ""} />
-          <button type="submit">Suchen</button>
+        <form className="filter-form" role="search">
+          <label className="filter-wide">
+            Suche nach Name, E-Mail, Produkt oder Bestellnummer
+            <input name="q" type="search" defaultValue={q ?? ""} />
+          </label>
+          <label>
+            Bestellt ab
+            <input name="von" type="date" defaultValue={params.von ?? ""} />
+          </label>
+          <label>
+            Bestellt bis
+            <input name="bis" type="date" defaultValue={params.bis ?? ""} />
+          </label>
+          {select("lage", "Lage", Object.entries(STATE_LABELS))}
+          {select("status", "Status", Object.entries(STATUS_LABELS))}
+          {select("zahlung", "Zahlungsart", Object.entries(PAYMENT_LABELS))}
+          {select("produkt", "Produkt", options.products.map((p) => [p.id, p.name]))}
+          {select("land", "Land", options.countries.map((c) => [c, c]))}
+          {admin && select("vertrieb", "Vertrieb", options.sellers.map((s) => [s.id, s.display_name]))}
+          <div className="filter-actions">
+            <button type="submit">Anzeigen</button>
+            {(filtered || q) && <a href="/admin/bestellungen">Filter zurücksetzen</a>}
+            {admin && <a href={`/admin/bestellungen/export?${filterQuery(params)}`}>Als CSV herunterladen</a>}
+          </div>
         </form>
+        {params.lage === "ueberfaellig" && (
+          <p className="note">Überfällig: Eine Rate oder Abozahlung ist fällig und noch offen oder fehlgeschlagen.</p>
+        )}
         <OrderTable orders={orders} />
+        {orders.length === 0 && <p className="note">Keine Bestellungen zu diesen Filtern.</p>}
         <p>
-          {page > 1 && <a href={`?${new URLSearchParams({ ...(q ? { q } : {}), seite: String(page - 1) })}`}>Zurück</a>}{" "}
-          {orders.length === 50 && <a href={`?${new URLSearchParams({ ...(q ? { q } : {}), seite: String(page + 1) })}`}>Weiter</a>}
+          {page > 1 && <a href={`?${filterQuery(params, { seite: String(page - 1) })}`}>Zurück</a>}{" "}
+          {orders.length === PAGE && <a href={`?${filterQuery(params, { seite: String(page + 1) })}`}>Weiter</a>}
         </p>
       </section>
       {legacy.length > 0 && (

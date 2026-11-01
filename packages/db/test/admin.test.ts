@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
-import { listOrders, openWork, orderDetail, resolveNotice, sellerLinks } from "../src/admin.ts";
+import { listOrders, openWork, orderDetail, orderFilterOptions, resolveNotice, sellerLinks } from "../src/admin.ts";
 import { endSession, redeemLogin, requestLogin, sessionUser, type SessionUser } from "../src/auth.ts";
 import { submitNotice } from "../src/notices.ts";
 import { placeOrder, type PlaceOrderInput } from "../src/orders.ts";
@@ -100,6 +100,40 @@ describe("Verwaltung: Anmeldung und Sichtbarkeit", () => {
 
     const links = await sellerLinks(db.pool, vera);
     assert.ok(links.every((l) => l.path.endsWith("?v=vera")));
+  });
+
+  it("filtert die Bestellliste nach Zeitraum, Lage, Land, Vertrieb und Zahlung", async () => {
+    const admin: SessionUser = { id: "00000000-0000-0000-0000-000000000000", email: "a@example.org", displayName: "A", role: "admin", salesCode: null };
+    const vera: SessionUser = { id: vertrieb, email: "vera@example.org", displayName: "Vera", role: "vertrieb", salesCode: "vera" };
+    const all = await listOrders(db.pool, admin);
+    assert.ok(all.length >= 2);
+    const ids = async (f: Parameters<typeof listOrders>[2]) => (await listOrders(db.pool, admin, f)).map((o) => o.id).sort();
+    const rows = (await db.pool.query(`select o.id, exists (select 1 from app.subscription_terms t where t.order_id = o.id) abo from app.orders o`)).rows;
+    const aboIds = rows.filter((r) => r.abo).map((r) => r.id).sort();
+    const ratenIds = rows.filter((r) => !r.abo).map((r) => r.id).sort();
+    assert.deepEqual(await ids({ state: "abo" }), aboIds);
+    assert.deepEqual(await ids({ state: "raten" }), ratenIds);
+    assert.deepEqual(await ids({ state: "einmal" }), []);
+    // Noch nichts bezahlt, Raten ab 2026-11-02 fällig: am 2026-12-15 überfällig, vorher nicht.
+    assert.ok((await ids({ state: "ueberfaellig", today: "2026-12-15" })).length >= ratenIds.length);
+    assert.deepEqual(await ids({ state: "ueberfaellig", today: "2025-01-01" }), []);
+    assert.deepEqual(await ids({ country: "de" }), all.map((o) => o.id).sort());
+    assert.deepEqual(await ids({ country: "AT" }), []);
+    assert.deepEqual(await ids({ payment: "keine" }), all.map((o) => o.id).sort());
+    assert.deepEqual(await ids({ payment: "stripe" }), []);
+    const today = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Berlin" }).format(new Date());
+    assert.equal((await ids({ from: today, to: today })).length, all.length);
+    assert.deepEqual(await ids({ to: "2020-01-01" }), []);
+    // Unsinnige Werte werden ignoriert statt zu Fehlern zu führen.
+    assert.equal((await ids({ from: "gestern", productId: "x", sellerId: "y" })).length, all.length);
+    const veraOrders = (await listOrders(db.pool, vera)).map((o) => o.id).sort();
+    assert.deepEqual(await ids({ sellerId: vertrieb }), veraOrders);
+    // Der Vertrieb kann über den Filter keine fremden Bestellungen sehen.
+    assert.deepEqual((await listOrders(db.pool, vera, { sellerId: "00000000-0000-0000-0000-000000000000" })).map((o) => o.id).sort(), veraOrders);
+    const opts = await orderFilterOptions(db.pool, admin);
+    assert.deepEqual(opts.countries, ["DE"]);
+    assert.ok(opts.sellers.some((s) => s.id === vertrieb));
+    assert.equal((await orderFilterOptions(db.pool, vera)).sellers.length, 0);
   });
 
   it("führt offene Kündigungen, bis ein Admin sie erledigt", async () => {

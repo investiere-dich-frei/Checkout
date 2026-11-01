@@ -136,7 +136,7 @@ describe("Rechnungen nach GoBD", () => {
     assert.ok(Number(storno.number_seq) > Number(inv.number_seq));
     await assert.rejects(
       tx(db.pool, (c) => issueInvoice(c, f, { kind: "storno", correctsInvoiceId: inv.id, netCents: -10000 })),
-      /invoices_one_storno_idx/,
+      /invoices_one_storno_idx|übersteigen/,
     );
   });
 

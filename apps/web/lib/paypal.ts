@@ -176,9 +176,11 @@ export class PaypalApi {
   }
 
   /** Zahlung (Capture) voll erstatten. */
-  async refundCapture(captureId: string, requestId: string): Promise<{ id: string; status: string }> {
+  /** Zahlung erstatten; ohne amount ganz, sonst den Teilbetrag. */
+  async refundCapture(captureId: string, requestId: string, amount?: { amountCents: number; currency: string }): Promise<{ id: string; status: string }> {
     if (!/^[A-Z0-9]{5,40}$/.test(captureId)) throw new PaypalError("Ungültige PayPal-Zahlungsnummer", 400);
-    return this.call(`/v2/payments/captures/${captureId}/refund`, {}, requestId);
+    const body = amount ? { amount: { currency_code: amount.currency.toUpperCase(), value: centsToPaypalAmount(amount.amountCents) } } : {};
+    return this.call(`/v2/payments/captures/${captureId}/refund`, body, requestId);
   }
 
   /** Signatur einer Webhook-Meldung bei PayPal prüfen lassen. */

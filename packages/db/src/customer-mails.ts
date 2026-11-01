@@ -131,7 +131,9 @@ export async function enqueueInvoiceMail(client: pg.ClientBase, invoiceId: strin
     "",
     inv.kind === "storno"
       ? `wir haben dir den Betrag der Rechnung ${inv.corrects_number} erstattet. Anbei die Stornorechnung ${inv.invoice_number} vom ${day(inv.issue_date)}.`
-      : `danke für deine Zahlung. Anbei deine Rechnung ${inv.invoice_number} vom ${day(inv.issue_date)}.`,
+      : inv.kind === "korrektur"
+        ? `wir haben dir einen Teil der Rechnung ${inv.corrects_number} erstattet. Anbei die Rechnungskorrektur ${inv.invoice_number} vom ${day(inv.issue_date)}.`
+        : `danke für deine Zahlung. Anbei deine Rechnung ${inv.invoice_number} vom ${day(inv.issue_date)}.`,
     "",
     ...items.rows.map((i) => `- ${i.description}: ${euro(Number(i.gross_cents), inv.currency)}`),
     "",
@@ -140,7 +142,7 @@ export async function enqueueInvoiceMail(client: pg.ClientBase, invoiceId: strin
     `Gesamt: ${euro(Number(inv.gross_cents), inv.currency)}`,
     ...items.rows.filter((i) => i.tax_exemption_note).map((i) => i.tax_exemption_note!),
     "",
-    inv.kind === "storno" ? "Die Erstattung erfolgt über die Zahlungsart, mit der du bezahlt hast." : "Der Betrag ist bereits bezahlt.",
+    inv.kind !== "rechnung" ? "Die Erstattung erfolgt über die Zahlungsart, mit der du bezahlt hast." : "Der Betrag ist bereits bezahlt.",
     "",
     companyFooter(inv.company_snapshot),
   ];
@@ -148,7 +150,7 @@ export async function enqueueInvoiceMail(client: pg.ClientBase, invoiceId: strin
     `insert into app.mail_outbox (purpose, to_address, subject, body_text, related_id) values ('rechnung', $1, $2, $3, $4) returning id`,
     [
       String(toAddress ?? cu.email).trim().toLowerCase(),
-      `${inv.kind === "storno" ? "Deine Stornorechnung" : "Deine Rechnung"} ${inv.invoice_number}`,
+      `${inv.kind === "storno" ? "Deine Stornorechnung" : inv.kind === "korrektur" ? "Deine Rechnungskorrektur" : "Deine Rechnung"} ${inv.invoice_number}`,
       lines.join("\n"),
       invoiceId,
     ],

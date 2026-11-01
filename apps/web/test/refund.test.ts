@@ -66,7 +66,7 @@ describe("Erstattung über den Anbieter", () => {
         create: async (params: Record<string, unknown>, opts: { idempotencyKey: string }) => {
           calls.push({ params, key: opts.idempotencyKey });
           if (params.payment_intent === "pi_no@example.org") throw Object.assign(new Error("x"), { code: "charge_disputed" });
-          return { id: "re_ok", status: "succeeded" };
+          return { id: `re_ok_${calls.length}`, status: "succeeded" };
         },
       },
     } as unknown as Stripe;
@@ -80,5 +80,13 @@ describe("Erstattung über den Anbieter", () => {
     assert.deepEqual(bad, { ok: false, message: "Erstattung abgelehnt (charge_disputed). Die Rechnung bleibt unverändert." });
     const storno = (await db.pool.query(`select count(*)::int n from app.invoices where corrects_invoice_id = $1`, [declined])).rows[0].n;
     assert.equal(storno, 0);
+
+    // Teilbetrag: Stripe bekommt genau diesen Betrag, es entsteht eine Rechnungskorrektur.
+    const partial = await paid("teil@example.org");
+    const t = await refundInvoice(db.pool, { stripe: fakeStripe, paypal: null }, admin, partial, "Kulanz", 2500);
+    assert.ok(t.ok && t.scope === "teil" && t.amountCents === 2500);
+    assert.equal(calls.at(-1)!.params.amount, 2500);
+    const kind = (await db.pool.query(`select kind from app.invoices where corrects_invoice_id = $1`, [partial])).rows.map((r) => r.kind);
+    assert.deepEqual(kind, ["korrektur"]);
   });
 });

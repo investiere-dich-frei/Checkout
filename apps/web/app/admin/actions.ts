@@ -3,12 +3,15 @@
 import { canChange, resolveNotice } from "@idf/db/admin";
 import { endSession, redeemLogin, requestLogin } from "@idf/db/auth";
 import { endSubscription } from "@idf/db/billing";
+import { ProductError } from "@idf/db/products";
 import { cancelOrder, RefundError } from "@idf/db/refunds";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { pool, transaction } from "../../lib/db";
+import { formatCents } from "../../lib/format";
 import { paypal } from "../../lib/paypal";
+import { parseEuro } from "../../lib/product-form";
 import { refundInvoice } from "../../lib/refund";
 import { SESSION_COOKIE, requireUser } from "../../lib/session";
 import { stripe } from "../../lib/stripe";
@@ -81,11 +84,19 @@ export async function refundInvoiceAction(_prev: { message: string | null }, for
   const reason = String(form.get("reason") ?? "").trim();
   if (!reason) return { message: "Bitte einen Grund angeben." };
   try {
-    const r = await refundInvoice(pool(), { stripe: stripe(), paypal: paypal() }, user, invoiceId, reason);
+    // Leer = ganzer noch offener Betrag.
+    const amountCents = parseEuro(form.get("amount")) ?? undefined;
+    const r = await refundInvoice(pool(), { stripe: stripe(), paypal: paypal() }, user, invoiceId, reason, amountCents);
     revalidatePath(`/admin/bestellungen/${orderId}`);
-    return { message: r.ok ? `Erstattet. Stornorechnung ${r.stornoNumber} ist erstellt und geht per E-Mail raus.` : r.message };
+    if (!r.ok) return { message: r.message };
+    return {
+      message:
+        r.scope === "voll"
+          ? `Erstattet. Stornorechnung ${r.stornoNumber} ist erstellt und geht per E-Mail raus.`
+          : `${formatCents(r.amountCents, r.currency)} erstattet. Rechnungskorrektur ${r.stornoNumber} ist erstellt und geht per E-Mail raus.`,
+    };
   } catch (err) {
-    if (err instanceof RefundError) return { message: err.message };
+    if (err instanceof RefundError || err instanceof ProductError) return { message: err.message };
     console.error("Erstattung fehlgeschlagen", (err as Error).message);
     return { message: "Erstattung nicht möglich. Bitte später erneut versuchen." };
   }
