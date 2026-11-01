@@ -3,6 +3,7 @@ import { DEFAULT_CONTENT, resolvePage } from "@idf/db/checkout-pages";
 import { notFound } from "next/navigation";
 import { CheckoutPageView } from "../../../../lib/checkout-page-view";
 import { pool } from "../../../../lib/db";
+import { createChallenge, POW_BITS } from "../../../../lib/pow";
 import { todayBerlin } from "../../../../lib/format";
 import { checkCouponAction } from "./actions";
 import { CheckoutForm } from "./checkout-form";
@@ -55,6 +56,8 @@ export default async function CheckoutPage(props: {
         purchaseDay={todayBerlin()}
         withdrawalText={legal.widerruf.content}
         initialCoupon={initialCoupon}
+        challenge={createChallenge()}
+        powBits={POW_BITS}
       />
       }
     />

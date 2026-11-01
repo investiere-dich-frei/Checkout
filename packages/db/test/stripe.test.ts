@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
 import { placeOrder, type PlaceOrderInput } from "../src/orders.ts";
+import { recordChargeAttempt } from "../src/billing.ts";
 import { handleStripeEvent, nextPaymentTarget, rememberPaymentIntent, rememberStripeCustomer, type StripeEventInput } from "../src/stripe.ts";
 import { createTestDb, tx, type TestDb } from "./helpers.ts";
 
@@ -163,6 +164,40 @@ describe("Stripe-Zahlungen verbuchen", () => {
     const late = await tx(db.pool, (c) => handleStripeEvent(c, succeeded("pi_d2", t.grossCents)));
     assert.equal(late.outcome, "pruefen");
     assert.match(late.note!, /anderen Zahlung/);
+  });
+
+  it("vermerkt eine später abgelehnte eingereichte Abbuchung als Fehlversuch", async () => {
+    const placed = await tx(db.pool, (c) => placeOrder(c, order));
+    const inst = (await db.pool.query(`select id from app.order_installments where order_id = $1 and seq = 2`, [placed.orderId])).rows[0].id as string;
+    const failed = (pi: string): StripeEventInput => ({
+      id: `evt_${++n}`,
+      type: "payment_intent.payment_failed",
+      created: Date.UTC(2026, 11, 3) / 1000,
+      payload: { id: `evt_${n}`, object: "event" },
+      paymentIntent: { id: pi, status: "requires_payment_method", amountReceived: 0, currency: "eur", metadata: {}, errorCode: "insufficient_funds" },
+    });
+    // Abgelehnt auf der Kaufseite (kein eingereichter Einzug): ändert nichts.
+    await rememberPaymentIntent(db.pool, { id: "pi_f0", installmentId: inst, amountCents: 50000, currency: "eur" });
+    const onPage = await tx(db.pool, (c) => handleStripeEvent(c, failed("pi_f0")));
+    assert.equal(onPage.outcome, "ignoriert");
+    assert.equal((await db.pool.query(`select count(*)::int n from app.charge_attempts where installment_id = $1`, [inst])).rows[0].n, 0);
+
+    await rememberPaymentIntent(db.pool, { id: "pi_f1", installmentId: inst, amountCents: 50000, currency: "eur" });
+    await tx(db.pool, (c) => recordChargeAttempt(c, { installmentId: inst, provider: "stripe", providerRef: "pi_f1", outcome: "eingereicht" }));
+    const r = await tx(db.pool, (c) => handleStripeEvent(c, failed("pi_f1")));
+    assert.equal(r.outcome, "ignoriert");
+    assert.match(r.note!, /insufficient_funds/);
+    const attempts = (
+      await db.pool.query(`select outcome, error_code from app.charge_attempts where installment_id = $1 order by attempted_at`, [inst])
+    ).rows;
+    assert.deepEqual(attempts, [
+      { outcome: "eingereicht", error_code: null },
+      { outcome: "abgelehnt", error_code: "insufficient_funds" },
+    ]);
+    assert.equal((await db.pool.query(`select status from app.order_installments where id = $1`, [inst])).rows[0].status, "fehlgeschlagen");
+    // Eine zweite Meldung zur selben Absicht vermerkt nichts doppelt.
+    await tx(db.pool, (c) => handleStripeEvent(c, failed("pi_f1")));
+    assert.equal((await db.pool.query(`select count(*)::int n from app.charge_attempts where installment_id = $1`, [inst])).rows[0].n, 2);
   });
 
   it("schützt die Ablage vor Änderungen", async () => {

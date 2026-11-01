@@ -79,3 +79,16 @@ Kaufseiten und Verwaltung folgen dem Brandbook „Investiere Dich Frei – Emili
   graue Fußzeile. Knöpfe rund, ohne Hover-Effekt.
 - Der Thrivecart-Import legt Abschnitte vor dem Bestellbereich in „mitte“ ab. Ein erneuter
   Import mit `--ueberschreiben` ändert nur Seiten, die noch niemand im Editor bearbeitet hat.
+
+## Schutz gegen Kartentests und Massenbestellungen
+
+Ohne fremden Captcha-Dienst und ohne Cookies (Migration 0030, `apps/web/lib/order-guard.ts`):
+
+- **Rechenaufgabe:** Jede Kaufseite bekommt eine vom Server signierte Aufgabe. Der Browser löst sie
+  im Hintergrund in ein bis drei Sekunden, während die Kundin das Formular ausfüllt; erst dann ist
+  der Bestellknopf aktiv. Jede Aufgabe gilt eine Stunde und nur für einen Bestellversuch.
+- **Grenzen je Stunde:** höchstens 10 Bestellversuche je IP-Adresse, 5 je E-Mail-Adresse und
+  30 Gutscheinprüfungen je IP-Adresse. Danach kommt ein Hinweis mit der Service-Adresse.
+- **Datenschutz:** In `app.request_counters` stehen nur HMAC-Werte, nie IP- oder E-Mail-Adressen.
+  Der Schlüssel kommt aus `CHECKOUT_POW_SECRET`, sonst aus `DATABASE_URL`.
+- Die Kartenprüfung selbst schützt zusätzlich Stripe Radar.

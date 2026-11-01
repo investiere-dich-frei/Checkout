@@ -17,7 +17,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         { href: "/admin/manuell", label: "Manuelle Bestellungen" },
         ...(canSeeAll(user) ? [{ href: "/admin/kunden", label: "Kunden" }, { href: "/admin/produkte", label: "Produkte" }, { href: "/admin/gutscheine", label: "Gutscheine" }, { href: "/admin/abo-umzug", label: "Abo-Umzug" }, { href: "/admin/buchhaltung", label: "Buchhaltung" }] : []),
         { href: "/admin/kauflinks", label: "Kauflinks" },
-        ...(user.role === "admin" ? [{ href: "/admin/seiten", label: "Kaufseiten" }] : []),
+        ...(user.role === "admin" ? [{ href: "/admin/seiten", label: "Kaufseiten" }, { href: "/admin/team", label: "Team" }] : []),
       ]
     : [];
   return (

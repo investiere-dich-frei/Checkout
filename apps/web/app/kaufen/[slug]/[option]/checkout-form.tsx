@@ -3,9 +3,10 @@
 import type { AmountBasis, PricePlan } from "@idf/core/pricing";
 import type { TaxCategory } from "@idf/core/tax";
 import { SOFORTSTART_TEXT } from "@idf/db/legal";
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
 import { COUNTRIES } from "../../../../lib/countries";
 import { formatCents, formatDay, formatRate } from "../../../../lib/format";
+import { solveInBrowser } from "../../../../lib/pow-client";
 import { previewPrice } from "../../../../lib/price-preview";
 import { checkCouponAction, submitOrder, type CheckoutState, type CouponPreview } from "./actions";
 
@@ -54,9 +55,33 @@ export function CheckoutForm(props: {
   withdrawalText: string;
   /** Gutschein aus dem Link (?gutschein=CODE), schon geprüft. */
   initialCoupon?: CouponPreview | null;
+  /** Rechenaufgabe gegen automatisierte Bestellungen (lib/pow.ts). */
+  challenge: string;
+  powBits: number;
 }) {
   const { offer } = props;
-  const [state, action, pending] = useActionState<CheckoutState, FormData>(submitOrder, { errors: {}, message: null, values: {} });
+  const [state, action, pending] = useActionState<CheckoutState, FormData>(submitOrder, {
+    errors: {},
+    message: null,
+    values: {},
+    challenge: props.challenge,
+  });
+  // Die Aufgabe wird im Hintergrund gelöst, während die Kundin das Formular ausfüllt.
+  const [solved, setSolved] = useState<{ challenge: string; nonce: string } | null>(null);
+  const [powFailed, setPowFailed] = useState(false);
+  useEffect(() => {
+    const signal = { cancelled: false };
+    setSolved(null);
+    solveInBrowser(state.challenge, props.powBits, signal).then((nonce) => {
+      if (signal.cancelled) return;
+      if (nonce === null) setPowFailed(true);
+      else setSolved({ challenge: state.challenge, nonce });
+    });
+    return () => {
+      signal.cancelled = true;
+    };
+  }, [state.challenge, props.powBits]);
+  const ready = solved?.challenge === state.challenge;
   const [country, setCountry] = useState("DE");
   const [kind, setKind] = useState<"privat" | "unternehmen">("privat");
   const [coupon, setCoupon] = useState<CouponPreview | null>(props.initialCoupon?.ok ? props.initialCoupon : null);
@@ -97,6 +122,8 @@ export function CheckoutForm(props: {
       <input type="hidden" name="price_option_id" value={offer.priceOptionId} />
       {props.sellerCode && <input type="hidden" name="seller" value={props.sellerCode} />}
       <input type="hidden" name="coupon" value={applied?.code ?? ""} />
+      <input type="hidden" name="pow_challenge" value={state.challenge} />
+      <input type="hidden" name="pow_nonce" value={solved && ready ? solved.nonce : ""} />
 
       <section className="card" aria-labelledby="kontakt">
         <h2 id="kontakt">Deine Angaben</h2>
@@ -259,8 +286,13 @@ export function CheckoutForm(props: {
       <p className="total" aria-live="polite">
         Jetzt zu zahlen: {money(p.dueNowCents)}
       </p>
-      <button type="submit" className="order" disabled={pending}>
-        {pending ? "Bestellung wird gesendet …" : "Zahlungspflichtig bestellen"}
+      {powFailed && (
+        <p className="error" role="alert">
+          Dein Browser kann die Sicherheitsprüfung nicht ausführen. Bitte nutze einen aktuellen Browser oder schreib uns an service@investieredichfrei.de.
+        </p>
+      )}
+      <button type="submit" className="order" disabled={pending || !ready}>
+        {pending ? "Bestellung wird gesendet …" : ready ? "Zahlungspflichtig bestellen" : "Einen Moment, Sicherheitsprüfung …"}
       </button>
     </form>
   );

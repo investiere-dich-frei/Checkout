@@ -17,6 +17,10 @@ Unter `/admin` (nur mit Anmeldung).
 | Prüfung (Steuerberatung, Betriebsprüfung) | alle Bestellungen, offene Arbeit | nur lesen |
 | Vertrieb, Freelancer | nur Bestellungen über eigene Kauflinks | Kauflinks abrufen |
 
+Personen verwaltet ein Admin unter **Team**: anlegen (mit Anmeldelink per E-Mail), Name, Rolle und Kürzel ändern, sperren.
+Die E-Mail-Adresse bleibt fest. Sperren oder eine neue Rolle beenden laufende Sitzungen sofort. Die eigene Rolle und den
+eigenen Zugang kann man nicht ändern, und es bleibt immer mindestens ein Admin. Alle Änderungen stehen im Audit-Log.
+
 ## Seiten
 
 - **Übersicht**: offene Kündigungen und Widerrufe, Zahlungen zur Prüfung, dreimal gescheiterte Einzüge, neueste Bestellungen.

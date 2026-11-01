@@ -45,6 +45,7 @@ describe("Stripe-Meldungen", () => {
       metadata: { installment_id: "00000000-0000-0000-0000-000000000001" },
       savedPaymentMethod: null,
       stripeCustomer: null,
+      errorCode: null,
     });
     assert.equal(input.created, 1793660000);
   });
