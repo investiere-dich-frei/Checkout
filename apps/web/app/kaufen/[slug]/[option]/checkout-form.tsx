@@ -24,17 +24,19 @@ const INTERVAL: Record<number, string> = { 1: "monatlich", 3: "vierteljährlich"
 function Field(props: { name: string; label: string; type?: string; autoComplete?: string; state: CheckoutState; full?: boolean }) {
   const error = props.state.errors[props.name];
   return (
-    <div className={props.full ? "full" : undefined}>
-      <label htmlFor={props.name}>{props.label}</label>
+    <div className={props.full ? "full float" : "float"}>
+      {/* Beschriftung steht im Feld und rutscht beim Tippen nach oben (wie bei Thrivecart). */}
       <input
         id={props.name}
         name={props.name}
         type={props.type ?? "text"}
+        placeholder=" "
         autoComplete={props.autoComplete}
         defaultValue={props.state.values[props.name] ?? ""}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${props.name}-error` : undefined}
       />
+      <label htmlFor={props.name}>{props.label}</label>
       {error && (
         <p className="error" id={`${props.name}-error`}>
           {error}
@@ -118,8 +120,7 @@ export function CheckoutForm(props: {
           <Field name="street" label="Straße und Hausnummer" autoComplete="street-address" state={state} full />
           <Field name="postal_code" label="PLZ" autoComplete="postal-code" state={state} />
           <Field name="city" label="Ort" autoComplete="address-level2" state={state} />
-          <div className="full">
-            <label htmlFor="country">Land</label>
+          <div className="full float float-select">
             <select id="country" name="country" value={country} onChange={(e) => setCountry(e.target.value)} autoComplete="country">
               {COUNTRIES.map((c) => (
                 <option key={c.code} value={c.code}>
@@ -127,6 +128,7 @@ export function CheckoutForm(props: {
                 </option>
               ))}
             </select>
+            <label htmlFor="country">Land</label>
           </div>
           {kind === "unternehmen" && <Field name="vat_id" label="USt-IdNr. (optional)" state={state} full />}
         </div>

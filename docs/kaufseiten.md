@@ -55,7 +55,7 @@ DATABASE_URL=… pnpm db:kaufseiten:thrivecart /absoluter/pfad/idf-thrivecart-se
   mit ✅ werden Vertrauenshinweise.
 - Nicht übernommen: Formular, Preise, Gutscheinfeld, Knöpfe, Rechtstexte, Fußzeile,
   ausgeblendete Elemente und Thrivecart-Platzhalter.
-- Produkte mit eigener Seite bleiben unverändert (außer mit `--ueberschreiben`).
+- Produkte mit eigener Seite bleiben unverändert. Mit `--ueberschreiben` werden nur Seiten neu übernommen, die noch niemand im Editor bearbeitet hat.
 - Gibt es noch keine Standardseite, bekommt sie das häufigste Logo.
 - Seiten, die Thrivecart nicht mehr ausliefert (404), werden gemeldet und ausgelassen.
 
@@ -71,7 +71,11 @@ Kaufseiten und Verwaltung folgen dem Brandbook „Investiere Dich Frei – Emili
   Sie liegen auf unserem Server (`apps/web/public/schriften`), es geht nichts an Google.
 - Logos aus dem Brandbook unter `apps/web/public/marke` (bunt, weiß, Bildmarke).
   Ohne eigenes Logo im Editor zeigt die Kaufseite das bunte Logo.
-- Aufbau der Kaufseite: Logo oben mittig, Kopfbereich mit Text links und Bild rechts
-  (mit Punktraster und Fläche in Soft Rose), Bestellbereich auf hellgrauem Grund mit
-  weißer Bestellbox und den Schritten „01 Kunde / 02 Zahlung“, Bereich unten
-  (z. B. Emilia mit Foto), dunkle Fußzeile mit weißem Logo.
+- Aufbau der Kaufseite nach der Vermessung von Thrivecart /her/ (01.11.2026): durchgehend
+  hellgrauer Grund, Logo mittig, Kopfbereich (Text links, Bild rechts mit Schatten, Bogen
+  und Punktraster), Abschnitt über der Bestellung (Bereich „mitte“, Bild links und
+  Aufzählung rechts), Bestellbereich (Inhalt links, Bestellbox in Rosé rechts, Felder mit
+  Beschriftung im Feld, keine sichtbaren Schritte), Bereich unten (Emilia), schlichte
+  graue Fußzeile. Knöpfe rund, ohne Hover-Effekt.
+- Der Thrivecart-Import legt Abschnitte vor dem Bestellbereich in „mitte“ ab. Ein erneuter
+  Import mit `--ueberschreiben` ändert nur Seiten, die noch niemand im Editor bearbeitet hat.

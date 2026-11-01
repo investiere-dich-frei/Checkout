@@ -1,6 +1,7 @@
 Schriften für Kaufseiten und Verwaltung, laut Brandbook (Juli 2025):
 - Playfair Display (Überschriften), Copyright The Playfair Project Authors
 - Raleway (Unterzeilen und Fließtext), Copyright The Raleway Project Authors
+- Halant (Zitat-Überschriften wie auf den Thrivecart-Seiten), Copyright Indian Type Foundry
 
 Beide stehen unter der SIL Open Font License 1.1 (https://openfontlicense.org).
 Die Dateien liegen bewusst auf unserem eigenen Server (Lateinisch-Teilmenge von

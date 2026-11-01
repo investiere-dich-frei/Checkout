@@ -29,6 +29,7 @@ const TYPE_LABEL: Record<BlockType, string> = {
 };
 
 const AREA_LABEL: Record<BlockArea, string> = {
+  mitte: "Abschnitt über der Bestellung",
   inhalt: "Links neben dem Formular",
   formular: "Rechts über dem Formular",
   unten: "Unten, ganze Breite",
