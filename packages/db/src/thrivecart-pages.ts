@@ -246,7 +246,7 @@ export function parseThrivecartPage(html: string): ThrivecartDraft {
       }
       continue;
     }
-    draft.blocks.push(...collect(r, afterCart ? "unten" : "inhalt", skipCheckout));
+    draft.blocks.push(...collect(r, afterCart ? "unten" : "mitte", skipCheckout));
   }
 
   // Thrivecart-Platzhalter und Anleitungen an die Kundschaft für das alte Formular weglassen.
@@ -259,7 +259,7 @@ export function parseThrivecartPage(html: string): ThrivecartDraft {
 
 export interface ImportRow {
   slug: string;
-  status: "übernommen" | "überschrieben" | "vorhanden, ausgelassen" | "kein Produkt" | "Seite fehlt bei Thrivecart" | "Bild fehlt";
+  status: "übernommen" | "überschrieben" | "vorhanden, ausgelassen" | "von Hand bearbeitet, ausgelassen" | "kein Produkt" | "Seite fehlt bei Thrivecart" | "Bild fehlt";
   blocks: number;
   detail?: string;
 }
@@ -303,6 +303,11 @@ export async function importThrivecartPages(
     const existing = await getStoredPage(client, product);
     if (existing && !opts.overwrite) {
       rows.push({ slug, status: "vorhanden, ausgelassen", blocks: existing.content.blocks.length });
+      continue;
+    }
+    // Seiten, die jemand im Editor bearbeitet hat, werden nie überschrieben.
+    if (existing && (await client.query(`select updated_by from app.checkout_pages where product_id = $1`, [product])).rows[0]?.updated_by) {
+      rows.push({ slug, status: "von Hand bearbeitet, ausgelassen", blocks: existing.content.blocks.length });
       continue;
     }
     const d = parseThrivecartPage(html);

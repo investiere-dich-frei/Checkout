@@ -131,6 +131,35 @@ export function Steps(props: { current: 1 | 2 }) {
   );
 }
 
+/**
+ * Abschnitt zwischen Kopfbereich und Bestellung. Beginnt er mit einem Bild, steht das Bild
+ * links und der Rest rechts daneben (wie „Bundle“ und „Her Options“ bei Thrivecart).
+ */
+function MiddleSection(props: { blocks: Block[] }) {
+  const [first, ...rest] = props.blocks;
+  const split = first?.type === "bild" && rest.length > 0;
+  return (
+    <section className="cp-middle">
+      <div className={split ? "cp-middle-inner cp-middle-split" : "cp-middle-inner"}>
+        {split ? (
+          <>
+            <div className="cp-middle-media">
+              <BlockView block={first} />
+            </div>
+            <div>
+              {rest.map((b, i) => (
+                <BlockView key={i} block={b} />
+              ))}
+            </div>
+          </>
+        ) : (
+          props.blocks.map((b, i) => <BlockView key={i} block={b} />)
+        )}
+      </div>
+    </section>
+  );
+}
+
 /** Die ganze Kaufseite; `form` ist das Bestellformular (in der Vorschau ein Platzhalter). */
 export function CheckoutPageView(props: { content: PageContent; productName: string; optionLabel: string; form: ReactNode }) {
   const c = props.content;
@@ -138,12 +167,12 @@ export function CheckoutPageView(props: { content: PageContent; productName: str
   const style = { "--accent": c.accentColor, "--on-accent": textOn(c.accentColor) } as CSSProperties;
   return (
     <div className="checkout-page" style={style}>
-      <div className="cp-top">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="cp-logo" src={c.logoImageId ? imageUrl(c.logoImageId) : BRAND_LOGO} alt="Investiere Dich Frei – Die Emilia Bolda Finanzakademie" />
-      </div>
       <header className="cp-hero">
         <div className="cp-hero-inner">
+          <div className="cp-top">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="cp-logo" src={c.logoImageId ? imageUrl(c.logoImageId) : BRAND_LOGO} alt="Investiere Dich Frei – Die Emilia Bolda Finanzakademie" />
+          </div>
           <div className={c.heroImageId ? "cp-hero-grid" : undefined}>
             <div>
               <h1>{c.headline || props.productName}</h1>
@@ -168,6 +197,8 @@ export function CheckoutPageView(props: { content: PageContent; productName: str
         </div>
       </header>
 
+      {c.blocks.some((b) => b.area === "mitte") && <MiddleSection blocks={c.blocks.filter((b) => b.area === "mitte")} />}
+
       <section className="cp-order" aria-label="Bestellung">
         <div className={hasContent ? "cp-columns" : "cp-columns cp-single"}>
           {hasContent && (
@@ -181,7 +212,6 @@ export function CheckoutPageView(props: { content: PageContent; productName: str
               <span className="note">{props.optionLabel}</span>
             </div>
             <Blocks blocks={c.blocks} area="formular" />
-            <Steps current={1} />
             {props.form}
           </div>
         </div>

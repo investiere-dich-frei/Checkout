@@ -3,8 +3,13 @@
  * damit der Editor im Browser dieselben Regeln benutzt wie der Server.
  */
 
-export type BlockArea = "inhalt" | "formular" | "unten";
-export const BLOCK_AREAS: readonly BlockArea[] = ["inhalt", "formular", "unten"];
+/**
+ * Bereiche einer Kaufseite: „mitte“ = eigener Abschnitt zwischen Kopfbereich und Bestellung
+ * (über die ganze Breite, z. B. Bild links und Aufzählung rechts), „inhalt“ = links neben dem
+ * Formular, „formular“ = in der Bestellbox über dem Formular, „unten“ = unter der Bestellung.
+ */
+export type BlockArea = "mitte" | "inhalt" | "formular" | "unten";
+export const BLOCK_AREAS: readonly BlockArea[] = ["mitte", "inhalt", "formular", "unten"];
 
 export type Block =
   | { type: "ueberschrift"; area: BlockArea; text: string }

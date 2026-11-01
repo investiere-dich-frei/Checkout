@@ -19,7 +19,7 @@ describe("Thrivecart-Kaufseiten lesen", () => {
     assert.equal(d.heroImage, "kurs-1.webp");
     assert.deepEqual(
       d.blocks.map((b) => `${b.area}:${b.type}`),
-      ["inhalt:bild", "inhalt:ueberschrift", "inhalt:liste", "inhalt:ueberschrift", "inhalt:text", "inhalt:vertrauen", "unten:person"],
+      ["mitte:bild", "mitte:ueberschrift", "mitte:liste", "inhalt:ueberschrift", "inhalt:text", "inhalt:vertrauen", "unten:person"],
     );
     const liste = d.blocks[2] as { items: string[] };
     assert.deepEqual(liste.items, ["**6 Wochen Live-Calls** mit Beispiel & Gästen", "**Workbook** als PDF"]);
@@ -104,5 +104,11 @@ describe("Thrivecart-Kaufseiten übernehmen", () => {
     assert.equal(again[0]!.status, "vorhanden, ausgelassen");
     const forced = await tx(db.pool, (c) => importThrivecartPages(c, pages.slice(0, 1), files, { overwrite: true }));
     assert.equal(forced[0]!.status, "überschrieben");
+
+    // Im Editor bearbeitete Seiten bleiben auch mit „überschreiben“ unangetastet.
+    const admin = (await db.pool.query(`insert into app.users (email, display_name, role) values ('a@example.org', 'A', 'admin') returning id`)).rows[0].id;
+    await db.pool.query(`update app.checkout_pages set updated_by = $1 where product_id = $2`, [admin, product]);
+    const kept = await tx(db.pool, (c) => importThrivecartPages(c, pages.slice(0, 1), files, { overwrite: true }));
+    assert.equal(kept[0]!.status, "von Hand bearbeitet, ausgelassen");
   });
 });
