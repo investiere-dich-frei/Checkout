@@ -11,6 +11,7 @@ import {
   getProduct,
   listProducts,
   ProductError,
+  setAccessLike,
   setPriceOptionActive,
   setProductActive,
   updatePriceOption,
@@ -18,6 +19,7 @@ import {
   type PriceOptionInput,
   type ProductInput,
 } from "../src/products.ts";
+import { enqueueWebhook } from "../src/webhooks.ts";
 import { createTestDb, tx, type TestDb } from "./helpers.ts";
 
 // Ausgedachte Gesellschaft, Personen und Produkte, keine echten Daten.
@@ -181,6 +183,52 @@ describe("Produktpflege in der Verwaltung", () => {
     assert.equal(list[0]!.orders, 1);
     assert.equal(list[0]!.activeOptions, 0);
     assert.equal((await getProduct(db.pool, admin, id))!.options[0]!.sold, 1);
+  });
+
+  it("übernimmt für neue Produkte die Kurszuordnung einer Vorlage aus Thrivecart", async () => {
+    const companyId = (await db.pool.query(`select id from app.companies limit 1`)).rows[0].id as string;
+    const vorlage = (
+      await db.pool.query(
+        `insert into app.products (company_id, name, tax_category, thrivecart_product_id) values ($1, 'Alter Kurs', 'standard', 4711) returning id`,
+        [companyId],
+      )
+    ).rows[0].id as string;
+    const ohne = await tx(db.pool, (c) => createProduct(c, admin, null, { ...product, name: "Ohne Nummer", slug: "ohne-nummer" }));
+    const neu = await tx(db.pool, (c) => createProduct(c, admin, null, { ...product, name: "Neuer Kurs", slug: "neuer-kurs" }));
+
+    await assert.rejects(tx(db.pool, (c) => setAccessLike(c, admin, neu, ohne)), /Vorlage geht nur ein Produkt aus Thrivecart/);
+    await assert.rejects(tx(db.pool, (c) => setAccessLike(c, admin, vorlage, vorlage)), /eigene Zuordnung/);
+    await assert.rejects(tx(db.pool, (c) => setAccessLike(c, pruefer, neu, vorlage)), /Berechtigung/);
+    await tx(db.pool, (c) => setAccessLike(c, admin, neu, vorlage));
+    const p = (await getProduct(db.pool, admin, neu))!;
+    assert.deepEqual([p.accessLikeProductId, p.accessLikeName], [vorlage, "Alter Kurs"]);
+
+    // Die Meldung an n8n trägt die Thrivecart-Nummer der Vorlage.
+    await tx(db.pool, (c) => createPriceOption(c, admin, neu, einmal));
+    await confirm(neu);
+    await tx(db.pool, (c) => setProductActive(c, admin, neu, true));
+    const optionId = (await getProduct(db.pool, admin, neu))!.options[0]!.id;
+    const placed = await tx(db.pool, (c) =>
+      placeOrder(c, {
+        priceOptionId: optionId,
+        customer: { kind: "privat", first_name: "Erika", last_name: "Muster", email: "erika@example.org", country: "DE" },
+        vatIdVerified: false,
+        sellerUserId: null,
+        agbVersionId: legal[0]!,
+        privacyVersionId: legal[1]!,
+        withdrawalVersionId: legal[2]!,
+        withdrawalWaiver: true,
+        purchaseDay: "2026-11-02",
+      }),
+    );
+    await tx(db.pool, (c) => enqueueWebhook(c, "bestellung.beendet", placed.orderId));
+    const payload = (await db.pool.query(`select payload from app.webhook_outbox where payload->'order'->>'order_id' = $1`, [placed.orderId])).rows[0].payload;
+    assert.equal(payload.order.product.thrivecart_product_id, 4711);
+    assert.equal(payload.order.product.access_like_product_id, vorlage);
+
+    // Zuordnung aufheben geht.
+    await tx(db.pool, (c) => setAccessLike(c, admin, neu, null));
+    assert.equal((await getProduct(db.pool, admin, neu))!.accessLikeProductId, null);
   });
 
   it("zeigt Prüferinnen alles, Vertrieb nichts", async () => {

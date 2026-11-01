@@ -7,6 +7,7 @@ import {
   createPriceOption,
   createProduct,
   ProductError,
+  setAccessLike,
   setPriceOptionActive,
   setProductActive,
   updatePriceOption,
@@ -38,9 +39,16 @@ async function run<T>(fn: (user: Awaited<ReturnType<typeof requireUser>>, c: Par
 }
 
 const id = (form: FormData, key: string) => String(form.get(key) ?? "");
+/** Kurszuordnung aus dem Formular; undefined, wenn das Feld nicht angezeigt wurde. */
+const accessLike = (form: FormData) => (form.has("access_like_product_id") ? id(form, "access_like_product_id") || null : undefined);
 
 export async function createProductAction(_prev: FormState, form: FormData): Promise<FormState> {
-  const r = await run((user, c) => createProduct(c, user, id(form, "company_id") || null, productFromForm(form)));
+  const r = await run(async (user, c) => {
+    const productId = await createProduct(c, user, id(form, "company_id") || null, productFromForm(form));
+    const like = accessLike(form);
+    if (like) await setAccessLike(c, user, productId, like);
+    return productId;
+  });
   if (!r.ok) return { message: r.message };
   revalidatePath("/admin/produkte");
   redirect(`/admin/produkte/${r.value}?neu=1`);
@@ -48,7 +56,12 @@ export async function createProductAction(_prev: FormState, form: FormData): Pro
 
 export async function updateProductAction(_prev: FormState, form: FormData): Promise<FormState> {
   const productId = id(form, "product_id");
-  const r = await run((user, c) => updateProduct(c, user, productId, productFromForm(form)));
+  const r = await run(async (user, c) => {
+    const result = await updateProduct(c, user, productId, productFromForm(form));
+    const like = accessLike(form);
+    if (like !== undefined) await setAccessLike(c, user, productId, like);
+    return result;
+  });
   if (!r.ok) return { message: r.message };
   revalidatePath(`/admin/produkte/${productId}`);
   return {

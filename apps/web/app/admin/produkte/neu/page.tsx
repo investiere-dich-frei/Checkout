@@ -1,5 +1,5 @@
 import { canChange } from "@idf/db/admin";
-import { listCompanies } from "@idf/db/products";
+import { listAccessTemplates, listCompanies } from "@idf/db/products";
 import { redirect } from "next/navigation";
 import { pool } from "../../../../lib/db";
 import { requireUser } from "../../../../lib/session";
@@ -10,6 +10,7 @@ export default async function NewProductPage() {
   const user = await requireUser();
   if (!canChange(user)) redirect("/admin/produkte");
   const companies = await listCompanies(pool());
+  const accessTemplates = await listAccessTemplates(pool());
   return (
     <section className="card">
       <p>
@@ -21,7 +22,7 @@ export default async function NewProductPage() {
         Erst dann funktionieren die Kauflinks.
       </p>
       <ActionForm action={createProductAction} submit="Produkt speichern">
-        <ProductFields isNew companies={companies} values={{ name: "", slug: "", internalLabel: "", taxCategory: "standard", immediateAccess: false }} />
+        <ProductFields isNew companies={companies} accessTemplates={accessTemplates} values={{ name: "", slug: "", internalLabel: "", taxCategory: "standard", immediateAccess: false }} />
       </ActionForm>
     </section>
   );

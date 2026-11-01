@@ -1,5 +1,5 @@
 import { canChange, canSeeAll } from "@idf/db/admin";
-import { getProduct, type PriceOptionRow } from "@idf/db/products";
+import { getProduct, listAccessTemplates, type PriceOptionRow } from "@idf/db/products";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { pool } from "../../../../lib/db";
@@ -54,6 +54,8 @@ export default async function ProductPage(props: { params: Promise<{ id: string 
   const product = await getProduct(pool(), user, id);
   if (!product) notFound();
   const edit = canChange(user);
+  const ownMapping = product.thrivecartProductId !== null;
+  const accessTemplates = edit && !ownMapping ? (await listAccessTemplates(pool())).filter((t) => t.id !== product.id) : undefined;
   const activeOptions = product.options.filter((o) => o.active);
   const h = await headers();
   const base = process.env.PUBLIC_BASE_URL?.replace(/\/$/, "") ?? `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host") ?? ""}`;
@@ -93,6 +95,12 @@ export default async function ProductPage(props: { params: Promise<{ id: string 
           Gesellschaft: {product.companyName}
           {product.thrivecartProductId !== null && ` · aus Thrivecart übernommen (Produkt ${product.thrivecartProductId})`} · angelegt {dateTime.format(product.createdAt)}
         </p>
+        {!ownMapping && !product.accessLikeProductId && (
+          <p className="notice-box">
+            Noch keine Kurszuordnung: Nach einem Kauf legt n8n weder HubSpot-Deal noch Kurszugang an. Unten bei „Kurszugang und HubSpot wie bei“ ein
+            Produkt wählen.
+          </p>
+        )}
         <p>
           <a href={`/admin/seiten/${product.id}`}>Kaufseite gestalten</a>
         </p>
@@ -105,12 +113,14 @@ export default async function ProductPage(props: { params: Promise<{ id: string 
             <input type="hidden" name="product_id" value={product.id} />
             <ProductFields
               isNew={false}
+              accessTemplates={accessTemplates}
               values={{
                 name: product.name,
                 slug: product.slug ?? "",
                 internalLabel: product.internalLabel ?? "",
                 taxCategory: product.taxCategory,
                 immediateAccess: product.immediateAccess,
+                accessLike: product.accessLikeProductId ?? "",
               }}
             />
             <p className="note">Wird die Umsatzsteuer-Art geändert, schaltet sich das Produkt ab, bis die Steuer erneut bestätigt ist.</p>
@@ -123,6 +133,8 @@ export default async function ProductPage(props: { params: Promise<{ id: string 
             <dd>{TAX_LABEL[product.taxCategory]}</dd>
             <dt>Sofortzugang</dt>
             <dd>{product.immediateAccess ? "ja" : "nein"}</dd>
+            <dt>Kurszugang und HubSpot</dt>
+            <dd>{ownMapping ? `aus Thrivecart (Produkt ${product.thrivecartProductId})` : product.accessLikeName ? `wie ${product.accessLikeName}` : "keine Zuordnung"}</dd>
           </dl>
         )}
       </section>
