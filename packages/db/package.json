@@ -30,7 +30,8 @@
     "./accounting": "./src/accounting.ts",
     "./dunning": "./src/dunning.ts",
     "./team": "./src/team.ts",
-    "./throttle": "./src/throttle.ts"
+    "./throttle": "./src/throttle.ts",
+    "./settings": "./src/settings.ts"
   },
   "scripts": {
     "migrate": "tsx src/cli.ts",
