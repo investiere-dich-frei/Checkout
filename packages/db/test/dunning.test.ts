@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
-import { extendSubscriptions, recordChargeAttempt } from "../src/billing.ts";
+import { dueCharges, extendSubscriptions, recordChargeAttempt } from "../src/billing.ts";
 import { portalEmail } from "../src/customer-portal.ts";
 import {
   cardExpiresBefore,
@@ -8,6 +8,8 @@ import {
   cardValidUntil,
   dunningCases,
   dunningNoticesOfOrder,
+  dunningStats,
+  overduePayments,
   rememberCard,
   sendDunningNotice,
   type DunningCase,
@@ -146,11 +148,78 @@ describe("Mahnwesen", () => {
 
   it("bittet um eine Zahlungsart, wenn keine hinterlegt ist", async () => {
     const r = await tx(db.pool, (c) => placeOrder(c, { ...raten, customer: { ...raten.customer, email: "ohne@example.org" } }));
+    await payFirst(r.orderId, "pm_ohne");
+    await db.pool.query(
+      `update app.saved_payment_methods set revoked_at = now() where customer_id = (select customer_id from app.orders where id = $1)`,
+      [r.orderId],
+    );
     const inst = await seq2(r.orderId);
     const mine = (await dunningCases(db.pool, "2026-12-03")).filter((c) => c.orderId === r.orderId);
     assert.deepEqual(mine.map((c) => [c.kind, c.installmentId]), [["ohne_zahlungsart", inst.id]]);
     assert.equal(await send(mine[0]!), true);
     assert.match((await mailOf(r.orderId)).subject, /^Bitte Zahlungsart hinterlegen/);
+  });
+
+  it("mahnt und bucht nicht bei abgebrochenen Käufen, auch mit Karte aus einem anderen Kauf", async () => {
+    const email = "abbruch@example.org";
+    const first = await tx(db.pool, (c) => placeOrder(c, { ...raten, customer: { ...raten.customer, email } }));
+    await payFirst(first.orderId, "pm_abbruch");
+    // Zweiter Kauf derselben Kundin, erste Rate nie bezahlt.
+    const open = await tx(db.pool, (c) => placeOrder(c, { ...raten, customer: { ...raten.customer, email }, purchaseDay: "2026-11-05" }));
+    const inst = await seq2(open.orderId);
+    assert.equal((await tx(db.pool, (c) => dueCharges(c, inst.d))).some((d) => d.orderId === open.orderId), false);
+    assert.equal((await dunningCases(db.pool, inst.d)).some((c) => c.orderId === open.orderId), false);
+    assert.equal((await overduePayments(db.pool, "2027-01-01", { orderId: open.orderId })).length, 0);
+    // Die bezahlte Bestellung wird weiter eingezogen.
+    assert.equal((await tx(db.pool, (c) => dueCharges(c, "2026-12-02"))).some((d) => d.orderId === first.orderId), true);
+  });
+
+  it("zeigt überfällige Zahlungen mit Lage und nächstem Versuch, dazu Kennzahlen", async () => {
+    const r = await tx(db.pool, (c) => placeOrder(c, { ...raten, customer: { ...raten.customer, email: "liste@example.org" } }));
+    await payFirst(r.orderId, "pm_liste");
+    const inst = await seq2(r.orderId);
+    // Fällig, noch kein Versuch: der nächste Einzug bucht ab.
+    let [o] = await overduePayments(db.pool, "2026-12-05", { orderId: r.orderId });
+    assert.equal(o!.state, "naechster_einzug");
+    assert.equal(o!.daysOverdue, 3);
+    assert.equal(o!.seq, 2);
+    assert.equal(o!.installments, 2);
+    // Vor der Fälligkeit nicht überfällig.
+    assert.equal((await overduePayments(db.pool, "2026-12-02", { orderId: r.orderId })).length, 0);
+    const before = await dunningStats(db.pool, today);
+    await tx(db.pool, (c) => recordChargeAttempt(c, { installmentId: inst.id, provider: "stripe", providerRef: "pi_l1", outcome: "abgelehnt", errorCode: "insufficient_funds" }));
+    [o] = await overduePayments(db.pool, today, { orderId: r.orderId });
+    assert.equal(o!.state, "erneuter_versuch");
+    assert.equal(o!.attempts, 1);
+    assert.equal(o!.lastErrorCode, "insufficient_funds");
+    assert.ok(o!.nextTry! > today);
+    const mid = await dunningStats(db.pool, today);
+    assert.equal(mid.failed, before.failed + 1);
+    assert.equal(mid.open, before.open + 1);
+    for (const ref of ["pi_l2", "pi_l3"]) {
+      await tx(db.pool, (c) => recordChargeAttempt(c, { installmentId: inst.id, provider: "stripe", providerRef: ref, outcome: "abgelehnt", errorCode: "card_declined" }));
+    }
+    [o] = await overduePayments(db.pool, today, { orderId: r.orderId });
+    assert.equal(o!.state, "aufgegeben");
+    assert.equal(o!.nextTry, null);
+    // Jemand bucht nach Kartenwechsel ab: gerettet.
+    const pi = "pi_l4";
+    await rememberPaymentIntent(db.pool, { id: pi, installmentId: inst.id, amountCents: 50000, currency: "eur" });
+    await tx(db.pool, (c) =>
+      handleStripeEvent(c, {
+        id: `evt_${pi}`,
+        type: "payment_intent.succeeded",
+        created: Math.floor(Date.now() / 1000),
+        payload: {},
+        paymentIntent: { id: pi, status: "succeeded", amountReceived: 50000, currency: "eur", metadata: {}, savedPaymentMethod: "pm_liste", stripeCustomer: "cus_m" },
+      }),
+    );
+    assert.equal((await overduePayments(db.pool, today, { orderId: r.orderId })).length, 0);
+    const end = await dunningStats(db.pool, today);
+    assert.equal(end.failed, before.failed + 1);
+    assert.equal(end.recovered, before.recovered + 1);
+    assert.equal(end.recoveredCents, before.recoveredCents + 50000);
+    assert.equal(end.open, before.open);
   });
 
   it("warnt, wenn die Karte vor der nächsten Abbuchung abläuft", async () => {

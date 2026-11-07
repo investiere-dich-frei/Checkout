@@ -161,9 +161,9 @@ describe("Wiederkehrende Zahlungen", () => {
     const setup = (await cardSetupTarget(db.pool, placed.orderId))!;
     assert.deepEqual([setup.firstDueDate, setup.firstGrossCents], ["2026-12-13", 249850]);
 
-    // Ohne hinterlegte Karte kann zum Fälligkeitstag nichts eingezogen werden.
+    // Ohne hinterlegte Karte ist der Kauf nicht zustande gekommen: nichts einzuziehen, nichts zu mahnen.
     const mine = async (day: string) => (await dueCharges(db.pool, day)).filter((d) => d.orderId === placed.orderId);
-    assert.equal((await mine("2026-12-13"))[0]!.method, null);
+    assert.deepEqual(await mine("2026-12-13"), []);
 
     // Eine Hinterlegung zu einer anderen Bestellung oder ohne Bestätigung zählt nicht.
     const base = { orderId: placed.orderId, status: "succeeded", paymentMethod: "pm_probe", stripeCustomerId: "cus_probe" };

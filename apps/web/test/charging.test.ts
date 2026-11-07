@@ -142,11 +142,11 @@ describe("Täglicher Einzug", () => {
   });
 
   it("zieht über ein gespeichertes PayPal-Konto ein und bucht sofort", async () => {
-    const placed = await tx(db.pool, (c) => placeOrder(c, { ...base, customer: { ...base.customer, email: "pp@example.org" } }));
-    const t = (await nextPaymentTarget(db.pool, placed.orderId, "2099-12-31"))!;
-    // Erste Zahlung als bezahlt markieren (über PayPal-Weg) und Vault merken.
+    // Erste Zahlung bezahlt (abgebrochene Käufe werden nie eingezogen), danach zahlt die Kundin per PayPal-Vault.
+    const orderId = await placeAndPayFirst("pp@example.org", "pm_pp");
+    const placed = { orderId, customerId: (await db.pool.query(`select customer_id from app.orders where id = $1`, [orderId])).rows[0].customer_id as string };
+    await db.pool.query(`update app.saved_payment_methods set revoked_at = now() where customer_id = $1`, [placed.customerId]);
     await db.pool.query(`insert into app.saved_payment_methods (customer_id, provider, ref) values ($1, 'paypal', 'VAULT1')`, [placed.customerId]);
-    await db.pool.query(`insert into app.paypal_orders (id, installment_id, amount_cents, currency) values ('PPFIRST', $1, $2, 'EUR')`, [t.installmentId, t.grossCents]);
     let calls = 0;
     const fakePaypal = {
       chargeVault: async (input: { installmentId: string; amountCents: number; vaultId: string }) => {
@@ -164,9 +164,9 @@ describe("Täglicher Einzug", () => {
     const run = await runCharging(db.pool, { stripe: null, paypal: fakePaypal }, "2026-10-01");
     assert.equal(run.booked, 1);
     const paid = (await db.pool.query(`select seq, status from app.order_installments where order_id = $1 order by seq`, [placed.orderId])).rows;
-    assert.deepEqual(paid.map((r) => r.status), ["offen", "bezahlt", "offen"]);
+    assert.deepEqual(paid.map((r) => r.status), ["bezahlt", "bezahlt", "offen"]);
     const mail = (await db.pool.query(`select count(*)::int n from app.mail_outbox m join app.invoices i on i.id = m.related_id where i.order_id = $1`, [placed.orderId])).rows[0].n;
-    assert.equal(mail, 1);
+    assert.equal(mail, 2);
   });
 
   it("zieht eine Rate von Hand sofort ein, auch nach drei Fehlversuchen, aber nie vor Fälligkeit oder doppelt", async () => {

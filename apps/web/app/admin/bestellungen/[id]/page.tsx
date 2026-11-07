@@ -1,6 +1,6 @@
 import { canChange, canSeeAll, orderDetail } from "@idf/db/admin";
 import { listPauses } from "@idf/db/billing";
-import { dunningNoticesOfOrder } from "@idf/db/dunning";
+import { dunningNoticesOfOrder, OVERDUE_STATE_LABEL, overduePayments } from "@idf/db/dunning";
 import { takeoverOfOrder } from "@idf/db/takeover";
 import { notFound } from "next/navigation";
 import { pool } from "../../../../lib/db";
@@ -32,6 +32,7 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
   const pauses = h.is_abo ? await listPauses(pool(), id) : [];
   const takeover = await takeoverOfOrder(pool(), id);
   const dunning = await dunningNoticesOfOrder(pool(), id);
+  const overdue = new Map((await overduePayments(pool(), today, { orderId: id, includeManual: true })).map((o) => [o.installmentId, o]));
   const openPause = pauses.find((p) => !p.endedBy && (p.endsOn === null || p.endsOn >= today));
   const pauseText = (p: { startsOn: string; endsOn: string | null }) =>
     p.endsOn !== null && p.endsOn < p.startsOn ? `${formatDay(p.startsOn)} (aufgehoben)` : `${formatDay(p.startsOn)} bis ${p.endsOn ? formatDay(p.endsOn) : "auf Weiteres"}`;
@@ -98,7 +99,20 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
                 <td>Rate {i.seq}</td>
                 <td>{formatDay(i.due_date)}</td>
                 <td>{formatCents(Number(i.gross_cents), h.currency)}</td>
-                <td>{i.status}</td>
+                <td>
+                  {i.status}
+                  {overdue.has(i.id) && (
+                    <>
+                      {" "}
+                      <span className="badge badge-warn">überfällig</span>
+                      <br />
+                      <span className="note">
+                        {OVERDUE_STATE_LABEL[overdue.get(i.id)!.state]}
+                        {overdue.get(i.id)!.nextTry && overdue.get(i.id)!.nextTry! > today && ` am ${formatDay(overdue.get(i.id)!.nextTry!)}`}
+                      </span>
+                    </>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

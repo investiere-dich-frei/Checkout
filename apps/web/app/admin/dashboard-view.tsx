@@ -178,7 +178,7 @@ export function DashboardView({ d, active }: { d: Dashboard; active: Preset | nu
       <div className="dash-tiles">
         <Tile label="Laufende Abos" value={int.format(d.now.activeSubscriptions)} sub={`${formatCents(d.now.mrrCents)} pro Monat`} />
         <Tile label="Laufende Ratenpläne" value={int.format(d.now.activePlans)} sub={`${formatCents(d.now.plansOutstandingCents)} noch offen`} />
-        <Tile label="Überfällige Zahlungen" value={int.format(d.now.overdue)} sub={formatCents(d.now.overdueCents)} />
+        <Tile label="Überfällige Zahlungen" value={int.format(d.now.overdue)} sub={formatCents(d.now.overdueCents)} href="/admin/bestellungen?lage=ueberfaellig" />
       </div>
 
       <div className="dash-columns">

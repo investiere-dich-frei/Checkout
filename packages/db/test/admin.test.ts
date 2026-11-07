@@ -114,8 +114,8 @@ describe("Verwaltung: Anmeldung und Sichtbarkeit", () => {
     assert.deepEqual(await ids({ state: "abo" }), aboIds);
     assert.deepEqual(await ids({ state: "raten" }), ratenIds);
     assert.deepEqual(await ids({ state: "einmal" }), []);
-    // Noch nichts bezahlt, Raten ab 2026-11-02 fällig: am 2026-12-15 überfällig, vorher nicht.
-    assert.ok((await ids({ state: "ueberfaellig", today: "2026-12-15" })).length >= ratenIds.length);
+    // Noch nichts bezahlt: abgebrochene Käufe gelten nicht als überfällig (Beispiele mit Zahlung in dunning.test.ts).
+    assert.deepEqual(await ids({ state: "ueberfaellig", today: "2026-12-15" }), []);
     assert.deepEqual(await ids({ state: "ueberfaellig", today: "2025-01-01" }), []);
     assert.deepEqual(await ids({ country: "de" }), all.map((o) => o.id).sort());
     assert.deepEqual(await ids({ country: "AT" }), []);
