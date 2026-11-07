@@ -195,3 +195,17 @@ negativ im Zeitraum ihrer Ausstellung. Alt-Rechnungen aus Thrivecart sind nicht 
 - **Rechnungsliste (CSV)**: eine Zeile je Rechnungsposition mit Kundin, Land, USt-IdNr., Satz, Netto,
   USt, Brutto, Zahlungsart und Zahlungsreferenz. Semikolon, Dezimalkomma, UTF-8 mit BOM (Excel, DATEV).
 - **Steuerbericht (CSV)** und **alle Rechnungs-PDFs (ZIP)**, höchstens 2.000 Rechnungen je ZIP.
+
+## Einstellungen
+
+Verwaltung → Einstellungen (ansehen: Admin und Prüfung, ändern: Admin):
+
+- **Firmendaten** je Gesellschaft: Name, Anschrift, USt-IdNr., Steuernummer, Handelsregister, Bank, IBAN (mit Prüfziffer),
+  BIC. Gilt für neue Rechnungen; ausgestellte Rechnungen behalten ihre Kopie der Firmendaten (`company_snapshot`).
+  Nummernkreis und Test/Live sind hier nicht änderbar.
+- **Steuersätze**: MWST Schweiz bei den Firmendaten. DE 19 %, AT 20 % und die übrigen EU-Normalsätze stehen fest im
+  Programm (`packages/core/src/tax.ts`).
+- **Rechtstexte**: neue Fassung von AGB, Datenschutz oder Widerrufsbelehrung mit Gültigkeitsbeginn (heute = sofort).
+  Alte Fassungen bleiben unverändert und gelten für die Bestellungen, die mit ihnen geschlossen wurden.
+
+Alle Änderungen stehen mit Person und Zeit im Audit-Log.
