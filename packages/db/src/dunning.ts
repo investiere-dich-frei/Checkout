@@ -50,6 +50,10 @@ const addDays = (d: string, n: number) => {
   return x.toISOString().slice(0, 10);
 };
 
+/** Für die Bestellung (Alias o) sind Mahnungen an diesem Tag ausgesetzt. */
+export const holdActiveSql = (today: string) => `exists (
+  select 1 from app.dunning_holds h where h.order_id = o.id and h.ended_at is null and (h.ends_on is null or h.ends_on >= ${today}))`;
+
 /**
  * Bedingungen wie beim automatischen Einzug (billing.dueCharges): Rate wird abgebucht, Bestellung
  * läuft, nicht per Rechnung, kein PayPal-Abo aus Thrivecart, nicht in einer Pause.
@@ -61,7 +65,8 @@ const AUTO_CHARGED = `
   and not exists (select 1 from app.thrivecart_takeovers t where t.order_id = o.id and t.route = 'paypal')
   and not exists (select 1 from app.manual_orders m where m.order_id = o.id)
   and not exists (select 1 from app.subscription_pauses p where p.order_id = o.id and p.starts_on <= i.due_date
-                    and (p.ends_on is null or p.ends_on >= i.due_date))`;
+                    and (p.ends_on is null or p.ends_on >= i.due_date))
+  and not ${holdActiveSql("$1::date")}`;
 
 const FROM = `
   from app.order_installments i
@@ -376,6 +381,8 @@ export interface OverduePayment {
   /** Nächster automatischer Versuch, falls einer geplant ist. */
   nextTry: string | null;
   lastNotice: { kind: string; at: Date } | null;
+  /** Mahnungen ausgesetzt: bis zu diesem Tag, „offen“ = bis auf Weiteres; null = nicht ausgesetzt. */
+  holdUntil: string | null;
 }
 
 /**
@@ -396,7 +403,9 @@ export async function overduePayments(
             exists (select 1 from app.manual_orders m where m.order_id = o.id) is_manual,
             exists (select 1 from app.thrivecart_takeovers t where t.order_id = o.id and t.route = 'paypal') paypal_abo,
             exists (select 1 from app.saved_payment_methods s where s.customer_id = o.customer_id and s.revoked_at is null) has_method,
-            dn.kind notice_kind, dn.created_at notice_at
+            dn.kind notice_kind, dn.created_at notice_at,
+            (select coalesce(h.ends_on::text, 'offen') from app.dunning_holds h where h.order_id = o.id and h.ended_at is null
+                and (h.ends_on is null or h.ends_on >= $1::date) order by h.created_at desc limit 1) hold_until
        from app.order_installments i
        join app.orders o on o.id = i.order_id
        join app.customers c on c.id = o.customer_id
@@ -455,6 +464,7 @@ export async function overduePayments(
       state,
       nextTry,
       lastNotice: r.notice_kind ? { kind: r.notice_kind, at: r.notice_at } : null,
+      holdUntil: r.hold_until ?? null,
     };
   });
 }
@@ -529,4 +539,75 @@ export async function dunningStats(db: Db, today: string, days = 365): Promise<D
   }
   for (const r of notices.rows) s.notices[r.kind] = Number(r.n);
   return s;
+}
+
+export class DunningHoldError extends Error {}
+
+export interface DunningHold {
+  id: string;
+  endsOn: string | null;
+  reason: string;
+  createdBy: string;
+  createdAt: Date;
+  endedAt: Date | null;
+  endedBy: string | null;
+}
+
+/** Aussetzungen einer Bestellung, älteste zuerst. */
+export async function dunningHoldsOfOrder(db: Db, orderId: string): Promise<DunningHold[]> {
+  const { rows } = await db.query(
+    `select id, ends_on::text, reason, created_by, created_at, ended_at, ended_by from app.dunning_holds where order_id = $1 order by created_at`,
+    [orderId],
+  );
+  return rows.map((r) => ({
+    id: r.id,
+    endsOn: r.ends_on,
+    reason: r.reason,
+    createdBy: r.created_by,
+    createdAt: r.created_at,
+    endedAt: r.ended_at,
+    endedBy: r.ended_by,
+  }));
+}
+
+/** Gerade geltende Aussetzung, falls es eine gibt. */
+export function activeHold(holds: DunningHold[], today: string): DunningHold | null {
+  return holds.find((h) => !h.endedAt && (h.endsOn === null || h.endsOn >= today)) ?? null;
+}
+
+/**
+ * Mahnungen für eine Bestellung aussetzen, bis einschließlich `endsOn` oder bis auf Weiteres.
+ * Ein Grund ist Pflicht (Nachweis, warum nicht gemahnt wurde). Der Einzug läuft weiter.
+ */
+export async function holdDunning(
+  client: pg.ClientBase,
+  input: { orderId: string; endsOn: string | null; reason: string; actor: string; today: string },
+): Promise<void> {
+  const reason = input.reason.trim();
+  if (!reason) throw new DunningHoldError("Bitte einen Grund angeben, z. B. die Vereinbarung mit der Kundin.");
+  if (input.endsOn && input.endsOn < input.today) throw new DunningHoldError("Das Ende liegt in der Vergangenheit.");
+  const o = (await client.query(`select status from app.orders where id = $1 for update`, [input.orderId])).rows[0];
+  if (!o) throw new DunningHoldError("Die Bestellung gibt es nicht.");
+  if (o.status === "storniert" || o.status === "erstattet") throw new DunningHoldError("Die Bestellung ist storniert oder erstattet.");
+  const open = await client.query(
+    `select 1 from app.dunning_holds where order_id = $1 and ended_at is null and (ends_on is null or ends_on >= $2)`,
+    [input.orderId, input.today],
+  );
+  if (open.rowCount) throw new DunningHoldError("Die Mahnungen sind schon ausgesetzt. Bitte erst aufheben.");
+  await client.query(`insert into app.dunning_holds (order_id, ends_on, reason, created_by) values ($1, $2, $3, $4)`, [
+    input.orderId,
+    input.endsOn,
+    reason,
+    input.actor,
+  ]);
+}
+
+/** Geltende Aussetzung aufheben. Gibt false zurück, wenn keine gilt. */
+export async function liftDunningHold(client: pg.ClientBase, input: { orderId: string; actor: string; today: string }): Promise<boolean> {
+  const r = await client.query(
+    `update app.dunning_holds set ended_at = now(), ended_by = $3
+      where order_id = $1 and ended_at is null and (ends_on is null or ends_on >= $2)`,
+    [input.orderId, input.today, input.actor],
+  );
+  return (r.rowCount ?? 0) > 0;
 }

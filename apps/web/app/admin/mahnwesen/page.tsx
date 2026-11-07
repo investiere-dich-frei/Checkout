@@ -157,6 +157,12 @@ export default async function DunningPage(props: { searchParams: Promise<{ lage?
                     <td>{formatCents(r.grossCents, r.currency)}</td>
                     <td>
                       <span className={BADGE[r.state]}>{OVERDUE_STATE_LABEL[r.state]}</span>
+                      {r.holdUntil && (
+                        <>
+                          {" "}
+                          <span className="badge">Mahnungen ausgesetzt{r.holdUntil === "offen" ? "" : ` bis ${formatDay(r.holdUntil)}`}</span>
+                        </>
+                      )}
                       <br />
                       <span className="note">
                         {r.attempts > 0 ? `${r.attempts} von ${MAX_ATTEMPTS} Versuchen` : "noch kein Versuch"}
@@ -224,6 +230,10 @@ export default async function DunningPage(props: { searchParams: Promise<{ lage?
           <li>
             <strong>Letzte Mahnung:</strong> nach dem {MAX_ATTEMPTS}. abgelehnten Versuch. Danach bucht die Kasse diese Rate nicht mehr selbst ab;
             Zugang und Abo bleiben bestehen, bis jemand hier entscheidet.
+          </li>
+          <li>
+            <strong>Mahnungen aussetzen:</strong> je Bestellung auf der Bestellseite, mit Grund und optionalem Enddatum (z. B. vereinbarter Aufschub).
+            Dann gehen keine dieser E-Mails raus; der automatische Einzug läuft weiter.
           </li>
         </ul>
         <p className="note">Alle E-Mails kommen von buchhaltung@ und enthalten einen persönlichen Link zum Kundenbereich ({DUNNING_LINK_DAYS} Tage gültig).</p>

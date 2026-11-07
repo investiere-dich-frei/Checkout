@@ -119,6 +119,14 @@ entfallen, verschickte E-Mails. Überfällig heißt überall gleich (Bestelllist
 offen, oder eine Abbuchung ist gescheitert; abgebrochene Käufe zählen nicht. Die Bestellliste zeigt dazu „überfällig“
 und „pausiert“ als Hinweis in der Statusspalte.
 
+### Mahnungen aussetzen
+
+Auf der Bestellseite (Abschnitt „Mahnungen“) kann ein Admin die Mahnungen einer Bestellung aussetzen, mit Pflicht-Grund
+und optionalem Enddatum, z. B. bei einem vereinbarten Zahlungsaufschub. Solange das gilt, gehen für diese Bestellung keine
+Erinnerungen, Mahnungen oder Kartenhinweise raus; der automatische Einzug läuft weiter (wer nicht abbuchen will, pausiert
+das Abo). Aussetzungen sind festgeschrieben (`app.dunning_holds`, Migration 0032); nur das Aufheben wird einmal nachgetragen.
+Mahnungen für Überweisungen aus manuellen Bestellungen gibt es nach Entscheidung vom 7.11.2026 nicht.
+
 ## Abo-Umzug aus Thrivecart
 
 Unter **Abo-Umzug** (Admin, Prüfung) stehen alle Thrivecart-Abos und Ratenpläne, die noch laufen
