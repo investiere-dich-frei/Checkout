@@ -8,7 +8,10 @@ import {
   cardValidUntil,
   dunningCases,
   dunningNoticesOfOrder,
+  dunningHoldsOfOrder,
   dunningStats,
+  holdDunning,
+  liftDunningHold,
   overduePayments,
   rememberCard,
   sendDunningNotice,
@@ -220,6 +223,38 @@ describe("Mahnwesen", () => {
     assert.equal(end.recovered, before.recovered + 1);
     assert.equal(end.recoveredCents, before.recoveredCents + 50000);
     assert.equal(end.open, before.open);
+  });
+
+  it("setzt Mahnungen je Bestellung aus und schaltet sie wieder ein", async () => {
+    const r = await tx(db.pool, (c) => placeOrder(c, { ...raten, customer: { ...raten.customer, email: "aufschub@example.org" } }));
+    await payFirst(r.orderId, "pm_aufschub");
+    const inst = await seq2(r.orderId);
+    await tx(db.pool, (c) => recordChargeAttempt(c, { installmentId: inst.id, provider: "stripe", providerRef: "pi_h1", outcome: "abgelehnt", errorCode: "card_declined" }));
+    const mine = async (day: string) => (await dunningCases(db.pool, day)).filter((c) => c.orderId === r.orderId);
+    assert.equal((await mine(today)).length, 1);
+    const hold = (input: Partial<Parameters<typeof holdDunning>[1]>) =>
+      tx(db.pool, (c) => holdDunning(c, { orderId: r.orderId, endsOn: null, reason: "Aufschub vereinbart", actor: "user:test", today, ...input }));
+    await assert.rejects(hold({ reason: "  " }), /Grund/);
+    await assert.rejects(hold({ endsOn: "2020-01-01" }), /Vergangenheit/);
+    await hold({});
+    await assert.rejects(hold({}), /schon ausgesetzt/);
+    assert.deepEqual(await mine(today), []);
+    const [o] = await overduePayments(db.pool, today, { orderId: r.orderId });
+    assert.equal(o!.holdUntil, "offen");
+    // Der Einzug läuft weiter.
+    assert.equal((await tx(db.pool, (c) => dueCharges(c, "2099-01-01"))).some((d) => d.orderId === r.orderId), true);
+    assert.equal(await tx(db.pool, (c) => liftDunningHold(c, { orderId: r.orderId, actor: "user:test", today })), true);
+    assert.equal(await tx(db.pool, (c) => liftDunningHold(c, { orderId: r.orderId, actor: "user:test", today })), false);
+    assert.equal((await mine(today)).length, 1);
+    const holds = await dunningHoldsOfOrder(db.pool, r.orderId);
+    assert.equal(holds.length, 1);
+    assert.equal(holds[0]!.endedBy, "user:test");
+    // Festgeschrieben: kein Löschen, kein zweites Aufheben, kein Ändern des Grundes.
+    await assert.rejects(db.pool.query(`delete from app.dunning_holds where order_id = $1`, [r.orderId]));
+    await assert.rejects(db.pool.query(`update app.dunning_holds set reason = 'x' where order_id = $1`, [r.orderId]));
+    // Befristet: gilt bis einschließlich Enddatum.
+    await hold({ endsOn: today });
+    assert.deepEqual(await mine(today), []);
   });
 
   it("warnt, wenn die Karte vor der nächsten Abbuchung abläuft", async () => {

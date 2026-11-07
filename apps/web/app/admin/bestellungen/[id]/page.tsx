@@ -1,13 +1,20 @@
 import { canChange, canSeeAll, orderDetail } from "@idf/db/admin";
 import { listPauses } from "@idf/db/billing";
-import { dunningNoticesOfOrder, OVERDUE_STATE_LABEL, overduePayments } from "@idf/db/dunning";
+import { activeHold, dunningHoldsOfOrder, dunningNoticesOfOrder, OVERDUE_STATE_LABEL, overduePayments } from "@idf/db/dunning";
 import { takeoverOfOrder } from "@idf/db/takeover";
 import { notFound } from "next/navigation";
 import { pool } from "../../../../lib/db";
 import { formatCents, formatDay, formatRate, todayBerlin } from "../../../../lib/format";
 import { requireUser } from "../../../../lib/session";
 import { cancelOrderAction, endSubscriptionAction } from "../../actions";
-import { chargeNowAction, pauseSubscriptionAction, resendInvoiceAction, resumeSubscriptionAction } from "../../kunden/actions";
+import {
+  chargeNowAction,
+  holdDunningAction,
+  liftDunningHoldAction,
+  pauseSubscriptionAction,
+  resendInvoiceAction,
+  resumeSubscriptionAction,
+} from "../../kunden/actions";
 import { ActionForm } from "../../produkte/forms";
 import { RefundForm } from "./refund-form";
 
@@ -32,6 +39,9 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
   const pauses = h.is_abo ? await listPauses(pool(), id) : [];
   const takeover = await takeoverOfOrder(pool(), id);
   const dunning = await dunningNoticesOfOrder(pool(), id);
+  const holds = await dunningHoldsOfOrder(pool(), id);
+  const hold = activeHold(holds, today);
+  const dunningApplies = !h.is_manual && (h.is_abo || d.installments.length > 1);
   const overdue = new Map((await overduePayments(pool(), today, { orderId: id, includeManual: true })).map((o) => [o.installmentId, o]));
   const openPause = pauses.find((p) => !p.endedBy && (p.endsOn === null || p.endsOn >= today));
   const pauseText = (p: { startsOn: string; endsOn: string | null }) =>
@@ -243,6 +253,52 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
           </details>
         )}
       </section>
+
+      {dunningApplies && (canChange(user) || holds.length > 0) && (
+        <section className="card">
+          <h2>Mahnungen</h2>
+          {hold ? (
+            <p>
+              <span className="badge badge-warn">ausgesetzt</span> {hold.endsOn ? `bis einschließlich ${formatDay(hold.endsOn)}` : "bis auf Weiteres"} · {hold.reason}
+            </p>
+          ) : (
+            <p className="note">Erinnerungen und Mahnungen gehen automatisch raus.</p>
+          )}
+          {canChange(user) && hold && (
+            <ActionForm action={liftDunningHoldAction} className="inline-form" submit="Mahnungen wieder einschalten">
+              <input type="hidden" name="order_id" value={id} />
+            </ActionForm>
+          )}
+          {canChange(user) && !hold && (
+            <details>
+              <summary>Mahnungen aussetzen</summary>
+              <p className="note">
+                Zum Beispiel bei einem vereinbarten Zahlungsaufschub. In der Zeit gehen keine Erinnerungen und Mahnungen an die Kundin. Der automatische
+                Einzug läuft weiter; wer auch nicht abbuchen will, pausiert das Abo.
+              </p>
+              <ActionForm action={holdDunningAction} className="inline-form" submit="Aussetzen">
+                <input type="hidden" name="order_id" value={id} />
+                <label htmlFor="hold_ends_on">Bis einschließlich (optional)</label>
+                <input id="hold_ends_on" name="ends_on" type="date" min={today} />
+                <label htmlFor="hold_reason">Grund</label>
+                <input id="hold_reason" name="reason" type="text" required placeholder="z. B. Aufschub mit Vertrieb vereinbart" />
+              </ActionForm>
+            </details>
+          )}
+          {holds.filter((x) => x !== hold).length > 0 && (
+            <ul className="note">
+              {holds
+                .filter((x) => x !== hold)
+                .map((x) => (
+                  <li key={x.id}>
+                    Ausgesetzt am {dateTime.format(x.createdAt)} {x.endsOn ? `bis ${formatDay(x.endsOn)}` : "bis auf Weiteres"} · {x.reason}
+                    {x.endedAt && ` · aufgehoben am ${dateTime.format(x.endedAt)}`}
+                  </li>
+                ))}
+            </ul>
+          )}
+        </section>
+      )}
 
       {(d.notices.length > 0 || d.attempts.length > 0 || dunning.length > 0) && (
         <section className="card">

@@ -5,6 +5,7 @@ import { PauseError, pauseSubscription, resumeSubscription } from "@idf/db/billi
 import { resendInvoiceMail } from "@idf/db/customer-mails";
 import { requestPortalLink } from "@idf/db/customer-portal";
 import { CustomerError, updateCustomerContact } from "@idf/db/customers";
+import { DunningHoldError, holdDunning, liftDunningHold } from "@idf/db/dunning";
 import { revalidatePath } from "next/cache";
 import { chargeNow } from "../../../lib/charging";
 import { pool, transaction } from "../../../lib/db";
@@ -130,4 +131,34 @@ export async function sendPortalLinkAction(_prev: FormState, form: FormData): Pr
   const base = await portalBaseUrl();
   const ok = await transaction(`user:${user.id}`, (c) => requestPortalLink(c, email, base, `user:${user.id}`));
   return ok ? { ok: true, message: `Link zum Kundenbereich geht in den nächsten Minuten an ${email}.` } : { message: "Zu dieser Adresse gibt es keine Kundin." };
+}
+
+export async function holdDunningAction(_prev: FormState, form: FormData): Promise<FormState> {
+  const user = await requireUser();
+  if (!canChange(user)) return { message: "Keine Berechtigung." };
+  const orderId = text(form, "order_id");
+  const endsOn = text(form, "ends_on") || null;
+  if (endsOn && !/^\d{4}-\d{2}-\d{2}$/.test(endsOn)) return { message: "Bitte ein gültiges Datum angeben." };
+  try {
+    await transaction(`user:${user.id}`, (c) =>
+      holdDunning(c, { orderId, endsOn, reason: text(form, "reason"), actor: `user:${user.id}`, today: todayBerlin() }),
+    );
+    revalidatePath(`/admin/bestellungen/${orderId}`);
+    revalidatePath("/admin/mahnwesen");
+    return { ok: true, message: "Mahnungen ausgesetzt. Der automatische Einzug läuft weiter." };
+  } catch (err) {
+    if (err instanceof DunningHoldError) return { message: err.message };
+    console.error("Aussetzung nicht gespeichert", (err as Error).message);
+    return { message: "Speichern nicht möglich. Bitte später erneut versuchen." };
+  }
+}
+
+export async function liftDunningHoldAction(_prev: FormState, form: FormData): Promise<FormState> {
+  const user = await requireUser();
+  if (!canChange(user)) return { message: "Keine Berechtigung." };
+  const orderId = text(form, "order_id");
+  const ok = await transaction(`user:${user.id}`, (c) => liftDunningHold(c, { orderId, actor: `user:${user.id}`, today: todayBerlin() }));
+  revalidatePath(`/admin/bestellungen/${orderId}`);
+  revalidatePath("/admin/mahnwesen");
+  return ok ? { ok: true, message: "Mahnungen laufen wieder." } : { message: "Es gab keine geltende Aussetzung." };
 }
