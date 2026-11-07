@@ -96,6 +96,29 @@ Bestellungen sowie Fehlversuche, die älter als 7 Tage sind. Die Bestellseite ze
 Mahnungen. Bei „fehlgeschlagen“ und „letzte Mahnung“ geht die Meldung `zahlung.fehlgeschlagen` an n8n.
 Der Lauf braucht `PUBLIC_BASE_URL` für die Links.
 
+Abgebrochene Kaufvorgänge (erste Zahlung nie geleistet) werden weder abgebucht noch gemahnt, auch wenn die Kundin
+aus einem anderen Kauf eine Karte gespeichert hat. Bei Probezeit ohne Anzahlung zählt der Kauf, sobald nach der
+Bestellung eine Karte hinterlegt wurde.
+
+### Seite „Mahnwesen“
+
+Verwaltung → Mahnwesen (Admin und Prüfung) zeigt alle überfälligen Raten und Abozahlungen mit ihrer Lage:
+
+| Lage | Bedeutung |
+| --- | --- |
+| Keine automatischen Versuche mehr | alle drei Versuche abgelehnt; bitte nachfassen (Link senden, anrufen, Bestellung beenden) |
+| Keine Zahlungsart hinterlegt | Kundin muss im Kundenbereich eine Karte hinterlegen |
+| Erneuter Versuch geplant | mit Datum des nächsten automatischen Versuchs |
+| Wird beim nächsten Einzug abgebucht | fällig, noch kein Versuch |
+| Abbuchung läuft | eingereicht, Bestätigung der Bank steht aus |
+| PayPal-Abo | übernommenes PayPal-Abo, PayPal bucht selbst ab |
+
+Admins können je Zeile sofort abbuchen oder den Link zum Kundenbereich senden. Oben stehen Kennzahlen der letzten
+12 Monate wie „Dunning Stats“ in Thrivecart: abgelehnte Zahlungen, davon gerettet (später bezahlt), noch offen,
+entfallen, verschickte E-Mails. Überfällig heißt überall gleich (Bestellliste, Dashboard, Zahlplan): Rate fällig und
+offen, oder eine Abbuchung ist gescheitert; abgebrochene Käufe zählen nicht. Die Bestellliste zeigt dazu „überfällig“
+und „pausiert“ als Hinweis in der Statusspalte.
+
 ## Abo-Umzug aus Thrivecart
 
 Unter **Abo-Umzug** (Admin, Prüfung) stehen alle Thrivecart-Abos und Ratenpläne, die noch laufen

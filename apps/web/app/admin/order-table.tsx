@@ -37,7 +37,21 @@ export function OrderTable({ orders }: { orders: OrderRow[] }) {
               <td>
                 {formatCents(o.paidCents, o.currency)} / {formatCents(o.totalCents, o.currency)}
               </td>
-              <td>{o.status}</td>
+              <td>
+                {o.status}
+                {o.overdue && (
+                  <>
+                    {" "}
+                    <span className="badge badge-warn">überfällig</span>
+                  </>
+                )}
+                {o.paused && (
+                  <>
+                    {" "}
+                    <span className="badge">pausiert</span>
+                  </>
+                )}
+              </td>
               <td>{o.seller ?? "–"}</td>
             </tr>
           ))}

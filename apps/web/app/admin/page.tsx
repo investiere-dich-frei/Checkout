@@ -18,7 +18,7 @@ export default async function AdminHome(props: { searchParams: Promise<{ zeitrau
   const active: Preset | null = custom ? null : sp.zeitraum && sp.zeitraum in PRESETS ? (sp.zeitraum as Preset) : "30";
   const range: Range = custom ?? presetRange(active!, today);
   const [orders, work, dash] = await Promise.all([
-    listOrders(pool(), user, { limit: 10 }),
+    listOrders(pool(), user, { limit: 10, today: todayBerlin() }),
     canSeeAll(user) ? openWork(pool()) : null,
     dashboard(pool(), user, range, today),
   ]);

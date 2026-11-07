@@ -84,6 +84,7 @@ export async function chargeNowAction(_prev: FormState, form: FormData): Promise
   try {
     const r = await chargeNow(pool(), { stripe: stripe(), paypal: paypal() }, text(form, "installment_id"), todayBerlin(), `user:${user.id}`);
     revalidatePath(`/admin/bestellungen/${orderId}`);
+    revalidatePath("/admin/mahnwesen");
     if (!r.ok) return { message: BLOCKED[r.reason] ?? "Nicht möglich." };
     return { ok: r.outcome === "gebucht" || r.outcome === "eingereicht", message: OUTCOME[r.outcome]! };
   } catch (err) {

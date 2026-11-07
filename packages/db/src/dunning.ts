@@ -1,5 +1,5 @@
 import type pg from "pg";
-import { MAX_ATTEMPTS, RETRY_AFTER_DAYS } from "./billing.ts";
+import { MAX_ATTEMPTS, ORDER_STARTED_SQL, RETRY_AFTER_DAYS } from "./billing.ts";
 import { companyFooter, day, euro, salutation } from "./customer-mails.ts";
 import { createPortalToken } from "./customer-portal.ts";
 import { enqueueWebhook } from "./webhooks.ts";
@@ -57,6 +57,7 @@ const addDays = (d: string, n: number) => {
 const AUTO_CHARGED = `
   (i.seq > 1 or po.amount_cents = 0 or exists (select 1 from app.thrivecart_takeovers t where t.order_id = o.id))
   and o.status not in ('storniert', 'erstattet')
+  and ${ORDER_STARTED_SQL}
   and not exists (select 1 from app.thrivecart_takeovers t where t.order_id = o.id and t.route = 'paypal')
   and not exists (select 1 from app.manual_orders m where m.order_id = o.id)
   and not exists (select 1 from app.subscription_pauses p where p.order_id = o.id and p.starts_on <= i.due_date
@@ -313,4 +314,219 @@ export async function dunningNoticesOfOrder(db: Db, orderId: string) {
     [orderId],
   );
   return rows;
+}
+
+/**
+ * Wann eine Zahlung als überfällig gilt (Aliase i = Rate, o = Bestellung, `today` als SQL-Ausdruck):
+ * Rate offen und Fälligkeit vorbei, oder eine Abbuchung ist schon gescheitert. Abgebrochene Kaufvorgänge
+ * zählen nicht (billing.ORDER_STARTED_SQL).
+ */
+export const overdueSql = (today: string) => `(
+  i.status in ('offen', 'fehlgeschlagen') and (i.due_date < ${today} or i.status = 'fehlgeschlagen')
+  and o.status not in ('storniert', 'erstattet')
+  and ${ORDER_STARTED_SQL})`;
+
+/**
+ * Lage einer überfälligen Zahlung:
+ *  - naechster_einzug:  noch kein Versuch, der tägliche Einzug bucht sie ab
+ *  - erneuter_versuch:  abgelehnt, nächster automatischer Versuch geplant
+ *  - laeuft:            Abbuchung eingereicht, Bestätigung der Bank steht aus
+ *  - aufgegeben:        alle automatischen Versuche gescheitert, bitte nachfassen
+ *  - ohne_zahlungsart:  keine Karte/kein PayPal hinterlegt
+ *  - paypal_abo:        übernommenes PayPal-Abo, PayPal bucht selbst ab
+ *  - ueberweisung:      manuelle Bestellung, Kundin überweist
+ */
+export type OverdueState =
+  | "naechster_einzug"
+  | "erneuter_versuch"
+  | "laeuft"
+  | "aufgegeben"
+  | "ohne_zahlungsart"
+  | "paypal_abo"
+  | "ueberweisung";
+
+export const OVERDUE_STATE_LABEL: Record<OverdueState, string> = {
+  naechster_einzug: "Wird beim nächsten Einzug abgebucht",
+  erneuter_versuch: "Erneuter Versuch geplant",
+  laeuft: "Abbuchung läuft",
+  aufgegeben: "Keine automatischen Versuche mehr",
+  ohne_zahlungsart: "Keine Zahlungsart hinterlegt",
+  paypal_abo: "PayPal-Abo (PayPal bucht ab)",
+  ueberweisung: "Überweisung offen",
+};
+
+export interface OverduePayment {
+  orderId: string;
+  installmentId: string;
+  seq: number;
+  installments: number;
+  dueDate: string;
+  daysOverdue: number;
+  grossCents: number;
+  currency: string;
+  customerId: string;
+  customerName: string;
+  email: string;
+  product: string;
+  option: string;
+  isAbo: boolean;
+  attempts: number;
+  lastErrorCode: string | null;
+  state: OverdueState;
+  /** Nächster automatischer Versuch, falls einer geplant ist. */
+  nextTry: string | null;
+  lastNotice: { kind: string; at: Date } | null;
+}
+
+/**
+ * Überfällige Zahlungen für die Verwaltung (Seite Mahnwesen und Bestellansicht), älteste zuerst.
+ * Ohne `orderId` alle; Sichtbarkeit regelt der Aufrufer (nur Admin und Prüfung).
+ */
+export async function overduePayments(
+  db: Db,
+  today: string,
+  opts: { orderId?: string; includeManual?: boolean; limit?: number } = {},
+): Promise<OverduePayment[]> {
+  const { rows } = await db.query(
+    `select i.id, i.order_id, i.seq, i.due_date::text, ($1::date - i.due_date)::int days, i.gross_cents, o.currency,
+            (select count(*)::int from app.order_installments z where z.order_id = o.id) n_installments,
+            c.id customer_id, coalesce(nullif(c.company_name, ''), concat_ws(' ', c.first_name, c.last_name)) customer_name, c.email,
+            p.name product, po.label option, exists (select 1 from app.subscription_terms t where t.order_id = o.id) is_abo,
+            coalesce(a.n, 0) attempts, a.last_outcome, a.last_day::text, a.last_error,
+            exists (select 1 from app.manual_orders m where m.order_id = o.id) is_manual,
+            exists (select 1 from app.thrivecart_takeovers t where t.order_id = o.id and t.route = 'paypal') paypal_abo,
+            exists (select 1 from app.saved_payment_methods s where s.customer_id = o.customer_id and s.revoked_at is null) has_method,
+            dn.kind notice_kind, dn.created_at notice_at
+       from app.order_installments i
+       join app.orders o on o.id = i.order_id
+       join app.customers c on c.id = o.customer_id
+       join app.order_items it on it.id = i.order_item_id
+       join app.price_options po on po.id = it.price_option_id
+       join app.products p on p.id = po.product_id
+       left join lateral (
+         select count(*)::int n, (array_agg(outcome order by attempted_at desc))[1] last_outcome,
+                (array_agg(error_code order by attempted_at desc))[1] last_error,
+                max((attempted_at at time zone 'Europe/Berlin')::date) last_day
+           from app.charge_attempts x where x.installment_id = i.id) a on true
+       left join lateral (
+         select d.kind, d.created_at from app.dunning_notices d
+          where d.installment_id = i.id order by d.created_at desc limit 1) dn on true
+      where ${overdueSql("$1::date")}
+        and ($2::uuid is null or o.id = $2)
+        and ($3::boolean or not exists (select 1 from app.manual_orders m where m.order_id = o.id))
+      order by i.due_date, i.id
+      limit $4`,
+    [today, opts.orderId ?? null, opts.includeManual ?? false, opts.limit ?? 500],
+  );
+  return rows.map((r) => {
+    const attempts = Number(r.attempts);
+    let state: OverdueState;
+    let nextTry: string | null = null;
+    if (r.is_manual) state = "ueberweisung";
+    else if (r.paypal_abo) state = "paypal_abo";
+    else if (r.last_outcome === "eingereicht") state = "laeuft";
+    else if (!r.has_method) state = "ohne_zahlungsart";
+    else if (attempts >= MAX_ATTEMPTS) state = "aufgegeben";
+    else if (attempts > 0 && r.last_day) {
+      state = "erneuter_versuch";
+      nextTry = addDays(r.last_day, RETRY_AFTER_DAYS[attempts - 1]!);
+      if (nextTry < today) nextTry = today;
+    } else {
+      state = "naechster_einzug";
+      nextTry = today;
+    }
+    return {
+      orderId: r.order_id,
+      installmentId: r.id,
+      seq: r.seq,
+      installments: r.n_installments,
+      dueDate: r.due_date,
+      daysOverdue: Math.max(0, Number(r.days)),
+      grossCents: Number(r.gross_cents),
+      currency: r.currency,
+      customerId: r.customer_id,
+      customerName: r.customer_name,
+      email: r.email,
+      product: r.product,
+      option: r.option,
+      isAbo: r.is_abo,
+      attempts,
+      lastErrorCode: r.last_error ?? null,
+      state,
+      nextTry,
+      lastNotice: r.notice_kind ? { kind: r.notice_kind, at: r.notice_at } : null,
+    };
+  });
+}
+
+export interface DunningStats {
+  from: string;
+  to: string;
+  /** Raten mit mindestens einer abgelehnten Abbuchung, erster Fehlschlag im Zeitraum. */
+  failed: number;
+  failedCents: number;
+  /** Davon inzwischen bezahlt (nach Mahnung, neuer Karte oder erneutem Versuch). */
+  recovered: number;
+  recoveredCents: number;
+  /** Davon noch offen. */
+  open: number;
+  openCents: number;
+  /** Davon entfallen (Bestellung beendet, Pause, Storno). */
+  dropped: number;
+  droppedCents: number;
+  /** Verschickte Benachrichtigungen im Zeitraum je Art. */
+  notices: Record<string, number>;
+}
+
+/** Kennzahlen des Mahnwesens (wie „Dunning Stats“ in Thrivecart) für die letzten `days` Tage. */
+export async function dunningStats(db: Db, today: string, days = 365): Promise<DunningStats> {
+  const from = addDays(today, -days + 1);
+  const [failed, notices] = await Promise.all([
+    db.query(
+      `select i.status, count(*)::int n, coalesce(sum(i.gross_cents), 0)::bigint cents
+         from app.order_installments i
+         join lateral (
+           select min((attempted_at at time zone 'Europe/Berlin')::date) first_fail
+             from app.charge_attempts x where x.installment_id = i.id and x.outcome = 'abgelehnt') f on f.first_fail is not null
+        where f.first_fail between $1::date and $2::date
+        group by i.status`,
+      [from, today],
+    ),
+    db.query(
+      `select kind, count(*)::int n from app.dunning_notices
+        where (created_at at time zone 'Europe/Berlin')::date between $1::date and $2::date group by kind`,
+      [from, today],
+    ),
+  ]);
+  const s: DunningStats = {
+    from,
+    to: today,
+    failed: 0,
+    failedCents: 0,
+    recovered: 0,
+    recoveredCents: 0,
+    open: 0,
+    openCents: 0,
+    dropped: 0,
+    droppedCents: 0,
+    notices: {},
+  };
+  for (const r of failed.rows) {
+    const n = Number(r.n);
+    const cents = Number(r.cents);
+    s.failed += n;
+    s.failedCents += cents;
+    if (r.status === "bezahlt") {
+      s.recovered += n;
+      s.recoveredCents += cents;
+    } else if (r.status === "offen" || r.status === "fehlgeschlagen") {
+      s.open += n;
+      s.openCents += cents;
+    } else {
+      s.dropped += n;
+      s.droppedCents += cents;
+    }
+  }
+  for (const r of notices.rows) s.notices[r.kind] = Number(r.n);
+  return s;
 }

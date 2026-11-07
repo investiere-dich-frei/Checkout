@@ -1,5 +1,6 @@
 import type pg from "pg";
 import type { SessionUser } from "./auth.ts";
+import { overdueSql } from "./dunning.ts";
 
 /**
  * Abfragen für die Verwaltung. Vertrieb und Freelancer sehen nur Bestellungen über
@@ -23,6 +24,10 @@ export interface OrderRow {
   totalCents: number;
   paidCents: number;
   seller: string | null;
+  /** Eine Rate oder Abozahlung ist überfällig (siehe dunning.overdueSql). */
+  overdue: boolean;
+  /** Abo ist heute pausiert. */
+  paused: boolean;
 }
 
 export interface OrderFilter {
@@ -53,7 +58,10 @@ export async function listOrders(
     `select o.id, o.created_at, o.status, coalesce(nullif(c.company_name, ''), concat_ws(' ', c.first_name, c.last_name)) customer_name,
             c.email, p.name product, po.label option, o.currency, o.total_gross_cents,
             coalesce((select sum(gross_cents) from app.order_installments i where i.order_id = o.id and i.status = 'bezahlt'), 0) paid,
-            u.display_name seller
+            u.display_name seller,
+            exists (select 1 from app.order_installments i where i.order_id = o.id and ${overdueSql("$14::date")}) overdue,
+            exists (select 1 from app.subscription_pauses sp where sp.order_id = o.id and sp.starts_on <= $14::date
+                      and (sp.ends_on is null or sp.ends_on >= $14::date)) paused
        from app.orders o
        join app.customers c on c.id = o.customer_id
        join app.order_items it on it.order_id = o.id
@@ -75,8 +83,8 @@ export async function listOrders(
              or exists (select 1 from app.payments pay where pay.order_id = o.id and pay.provider = $11))
         and ($12::uuid is null or o.seller_user_id = $12)
         and ($13::text is null
-             or ($13 = 'ueberfaellig' and o.status not in ('storniert', 'erstattet') and exists (
-                   select 1 from app.order_installments i where i.order_id = o.id and i.due_date < $14::date and i.status in ('offen', 'fehlgeschlagen')))
+             or ($13 = 'ueberfaellig' and exists (
+                   select 1 from app.order_installments i where i.order_id = o.id and ${overdueSql("$14::date")}))
              or ($13 = 'pausiert' and exists (
                    select 1 from app.subscription_pauses sp where sp.order_id = o.id and sp.starts_on <= $14::date
                       and (sp.ends_on is null or sp.ends_on >= $14::date)))
@@ -116,6 +124,8 @@ export async function listOrders(
     totalCents: Number(r.total_gross_cents),
     paidCents: Number(r.paid),
     seller: r.seller,
+    overdue: r.overdue,
+    paused: r.paused,
   }));
 }
 

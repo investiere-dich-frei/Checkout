@@ -14,6 +14,19 @@ export const RETRY_AFTER_DAYS = [3, 4];
 export const MAX_ATTEMPTS = RETRY_AFTER_DAYS.length + 1;
 
 /**
+ * Die Bestellung ist wirklich zustande gekommen (Alias o): etwas ist bezahlt, sie stammt aus Thrivecart
+ * oder ist eine manuelle Bestellung, oder bei Probezeit ohne Anzahlung wurde nach der Bestellung eine Karte
+ * hinterlegt. Abgebrochene Kaufvorgänge (erste Zahlung nie geleistet) werden weder abgebucht noch gemahnt,
+ * auch wenn die Kundin aus einem anderen Kauf eine Karte gespeichert hat.
+ */
+export const ORDER_STARTED_SQL = `(o.status in ('teilbezahlt', 'bezahlt')
+  or exists (select 1 from app.thrivecart_takeovers t0 where t0.order_id = o.id)
+  or exists (select 1 from app.manual_orders m0 where m0.order_id = o.id)
+  or exists (select 1 from app.order_items it0 join app.price_options po0 on po0.id = it0.price_option_id
+              where it0.order_id = o.id and po0.amount_cents = 0
+                and exists (select 1 from app.saved_payment_methods s0 where s0.customer_id = o.customer_id and s0.created_at >= o.created_at)))`;
+
+/**
  * Für laufende Abos die Fälligkeiten bis einschließlich `untilDay` anlegen. Betrag und
  * Termin folgen aus den bei der Bestellung festgeschriebenen Bedingungen. Nach einer
  * Kündigung entstehen keine Fälligkeiten nach dem Vertragsende.
@@ -101,6 +114,8 @@ export async function dueCharges(client: Db, today: string): Promise<DueCharge[]
              -- Aus Thrivecart übernommen: Die Karte liegt schon vor, auch die erste Zahlung wird eingezogen.
              or exists (select 1 from app.thrivecart_takeovers t where t.order_id = o.id))
         and o.status not in ('storniert', 'erstattet')
+        -- Nie bei abgebrochenen Kaufvorgängen, auch wenn eine Karte aus einem anderen Kauf gespeichert ist.
+        and ${ORDER_STARTED_SQL}
         -- Übernommene PayPal-Abos bucht PayPal selbst ab; die Zahlung kommt per Meldung von PayPal.
         and not exists (select 1 from app.thrivecart_takeovers t where t.order_id = o.id and t.route = 'paypal')
         -- Bestellungen per Rechnung zahlt die Kundin selbst per Überweisung.

@@ -2,6 +2,7 @@ import { splitAmount, type AmountBasis, type PricePlan } from "@idf/core/pricing
 import type pg from "pg";
 import { canSeeAll } from "./admin.ts";
 import type { SessionUser } from "./auth.ts";
+import { overdueSql } from "./dunning.ts";
 
 /**
  * Kennzahlen für das Dashboard der Verwaltung, wie im Thrivecart-Dashboard.
@@ -269,7 +270,7 @@ export async function dashboard(db: Db, user: SessionUser, range: Range, today: 
     db.query(
       `select count(*) n, coalesce(sum(i.gross_cents), 0) cents
          from app.order_installments i join app.orders o on o.id = i.order_id
-        where i.status in ('offen', 'fehlgeschlagen') and i.due_date < $1::date and o.status = 'teilbezahlt'
+        where ${overdueSql("$1::date")}
           and ($2::boolean or o.seller_user_id = $3)`,
       [today, all, user.id],
     ),
