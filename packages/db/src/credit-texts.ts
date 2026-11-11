@@ -1,7 +1,7 @@
 /**
  * Rechtstexte für den Ratenkauf (Finanzierungshilfe nach § 506 BGB ab 20.11.2026).
  *
- * ENTWURF vom 11.11.2026, von Claude vorformuliert, von RA Dr. Metzner zu prüfen. Grundlagen:
+ * ENTWURF vom 11.11.2026, von Claude vorformuliert, von einem Anwalt zu prüfen. Grundlagen:
  *  - Vorvertragliche Information: Europäische Standardinformation für Verbraucherkredite (Anlage 4
  *    zu Art. 247 § 2 EGBGB), Teil „Wesentliche Angaben“. Bei unentgeltlichen Raten mit begrenzten
  *    Verzugskosten beschränkt sie sich auf die Angaben nach Art. 247 § 3 Abs. 1 Satz 1 Nr. 1–11 EGBGB;
@@ -17,7 +17,7 @@
 
 import { CREDIT_WITHDRAWAL_DAYS } from "@idf/core/credit";
 
-export const CREDIT_TEXTS_VERSION = "entwurf-2026-11-11";
+export const CREDIT_TEXTS_VERSION = "entwurf-2026-11-11-2";
 
 /** Wortlaut des Pflicht-Kästchens zum Ratenvertrag (nicht vorangekreuzt, § 492 Abs. 1a BGB n. F.). */
 export const CREDIT_AGREEMENT_TEXT =
@@ -116,7 +116,7 @@ export function precontractInformation(d: CreditTextData): string {
     `${euro(f.total, cur)}. Das ist genau der Barzahlungspreis; die Ratenzahlung kostet nichts extra.`,
     "",
     "7. Kosten bei Zahlungsverzug",
-    "Gerät die Kundin mit einer Rate in Verzug, können gesetzliche Verzugszinsen in Höhe von 5 Prozentpunkten über dem jeweiligen Basiszinssatz pro Jahr auf den rückständigen Betrag anfallen (§ 497 Abs. 1, § 288 Abs. 1 BGB). Der Basiszinssatz ändert sich jeweils zum 1. Januar und 1. Juli. Mahngebühren berechnen wir nicht.",
+    "Bei Zahlungsverzug berechnen wir keine Verzugszinsen und keine Mahngebühren. Auf die gesetzlichen Verzugszinsen (§ 497 Abs. 1, § 288 Abs. 1 BGB) verzichten wir.",
     "",
     "8. Raten",
     `${d.schedule.length} Zahlungen, fällig wie folgt:`,
@@ -124,7 +124,7 @@ export function precontractInformation(d: CreditTextData): string {
     "Jede Zahlung wird mit der beim Kauf hinterlegten Zahlungsart (Karte oder PayPal) am Fälligkeitstag eingezogen. Zahlungen werden auf die jeweils älteste offene Rate angerechnet.",
     "",
     "9. Warnhinweis zu ausbleibenden Zahlungen",
-    "Wenn Zahlungen ausbleiben oder verspätet sind, kann das schwerwiegende Folgen haben: Es können Verzugszinsen anfallen, die Forderung kann einem Inkassounternehmen übergeben oder gerichtlich geltend gemacht werden, und es kann künftig schwieriger werden, einen Kredit zu bekommen. Sind mindestens zwei aufeinanderfolgende Raten ganz oder teilweise und mindestens 10 % des Gesamtbetrags (bei einer Laufzeit über drei Jahre 5 %) rückständig, dürfen wir nach einer Frist von zwei Wochen mit Kündigungsandrohung den gesamten Restbetrag fällig stellen (§ 498 BGB).",
+    "Wenn Zahlungen ausbleiben oder verspätet sind, kann das schwerwiegende Folgen haben: Die Forderung kann einem Inkassounternehmen übergeben oder gerichtlich geltend gemacht werden, und es kann künftig schwieriger werden, einen Kredit zu bekommen. Sind mindestens zwei aufeinanderfolgende Raten ganz oder teilweise und mindestens 10 % des Gesamtbetrags (bei einer Laufzeit über drei Jahre 5 %) rückständig, dürfen wir nach einer Frist von zwei Wochen mit Kündigungsandrohung den gesamten Restbetrag fällig stellen (§ 498 BGB).",
     "",
     "10. Widerrufsrecht",
     `Ja. Du kannst den Ratenzahlungsvertrag innerhalb von ${CREDIT_WITHDRAWAL_DAYS} Tagen ohne Angabe von Gründen widerrufen. Einzelheiten stehen in der Widerrufsinformation.`,
@@ -189,7 +189,7 @@ export function creditContract(d: CreditTextData, extra: { orderNumber: string; 
     "Die Raten werden am Fälligkeitstag mit der hinterlegten Zahlungsart eingezogen. Zahlungen werden auf die älteste offene Rate angerechnet. Du kannst jederzeit kostenlos vorzeitig zahlen.",
     "",
     "4. Verzug",
-    "Bei Verzug können gesetzliche Verzugszinsen von 5 Prozentpunkten über dem Basiszinssatz pro Jahr anfallen (§ 497 Abs. 1 BGB). Mahngebühren berechnen wir nicht. Den Restbetrag dürfen wir nur unter den Voraussetzungen des § 498 BGB fällig stellen (mindestens zwei aufeinanderfolgende Raten und mindestens 10 % des Gesamtbetrags rückständig, zweiwöchige Frist mit Androhung). Bei Zahlungsschwierigkeiten sprich uns bitte an; wir suchen gemeinsam eine Lösung (z. B. Zahlpause oder Stundung). " +
+    "Bei Verzug berechnen wir keine Verzugszinsen und keine Mahngebühren; auf die gesetzlichen Verzugszinsen (§ 497 Abs. 1 BGB) verzichten wir. Den Restbetrag dürfen wir nur unter den Voraussetzungen des § 498 BGB fällig stellen (mindestens zwei aufeinanderfolgende Raten und mindestens 10 % des Gesamtbetrags rückständig, zweiwöchige Frist mit Androhung). Bei Zahlungsschwierigkeiten sprich uns bitte an; wir suchen gemeinsam eine Lösung (z. B. Zahlpause oder Stundung). " +
       DEBT_ADVICE,
     "",
     "5. Sicherheiten",
@@ -207,7 +207,7 @@ export function creditContract(d: CreditTextData, extra: { orderNumber: string; 
       : `Du hast keinen sofortigen Start verlangt. Dein Zugang beginnt am Tag nach Ablauf der Widerrufsfrist.`,
     "",
     "9. Beschwerden und Aufsicht",
-    `Beschwerden richte bitte an ${d.company.email}. [ENTWURF: Angaben zu Streitbeilegung, Aufsichtsbehörde und § 4 Abs. 2 AbsFinAG von RA Dr. Metzner prüfen lassen.]`,
+    `Beschwerden richte bitte an ${d.company.email}. [ENTWURF: Angaben zu Streitbeilegung, Aufsichtsbehörde und § 4 Abs. 2 AbsFinAG vom Anwalt prüfen lassen.]`,
     "",
     "10. Weitere Bedingungen",
     "Im Übrigen gelten unsere Allgemeinen Geschäftsbedingungen in der beim Kauf zugestimmten Fassung.",

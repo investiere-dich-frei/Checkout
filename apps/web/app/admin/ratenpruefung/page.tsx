@@ -34,7 +34,7 @@ export default async function CreditChecksPage() {
         </p>
         <p>
           Ratenkauf ist <strong>{settings.enabled ? "eingeschaltet" : "ausgeschaltet"}</strong>. Rechtstexte: Fassung {CREDIT_TEXTS_VERSION}
-          {CREDIT_TEXTS_VERSION.startsWith("entwurf") && " (Entwurf, vor dem Einschalten von RA Dr. Metzner prüfen lassen)"}.
+          {CREDIT_TEXTS_VERSION.startsWith("entwurf") && " (Entwurf, vor dem Einschalten vom Anwalt prüfen lassen)"}.
         </p>
       </section>
 
