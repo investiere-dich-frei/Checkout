@@ -1,5 +1,6 @@
 import type pg from "pg";
 import type { SessionUser } from "./auth.ts";
+import { endSubscription } from "./billing.ts";
 import { enqueueInvoiceMail } from "./customer-mails.ts";
 import { storeInvoicePdf } from "./invoice-pdf.ts";
 import { enqueueWebhook } from "./webhooks.ts";
@@ -210,13 +211,14 @@ export async function completeRefund(client: pg.ClientBase, refundId: string, pr
 }
 
 /** Bestellung beenden: offene Raten entfallen, Abo endet heute. Bereits Bezahltes bleibt (Erstattung separat). */
-export async function cancelOrder(client: pg.ClientBase, user: SessionUser, orderId: string): Promise<void> {
+export async function cancelOrder(client: pg.ClientBase, user: SessionUser, orderId: string, extra: Record<string, unknown> = {}): Promise<void> {
   if (user.role !== "admin") throw new RefundError("Keine Berechtigung");
-  await enqueueWebhook(client, "bestellung.beendet", orderId, { ended_by: `user:${user.id}` });
+  const actor = `user:${user.id}`;
   await client.query(`update app.order_installments set status = 'storniert' where order_id = $1 and status in ('offen', 'fehlgeschlagen')`, [orderId]);
+  // Ein schon gesetztes Laufzeitende ist festgeschrieben (GoBD); ein früherer Storno wirkt über app.order_cancellations.
   await client.query(
     `update app.subscription_terms set ends_on = (now() at time zone 'Europe/Berlin')::date, ended_by = $2 where order_id = $1 and ends_on is null`,
-    [orderId, `user:${user.id}`],
+    [orderId, actor],
   );
   await client.query(
     `update app.orders o set status = case when exists (select 1 from app.order_installments i where i.order_id = o.id and i.status = 'bezahlt')
@@ -224,4 +226,108 @@ export async function cancelOrder(client: pg.ClientBase, user: SessionUser, orde
       where o.id = $1`,
     [orderId],
   );
+  await enqueueWebhook(client, "bestellung.beendet", orderId, { ended_by: actor, ...extra });
+}
+
+export type StornoKind = "ohne_rueckzahlung" | "mit_rueckzahlung";
+
+export const STORNO_LABEL: Record<StornoKind, string> = {
+  ohne_rueckzahlung: "Storno ohne Rückzahlung",
+  mit_rueckzahlung: "Storno mit Rückzahlung",
+};
+
+export interface StornoInput {
+  orderId: string;
+  kind: StornoKind;
+  reason: string;
+  /** Heute (Europe/Berlin), JJJJ-MM-TT. */
+  today: string;
+  /** Nur Abo und ohne Rückzahlung: letzter Tag der Laufzeit. Leer = sofort. */
+  endsOn?: string | null;
+}
+
+export interface StornoRecord {
+  id: string;
+  kind: StornoKind;
+  effectiveOn: string;
+  reason: string;
+  createdBy: string;
+  createdAt: Date;
+}
+
+/**
+ * Storno einer Bestellung (Verwaltung). Ohne Rückzahlung: offene Raten entfallen, das Abo endet
+ * sofort oder zum gewählten Tag; Bezahltes bleibt. Mit Rückzahlung: Die Bestellung endet sofort;
+ * die Erstattungen der gewählten Rechnungen löst danach die Web-App aus (refundInvoice), weil dafür
+ * Stripe oder PayPal aufgerufen werden. Jeder Storno wird mit Grund festgeschrieben.
+ */
+export async function stornoOrder(client: pg.ClientBase, user: SessionUser, input: StornoInput): Promise<StornoRecord> {
+  if (user.role !== "admin") throw new RefundError("Keine Berechtigung");
+  const reason = input.reason.trim();
+  if (!reason) throw new RefundError("Bitte einen Grund angeben");
+  if (input.kind !== "ohne_rueckzahlung" && input.kind !== "mit_rueckzahlung") throw new RefundError("Unbekannte Storno-Art");
+  const o = (
+    await client.query<{ status: string; manual: boolean; is_abo: boolean; ends_on: string | null; paypal_abo: boolean; open: number }>(
+      `select o.status,
+              exists (select 1 from app.manual_orders m where m.order_id = o.id) manual,
+              exists (select 1 from app.subscription_terms t where t.order_id = o.id) is_abo,
+              -- Wirksames Ende: Laufzeitende oder ein früherer Storno, was zuerst kommt.
+              nullif(least(coalesce((select max(t.ends_on) from app.subscription_terms t where t.order_id = o.id), 'infinity'::date),
+                           coalesce((select min(x.effective_on) from app.order_cancellations x where x.order_id = o.id), 'infinity'::date)),
+                     'infinity'::date)::text ends_on,
+              exists (select 1 from app.thrivecart_takeovers t where t.order_id = o.id and t.route = 'paypal') paypal_abo,
+              (select count(*)::int from app.order_installments i where i.order_id = o.id and i.status in ('offen', 'fehlgeschlagen')) open
+         from app.orders o where o.id = $1 for update of o`,
+      [input.orderId],
+    )
+  ).rows[0];
+  if (!o) throw new RefundError("Bestellung gibt es nicht");
+  if (o.manual) throw new RefundError("Bestellungen per Rechnung werden unter Manuelle Bestellungen storniert");
+  const running = o.status !== "storniert" && o.status !== "erstattet" && (o.open > 0 || (o.is_abo && (o.ends_on === null || o.ends_on > input.today)));
+  if (input.kind === "ohne_rueckzahlung" && !running) throw new RefundError("Die Bestellung ist bereits beendet");
+  const endsOn = input.endsOn || null;
+  if (endsOn) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(endsOn)) throw new RefundError("Ungültiges Datum");
+    if (input.kind !== "ohne_rueckzahlung") throw new RefundError("Mit Rückzahlung endet die Bestellung sofort");
+    if (!o.is_abo) throw new RefundError("Ein Enddatum gibt es nur bei Abos");
+    if (endsOn < input.today) throw new RefundError("Das Enddatum liegt in der Vergangenheit");
+    if (o.paypal_abo && endsOn > input.today) throw new RefundError("PayPal-Abos können nur sofort beendet werden");
+  }
+  const actor = `user:${user.id}`;
+  const extra = { storno: input.kind, reason };
+  if (endsOn && endsOn > input.today) {
+    if (o.ends_on !== null && o.ends_on <= endsOn) throw new RefundError(`Das Abo endet schon am ${o.ends_on}`);
+    // Ein schon gesetztes späteres Ende bleibt festgeschrieben; der Storno-Eintrag zieht es vor (siehe extendSubscriptions).
+    if (o.ends_on !== null) {
+      await client.query(
+        `update app.order_installments set status = 'storniert' where order_id = $1 and due_date > $2 and status in ('offen', 'fehlgeschlagen')`,
+        [input.orderId, endsOn],
+      );
+      await enqueueWebhook(client, "abo.beendet", input.orderId, { ends_on: endsOn, ...extra });
+    } else {
+      await endSubscription(client, input.orderId, endsOn, actor, extra);
+    }
+  } else if (running) {
+    await cancelOrder(client, user, input.orderId, extra);
+  } else {
+    // Schon beendet (z. B. Einmalzahlung): Nur die Erstattung folgt; Empfänger erfahren den Storno trotzdem.
+    await enqueueWebhook(client, "bestellung.beendet", input.orderId, { ended_by: actor, ...extra });
+  }
+  const r = await client.query<{ id: string; created_at: Date }>(
+    `insert into app.order_cancellations (order_id, kind, effective_on, reason, created_by) values ($1, $2, $3, $4, $5) returning id, created_at`,
+    [input.orderId, input.kind, endsOn ?? input.today, reason, actor],
+  );
+  return { id: r.rows[0]!.id, kind: input.kind, effectiveOn: endsOn ?? input.today, reason, createdBy: actor, createdAt: r.rows[0]!.created_at };
+}
+
+/** Stornos einer Bestellung, älteste zuerst. */
+export async function stornosOfOrder(db: pg.ClientBase | pg.Pool, orderId: string): Promise<StornoRecord[]> {
+  const { rows } = await db.query(
+    `select c.id, c.kind, c.effective_on::text, c.reason, coalesce(u.display_name, c.created_by) created_by, c.created_at
+       from app.order_cancellations c
+       left join app.users u on c.created_by = 'user:' || u.id::text
+      where c.order_id = $1 order by c.created_at`,
+    [orderId],
+  );
+  return rows.map((r) => ({ id: r.id, kind: r.kind, effectiveOn: r.effective_on, reason: r.reason, createdBy: r.created_by, createdAt: r.created_at }));
 }

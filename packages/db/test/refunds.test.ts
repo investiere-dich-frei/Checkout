@@ -3,7 +3,7 @@ import { after, before, describe, it } from "node:test";
 import type { SessionUser } from "../src/auth.ts";
 import { extendSubscriptions } from "../src/billing.ts";
 import { placeOrder, type PlaceOrderInput } from "../src/orders.ts";
-import { cancelOrder, completeRefund, failRefund, refundableCents, RefundError, requestRefund, splitRefund } from "../src/refunds.ts";
+import { cancelOrder, completeRefund, failRefund, refundableCents, RefundError, requestRefund, splitRefund, stornoOrder, stornosOfOrder } from "../src/refunds.ts";
 import { handleStripeEvent, nextPaymentTarget, rememberPaymentIntent } from "../src/stripe.ts";
 import { createTestDb, tx, type TestDb } from "./helpers.ts";
 
@@ -204,5 +204,74 @@ describe("Erstattung und Storno", () => {
     assert.deepEqual(rows.map((r) => r.status), ["storniert"]);
     assert.equal((await db.pool.query(`select status from app.orders where id = $1`, [abo.orderId])).rows[0].status, "storniert");
     assert.deepEqual((await db.pool.query(`select * from app.audit_verify()`)).rows, []);
+  });
+
+  it("Storno ohne Rückzahlung: beendet sofort, hält Grund fest und meldet die Art an n8n", async () => {
+    await ready();
+    const p = await paidOrder(order);
+    await assert.rejects(tx(db.pool, (c) => stornoOrder(c, admin, { orderId: p.orderId, kind: "ohne_rueckzahlung", reason: " ", today: "2026-11-11" })), /Grund/);
+    const vera: SessionUser = { ...admin, role: "vertrieb" };
+    await assert.rejects(tx(db.pool, (c) => stornoOrder(c, vera, { orderId: p.orderId, kind: "ohne_rueckzahlung", reason: "x", today: "2026-11-11" })), /Berechtigung/);
+    // Raten haben kein Enddatum.
+    await assert.rejects(
+      tx(db.pool, (c) => stornoOrder(c, admin, { orderId: p.orderId, kind: "ohne_rueckzahlung", reason: "x", today: "2026-11-11", endsOn: "2026-12-31" })),
+      /nur bei Abos/,
+    );
+    const rec = await tx(db.pool, (c) => stornoOrder(c, admin, { orderId: p.orderId, kind: "ohne_rueckzahlung", reason: "Kündigung per Mail", today: "2026-11-11" }));
+    assert.equal(rec.effectiveOn, "2026-11-11");
+    const st = (await db.pool.query(`select status from app.order_installments where order_id = $1 order by seq`, [p.orderId])).rows.map((r) => r.status);
+    assert.deepEqual(st, ["bezahlt", "storniert"]);
+    const hook = (await db.pool.query(`select payload from app.webhook_outbox where event_type = 'bestellung.beendet' and payload->'order'->>'order_id' = $1`, [p.orderId])).rows;
+    assert.equal(hook.length, 1);
+    assert.equal(hook[0].payload.storno, "ohne_rueckzahlung");
+    assert.equal(hook[0].payload.reason, "Kündigung per Mail");
+    // Nochmal ohne Rückzahlung geht nicht, es läuft ja nichts mehr.
+    await assert.rejects(tx(db.pool, (c) => stornoOrder(c, admin, { orderId: p.orderId, kind: "ohne_rueckzahlung", reason: "x", today: "2026-11-11" })), /bereits beendet/);
+    const list = await stornosOfOrder(db.pool, p.orderId);
+    assert.equal(list.length, 1);
+    assert.equal(list[0]!.createdBy, "Admin");
+    // Festgeschrieben.
+    await assert.rejects(db.pool.query(`update app.order_cancellations set reason = 'anders' where order_id = $1`, [p.orderId]));
+    await assert.rejects(db.pool.query(`delete from app.order_cancellations where order_id = $1`, [p.orderId]));
+  });
+
+  it("Storno ohne Rückzahlung zum Datum: Abo läuft bis dahin, danach entstehen keine Zahlungen", async () => {
+    await ready();
+    const abo = await tx(db.pool, (c) => placeOrder(c, { ...aboOrder, purchaseDay: "2026-10-15" }));
+    await assert.rejects(
+      tx(db.pool, (c) => stornoOrder(c, admin, { orderId: abo.orderId, kind: "ohne_rueckzahlung", reason: "x", today: "2026-11-11", endsOn: "2026-11-01" })),
+      /Vergangenheit/,
+    );
+    await assert.rejects(
+      tx(db.pool, (c) => stornoOrder(c, admin, { orderId: abo.orderId, kind: "mit_rueckzahlung", reason: "x", today: "2026-11-11", endsOn: "2026-12-14" })),
+      /sofort/,
+    );
+    const rec = await tx(db.pool, (c) => stornoOrder(c, admin, { orderId: abo.orderId, kind: "ohne_rueckzahlung", reason: "Kündigung zum Laufzeitende", today: "2026-11-11", endsOn: "2027-01-14" }));
+    assert.equal(rec.effectiveOn, "2027-01-14");
+    await tx(db.pool, (c) => extendSubscriptions(c, "2027-06-30"));
+    const due = (await db.pool.query(`select due_date::text from app.order_installments where order_id = $1 order by seq`, [abo.orderId])).rows.map((r) => r.due_date);
+    assert.deepEqual(due, ["2026-10-15", "2026-11-15", "2026-12-15"]);
+    const ev = (await db.pool.query(`select payload from app.webhook_outbox where event_type = 'abo.beendet' and payload->'order'->>'order_id' = $1`, [abo.orderId])).rows;
+    assert.equal(ev[0].payload.storno, "ohne_rueckzahlung");
+    // Später doch sofort: das spätere Ende wird auf heute vorgezogen.
+    await tx(db.pool, (c) => stornoOrder(c, admin, { orderId: abo.orderId, kind: "ohne_rueckzahlung", reason: "doch sofort", today: "2026-11-11" }));
+    // Das festgeschriebene Laufzeitende bleibt, es entstehen aber keine weiteren Zahlungen.
+    const ends = (await db.pool.query(`select ends_on::text from app.subscription_terms where order_id = $1`, [abo.orderId])).rows[0].ends_on;
+    assert.equal(ends, "2027-01-14");
+    await tx(db.pool, (c) => extendSubscriptions(c, "2027-06-30"));
+    const st = (await db.pool.query(`select status from app.order_installments where order_id = $1 order by seq`, [abo.orderId])).rows.map((r) => r.status);
+    assert.equal(st.includes("offen"), false);
+    assert.equal(st.length, 3);
+    assert.deepEqual((await db.pool.query(`select * from app.audit_verify()`)).rows, []);
+  });
+
+  it("Storno mit Rückzahlung bei bezahlter Einmalzahlung: Webhook und Eintrag, auch wenn nichts mehr läuft", async () => {
+    await ready();
+    const p = await paidOrder(order);
+    await tx(db.pool, (c) => cancelOrder(c, admin, p.orderId));
+    const rec = await tx(db.pool, (c) => stornoOrder(c, admin, { orderId: p.orderId, kind: "mit_rueckzahlung", reason: "Widerruf", today: "2026-11-11" }));
+    assert.equal(rec.kind, "mit_rueckzahlung");
+    const n = (await db.pool.query(`select count(*)::int n from app.webhook_outbox where event_type = 'bestellung.beendet' and payload->'order'->>'order_id' = $1 and payload->>'storno' = 'mit_rueckzahlung'`, [p.orderId])).rows[0].n;
+    assert.equal(n, 1);
   });
 });

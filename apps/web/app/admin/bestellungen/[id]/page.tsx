@@ -5,8 +5,10 @@ import { takeoverOfOrder } from "@idf/db/takeover";
 import { notFound } from "next/navigation";
 import { pool } from "../../../../lib/db";
 import { formatCents, formatDay, formatRate, todayBerlin } from "../../../../lib/format";
+
+const formatIsoDay = (d: Date) => todayBerlin(d);
 import { requireUser } from "../../../../lib/session";
-import { cancelOrderAction, endSubscriptionAction } from "../../actions";
+import { STORNO_LABEL, stornosOfOrder } from "@idf/db/refunds";
 import {
   chargeNowAction,
   holdDunningAction,
@@ -17,6 +19,7 @@ import {
 } from "../../kunden/actions";
 import { ActionForm } from "../../produkte/forms";
 import { RefundForm } from "./refund-form";
+import { StornoForm, type StornoInvoice } from "./storno-form";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DUNNING_LABELS: Record<string, string> = {
@@ -44,6 +47,23 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
   const dunningApplies = !h.is_manual && (h.is_abo || d.installments.length > 1);
   const overdue = new Map((await overduePayments(pool(), today, { orderId: id, includeManual: true })).map((o) => [o.installmentId, o]));
   const openPause = pauses.find((p) => !p.endedBy && (p.endsOn === null || p.endsOn >= today));
+  const stornos = await stornosOfOrder(pool(), id);
+  const paypalAbo = takeover?.route === "paypal";
+  // Wirksames Abo-Ende: Laufzeitende oder ein früherer Storno.
+  const aboEnd = [h.ends_on as string | null, ...stornos.map((x) => x.effectiveOn)].filter((x): x is string => !!x).sort()[0] ?? null;
+  const running =
+    h.status !== "storniert" &&
+    h.status !== "erstattet" &&
+    (d.installments.some((i) => i.status === "offen" || i.status === "fehlgeschlagen") || (h.is_abo && (!aboEnd || aboEnd > today)));
+  // Rechnungen mit noch erstattbarem Betrag (Teilerstattungen sind als negative Korrekturen abgezogen).
+  const refundable: StornoInvoice[] = d.invoices
+    .filter((i) => i.kind === "rechnung" && !d.invoices.some((s) => s.corrects_invoice_id === i.id && s.kind === "storno"))
+    .map((i) => ({
+      id: i.id,
+      number: i.invoice_number,
+      refundableCents: Number(i.gross_cents) + d.invoices.filter((s) => s.corrects_invoice_id === i.id).reduce((t, s) => t + Number(s.gross_cents), 0),
+    }))
+    .filter((i) => i.refundableCents > 0);
   const pauseText = (p: { startsOn: string; endsOn: string | null }) =>
     p.endsOn !== null && p.endsOn < p.startsOn ? `${formatDay(p.startsOn)} (aufgehoben)` : `${formatDay(p.startsOn)} bis ${p.endsOn ? formatDay(p.endsOn) : "auf Weiteres"}`;
 
@@ -143,12 +163,6 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
                 <input type="hidden" name="installment_id" value={i.id} />
               </ActionForm>
             ))}
-        {canChange(user) && !h.is_manual && d.installments.some((i) => i.status === "offen" || i.status === "fehlgeschlagen") && (
-          <form action={cancelOrderAction} className="inline-form">
-            <input type="hidden" name="order_id" value={id} />
-            <button type="submit">Offene Raten entfallen lassen (Bestellung beenden)</button>
-          </form>
-        )}
         {h.is_abo && pauses.length > 0 && (
           <>
             <h3>Pausen</h3>
@@ -162,7 +176,7 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
             </ul>
           </>
         )}
-        {h.is_abo && canChange(user) && !h.ends_on && h.status !== "storniert" && h.status !== "erstattet" &&
+        {h.is_abo && canChange(user) && !aboEnd && h.status !== "storniert" && h.status !== "erstattet" &&
           (openPause ? (
             <ActionForm action={resumeSubscriptionAction} className="inline-form" submit="Pause beenden, Abo fortsetzen" confirm="Pause beenden? Ab heute fällige Zahlungen werden wieder eingezogen.">
               <input type="hidden" name="order_id" value={id} />
@@ -182,23 +196,36 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
               </ActionForm>
             </details>
           ))}
-        {h.is_abo && (
-          <p>
-            {h.ends_on ? (
-              <>Abo endet am {formatDay(h.ends_on)}.</>
-            ) : canChange(user) ? (
-              <form action={endSubscriptionAction} className="inline-form">
-                <input type="hidden" name="order_id" value={id} />
-                <label htmlFor="ends_on">Abo beenden zum (letzter Tag der Laufzeit)</label>
-                <input id="ends_on" name="ends_on" type="date" min={todayBerlin()} required />
-                <button type="submit">Abo beenden</button>
-              </form>
-            ) : (
-              <>Abo läuft.</>
-            )}
-          </p>
-        )}
+        {h.is_abo && <p>{aboEnd ? <>Abo {aboEnd < today ? "endete" : "endet"} am {formatDay(aboEnd)}.</> : <>Abo läuft.</>}</p>}
       </section>
+
+      {(stornos.length > 0 || (canChange(user) && !h.is_manual && (running || refundable.length > 0))) && (
+        <section className="card">
+          <h2>Stornieren</h2>
+          {stornos.length > 0 && (
+            <ul>
+              {stornos.map((s) => (
+                <li key={s.id}>
+                  <strong>{STORNO_LABEL[s.kind]}</strong> am {dateTime.format(s.createdAt)} durch {s.createdBy}
+                  {s.effectiveOn > formatIsoDay(s.createdAt) && <> · Abo endet am {formatDay(s.effectiveOn)}</>} · Grund: {s.reason}
+                </li>
+              ))}
+            </ul>
+          )}
+          {canChange(user) && !h.is_manual && (running || refundable.length > 0) && (
+            <StornoForm
+              orderId={id}
+              isAbo={h.is_abo}
+              running={running}
+              canEndLater={!paypalAbo}
+              paypalAbo={paypalAbo}
+              today={today}
+              invoices={refundable}
+              currency={h.currency}
+            />
+          )}
+        </section>
+      )}
 
       <section className="card">
         <h2>Rechnungen</h2>
@@ -218,28 +245,23 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
             </tbody>
           </table>
         )}
-        {canChange(user) &&
-          !h.is_manual &&
-          d.invoices
-            .filter((i) => i.kind === "rechnung" && !d.invoices.some((s) => s.corrects_invoice_id === i.id && s.kind === "storno"))
-            .map((i) => {
-              const gross = Number(i.gross_cents);
-              // Rechnungskorrekturen (Teilerstattungen) haben negative Beträge.
-              const corrected = d.invoices.filter((s) => s.corrects_invoice_id === i.id).reduce((t, s) => t + Number(s.gross_cents), 0);
-              const left = gross + corrected;
-              if (left <= 0) return null;
-              return (
-                <RefundForm
-                  key={i.id}
-                  orderId={id}
-                  invoiceId={i.id}
-                  invoiceNumber={i.invoice_number}
-                  refundableCents={left}
-                  grossCents={gross}
-                  currency={h.currency}
-                />
-              );
-            })}
+        {canChange(user) && !h.is_manual && refundable.length > 0 && (
+          <details>
+            <summary>Einzelne Rechnung erstatten (auch Teilbetrag), Bestellung läuft weiter</summary>
+            <p className="note">Für einen Storno, der die Bestellung beendet, oben „Stornieren“ nutzen.</p>
+            {refundable.map((i) => (
+              <RefundForm
+                key={i.id}
+                orderId={id}
+                invoiceId={i.id}
+                invoiceNumber={i.number}
+                refundableCents={i.refundableCents}
+                grossCents={Number(d.invoices.find((x) => x.id === i.id)!.gross_cents)}
+                currency={h.currency}
+              />
+            ))}
+          </details>
+        )}
         {canChange(user) && d.invoices.length > 0 && (
           <details>
             <summary>Rechnung erneut per E-Mail senden</summary>
