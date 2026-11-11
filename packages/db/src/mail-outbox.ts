@@ -44,13 +44,19 @@ export async function sendPendingMails(pool: pg.Pool, send: SendMail, limit = 20
         attempts: number;
       }>(
         `select id, purpose, related_id, to_address, subject, body_text, attempts from app.mail_outbox
-          where sent_at is null and next_attempt_at <= now()
+          where sent_at is null and cancelled_at is null and next_attempt_at <= now()
           order by next_attempt_at limit 1 for update skip locked`,
       );
       const m = rows[0];
       if (!m) {
         await c.query("commit");
         break;
+      }
+      if (m.purpose === "ratenkauf_erinnerung" && m.related_id && !(await orderStillRunning(c, m.related_id))) {
+        // Widerrufserinnerung nur, solange der Ratenvertrag läuft (nicht nach Widerruf oder Storno).
+        await c.query(`update app.mail_outbox set cancelled_at = now(), cancel_reason = $2 where id = $1`, [m.id, "Bestellung widerrufen oder storniert"]);
+        await c.query("commit");
+        continue;
       }
       try {
         const attachments: OutgoingMail["attachments"] = [];
@@ -82,4 +88,14 @@ export async function sendPendingMails(pool: pg.Pool, send: SendMail, limit = 20
     }
   }
   return { sent, failed };
+}
+
+/** Läuft die Bestellung noch, also ohne Widerruf und ohne Storno? */
+async function orderStillRunning(c: pg.ClientBase, orderId: string): Promise<boolean> {
+  const r = await c.query<{ ended: boolean }>(
+    `select exists (select 1 from app.contract_notices where order_id = $1 and kind = 'widerruf')
+         or exists (select 1 from app.order_cancellations where order_id = $1) ended`,
+    [orderId],
+  );
+  return !r.rows[0]!.ended;
 }

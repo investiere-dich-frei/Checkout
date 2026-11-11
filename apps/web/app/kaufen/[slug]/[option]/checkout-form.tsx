@@ -107,6 +107,11 @@ function CreditQuestions(props: { state: CheckoutState }) {
         </fieldset>
       </div>
       <label className="check">
+        <input type="checkbox" name="credit_adult" />
+        <span>Ich bin mindestens 18 Jahre alt.</span>
+      </label>
+      {err("adult")}
+      <label className="check">
         <input type="checkbox" name="credit_confirm" />
         <span>Meine Angaben sind vollständig und richtig.</span>
       </label>
@@ -332,6 +337,16 @@ export function CheckoutForm(props: {
       </section>
 
       {creditFlow && !creditBlocked && <CreditQuestions state={state} />}
+      {props.credit && kind === "unternehmen" && (
+        <section className="card" aria-labelledby="gewerblich">
+          <h2 id="gewerblich">Kauf als Unternehmen</h2>
+          <label className="check">
+            <input type="checkbox" name="business_purpose" />
+            <span>Ich kaufe für meine gewerbliche oder selbständige berufliche Tätigkeit, nicht als Privatperson.</span>
+          </label>
+          <p className="note">Nötig für Ratenzahlung als Unternehmen, wenn wir keine gültige USt-IdNr. prüfen konnten.</p>
+        </section>
+      )}
       {creditBlocked && (
         <p className="error" role="alert">
           Ratenzahlung können wir gerade nicht anbieten. Bitte wähle die Einmalzahlung oder frag uns nach einem kürzeren Zahlplan.

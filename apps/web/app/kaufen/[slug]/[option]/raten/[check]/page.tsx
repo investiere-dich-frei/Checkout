@@ -1,5 +1,5 @@
-import { creditTextData, usableCheck } from "@idf/db/credit";
-import { creditWithdrawalInformation, precontractInformation } from "@idf/db/credit-texts";
+import { precontractForCheck, usableCheck } from "@idf/db/credit";
+import { creditWithdrawalInformation } from "@idf/db/credit-texts";
 import { notFound } from "next/navigation";
 import { pool } from "../../../../../../lib/db";
 import { formatCents, todayBerlin } from "../../../../../../lib/format";
@@ -52,12 +52,8 @@ export default async function CreditStepPage(props: { params: Promise<{ slug: st
     );
   }
 
-  const data = await creditTextData(db, {
-    priceOptionId: usable.priceOptionId,
-    customer: usable.customer,
-    couponCode: usable.couponCode,
-    contractDay: todayBerlin(),
-  });
+  // Genau diese Fassung wird beim Bestellen per Prüfsumme abgeglichen und festgeschrieben.
+  const { data, text: information, sha: informationSha } = await precontractForCheck(db, usable, todayBerlin());
   const immediate = (await db.query<{ immediate_access: boolean }>(
     `select p.immediate_access from app.price_options o join app.products p on p.id = o.product_id where o.id = $1`,
     [usable.priceOptionId],
@@ -73,11 +69,12 @@ export default async function CreditStepPage(props: { params: Promise<{ slug: st
           {usable.customer.email} geschickt.
         </p>
         <pre className="credit-info" style={{ whiteSpace: "pre-wrap", fontFamily: "inherit" }}>
-          {precontractInformation(data)}
+          {information}
         </pre>
       </section>
       <CreditOrderForm
         checkId={usable.id}
+        informationSha={informationSha}
         withdrawalText={creditWithdrawalInformation(data)}
         immediateAccess={immediate}
         dueNow={formatCents(dueNow, data.currency)}
