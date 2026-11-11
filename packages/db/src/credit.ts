@@ -51,6 +51,8 @@ export interface CreditSettings extends CreditRules {
   enabled: boolean;
   contactEmail: string;
   contactPhone: string | null;
+  /** Länder (ISO-Code der Anschrift), in denen Ratenkredit angeboten wird; zunächst nur DE. */
+  creditCountries: string[];
   updatedAt: Date;
   updatedBy: string;
 }
@@ -63,6 +65,7 @@ export async function getCreditSettings(db: Db): Promise<CreditSettings> {
     enabled: r.enabled,
     contactEmail: r.contact_email,
     contactPhone: r.contact_phone,
+    creditCountries: r.credit_countries,
     livingCostCents: Number(r.living_cost_cents),
     livingCostPerDependentCents: Number(r.living_cost_per_dependent_cents),
     greenMaxShareBp: r.green_max_share_bp,
@@ -93,13 +96,17 @@ export async function updateCreditSettings(
     if (v !== null && (!Number.isSafeInteger(v) || v < 0)) throw new CreditError(`${label} ist ungültig.`);
     return v;
   };
+  const countries = [...new Set(u.creditCountries.map((c) => c.trim().toUpperCase()).filter(Boolean))];
+  if (!countries.length || countries.length > 10 || !countries.every((c) => /^[A-Z]{2}$/.test(c))) {
+    throw new CreditError("Länder bitte als Kürzel angeben, z. B. „DE“ oder „DE, CH“.");
+  }
   if (!Number.isInteger(u.greenMaxShareBp) || u.greenMaxShareBp < 1 || u.greenMaxShareBp > 10000) {
     throw new CreditError("Der Anteil für „grün“ muss zwischen 0,01 und 100 % liegen.");
   }
   await client.query(
     `update app.credit_settings set enabled = $1, contact_email = $2, contact_phone = $3, living_cost_cents = $4,
             living_cost_per_dependent_cents = $5, green_max_share_bp = $6, manual_review_from_cents = $7, bureau_from_cents = $8,
-            updated_at = now(), updated_by = $9
+            credit_countries = $10, updated_at = now(), updated_by = $9
       where id`,
     [
       u.enabled,
@@ -111,8 +118,18 @@ export async function updateCreditSettings(
       cents(u.manualReviewFromCents, "Grenze für Prüfung durch das Team"),
       cents(u.bureauFromCents, "Grenze für Auskunftei"),
       actor,
+      countries,
     ],
   );
+}
+
+/** Meldung, wenn die Anschrift nicht in einem Land liegt, in dem wir Ratenkredit anbieten. */
+export function countryNotAllowed(settings: Pick<CreditSettings, "creditCountries">, country: string): string | null {
+  if (settings.creditCountries.includes(country.trim().toUpperCase())) return null;
+  const names: Record<string, string> = { DE: "Deutschland", AT: "Österreich", CH: "der Schweiz" };
+  const list = settings.creditCountries.map((c) => names[c] ?? c);
+  const where = list.length > 1 ? `${list.slice(0, -1).join(", ")} oder ${list[list.length - 1]}` : list[0];
+  return `Ratenzahlung über mehr als 50 Tage bieten wir derzeit nur bei einer Anschrift in ${where} an. Du kannst mit Einmalzahlung kaufen.`;
 }
 
 // ---------------------------------------------------------------------------
@@ -278,6 +295,8 @@ export async function startCreditCheck(client: pg.ClientBase, input: StartCheckI
   if (!credit) throw new CreditError("Dieses Angebot gibt es nicht.");
   if (!credit.isCredit) throw new CreditError("Für dieses Angebot ist keine Prüfung nötig.");
   if (credit.surchargeCents > 0) throw new CreditError("Ratenzahlung mit Aufschlag bieten wir nicht an.");
+  const notAllowed = countryNotAllowed(settings, input.customer.country);
+  if (notAllowed) throw new CreditError(notAllowed);
   const method = input.method ?? questionnaireMethod;
   const rules = rulesOf(settings);
   const assessed = await method.assess({ answers: input.answers, monthlyRateCents: credit.monthlyRateCents, creditCents: credit.creditCents, rules });
@@ -624,4 +643,36 @@ export async function listCreditChecks(db: Db, limit = 100) {
     [limit],
   );
   return rows;
+}
+
+// ---------------------------------------------------------------------------
+// Schwärzen nach Ablauf der Aufbewahrung (Entscheidung Christian vom 11.11.2026)
+// ---------------------------------------------------------------------------
+
+/** Prüfungen ohne Bestellung (abgelehnt, abgelaufen, nicht genutzt): Antworten nach so vielen Monaten schwärzen. */
+export const REDACT_UNUSED_AFTER_MONTHS = 6;
+/** Prüfungen mit Ratenvertrag: Antworten so viele Jahre nach der letzten Rate schwärzen (regelmäßige Verjährung). */
+export const REDACT_CONTRACT_AFTER_YEARS = 3;
+
+/**
+ * Schwärzt Fragebogen-Antworten, Kundenangaben und E-Mail-Adresse abgelaufener Prüfungen. Ergebnis, Regeln,
+ * Beträge und Begründungen bleiben als Nachweis der Prüfung stehen. Läuft täglich mit dem Einzug.
+ * Gibt die Zahl der geschwärzten Prüfungen zurück.
+ */
+export async function redactExpiredCreditChecks(client: pg.ClientBase): Promise<number> {
+  const r = await client.query(
+    `update app.credit_checks c
+        set redacted_at = now(), answers = '{}'::jsonb, customer = '{}'::jsonb, email = 'geschwärzt',
+            free_income_cents = null, bureau_response = null
+      where c.redacted_at is null
+        and case
+              when exists (select 1 from app.orders o where o.credit_check_id = c.id)
+                then coalesce((select max(i.due_date) from app.orders o join app.order_installments i on i.order_id = o.id
+                                where o.credit_check_id = c.id), c.created_at::date)
+                     + make_interval(years => $2) < now()
+              else c.created_at + make_interval(months => $1) < now()
+            end`,
+    [REDACT_UNUSED_AFTER_MONTHS, REDACT_CONTRACT_AFTER_YEARS],
+  );
+  return r.rowCount ?? 0;
 }

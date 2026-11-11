@@ -26,6 +26,12 @@ Wiederholte Anfragen: Die Selbstauskunft ließe sich mit anderen Zahlen wiederho
 
 Eine Prüfung gilt 7 Tage (bei Freigabe ab der Entscheidung) und nur für dieselbe Preisoption und dieselbe E-Mail-Adresse.
 
+## Sofortzugang, Länder und Löschen (Entscheidungen Christian vom 11.11.2026)
+
+- **Sofortzugang:** Bei Ratenkauf mit Kredit gibt es den Zugang nur mit Zustimmung zum Wertersatz sofort, sonst am Tag nach Ablauf der 14 Tage. Das gilt auch für Produkte mit `immediate_access`; sonst ließe sich der Kurs 14 Tage nutzen und ohne Wertersatz widerrufen.
+- **Länder:** Ratenkredit nur bei Anschrift in den eingestellten Ländern (`credit_settings.credit_countries`, zunächst nur DE). Österreich hat ein eigenes Verbraucherkreditgesetz ab 20.11.2026; die Schweiz nimmt zinsfreie Raten voraussichtlich aus (Art. 7 KKG). Beides erst nach Bestätigung durch den Anwalt freischalten.
+- **Löschen:** Der tägliche Einzug schwärzt Fragebogen-Antworten, Kundenangaben und E-Mail-Adresse einer Prüfung (`redactExpiredCreditChecks`): ohne Bestellung nach 6 Monaten, mit Ratenvertrag 3 Jahre nach der letzten Rate. Ergebnis, Regeln, Beträge und Begründungen bleiben als Nachweis (§ 505b Abs. 4 BGB n. F.). Die Datenbank erlaubt nur diesen Übergang (Migration 0037); das Audit-Log speichert die Antworten seit 0037 nicht mehr.
+
 ## Schalter und Regeln
 
 Verwaltung → Ratenprüfung. Der Schalter „Ratenkauf mit Kredit einschalten“ steht zunächst auf aus. Solange er aus ist, sind Kredit-Preisoptionen ab 20.11.2026 nicht bestellbar. Einschalten erst, wenn der Anwalt die Texte freigegeben hat.

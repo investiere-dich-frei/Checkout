@@ -58,10 +58,6 @@ export default async function CreditStepPage(props: { params: Promise<{ slug: st
     couponCode: usable.couponCode,
     contractDay: todayBerlin(),
   });
-  const immediate = (await db.query<{ immediate_access: boolean }>(
-    `select p.immediate_access from app.price_options o join app.products p on p.id = o.product_id where o.id = $1`,
-    [usable.priceOptionId],
-  )).rows[0]?.immediate_access ?? false;
   const dueNow = data.schedule.filter((s) => s.dueDate === data.contractDay).reduce((t, s) => t + s.grossCents, 0);
 
   return (
@@ -79,7 +75,6 @@ export default async function CreditStepPage(props: { params: Promise<{ slug: st
       <CreditOrderForm
         checkId={usable.id}
         withdrawalText={creditWithdrawalInformation(data)}
-        immediateAccess={immediate}
         dueNow={formatCents(dueNow, data.currency)}
       />
     </>

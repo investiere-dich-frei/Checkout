@@ -3,7 +3,7 @@ import { paymentSchedule, splitAmount, type AmountBasis, type PricePlan } from "
 import { decideTax, type TaxCategory, type TaxDecision } from "@idf/core/tax";
 import type pg from "pg";
 import { findCoupon, type ApplicableCoupon } from "./coupons.ts";
-import { getCreditSettings, optionCredit, recordCreditContract, usableCheck } from "./credit.ts";
+import { countryNotAllowed, getCreditSettings, optionCredit, recordCreditContract, usableCheck } from "./credit.ts";
 import { CREDIT_TEXTS_VERSION } from "./credit-texts.ts";
 
 /**
@@ -119,7 +119,10 @@ export async function placeOrder(client: pg.ClientBase, input: PlaceOrderInput):
   let creditCheckId: string | null = null;
   if (credit?.isCredit) {
     if (credit.surchargeCents > 0) throw new CreditRequired("Ratenzahlung mit Aufschlag bieten wir nicht an.");
-    if (!(await getCreditSettings(client)).enabled) throw new CreditRequired("Ratenzahlung ist gerade nicht möglich.");
+    const creditSettings = await getCreditSettings(client);
+    if (!creditSettings.enabled) throw new CreditRequired("Ratenzahlung ist gerade nicht möglich.");
+    const notAllowed = countryNotAllowed(creditSettings, c.country);
+    if (notAllowed) throw new CreditRequired(notAllowed);
     const check = input.credit ? await usableCheck(client, input.credit.checkId) : null;
     if (!check || check.priceOptionId !== opt.price_option_id || check.customer.email.trim().toLowerCase() !== c.email.trim().toLowerCase()) {
       throw new CreditRequired("Für die Ratenzahlung fehlt die Prüfung deiner Angaben, oder sie ist abgelaufen.");

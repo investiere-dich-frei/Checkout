@@ -5,7 +5,7 @@ import { useActionState } from "react";
 import { submitCreditOrder, type CreditOrderState } from "./actions";
 
 /** Zustimmungen zum Ratenvertrag. Kein Kästchen ist vorangekreuzt (§ 492 Abs. 1a BGB n. F.). */
-export function CreditOrderForm(props: { checkId: string; withdrawalText: string; immediateAccess: boolean; dueNow: string }) {
+export function CreditOrderForm(props: { checkId: string; withdrawalText: string; dueNow: string }) {
   const [state, action, pending] = useActionState<CreditOrderState, FormData>(submitCreditOrder, { message: null, errors: {} });
   return (
     <form action={action} noValidate>
@@ -30,9 +30,7 @@ export function CreditOrderForm(props: { checkId: string; withdrawalText: string
           <span>{VALUE_COMPENSATION_TEXT} (freiwillig)</span>
         </label>
         <p className="note" id="vc-note">
-          {props.immediateAccess
-            ? "Deinen Zugang bekommst du bei diesem Angebot sofort. Ohne Häkchen schuldest du bei einem Widerruf keinen Wertersatz."
-            : "Ohne Häkchen kannst du trotzdem kaufen. Deinen Zugang bekommst du dann am Tag nach Ablauf der 14-tägigen Widerrufsfrist."}
+          Ohne Häkchen kannst du trotzdem kaufen. Deinen Zugang bekommst du dann am Tag nach Ablauf der 14-tägigen Widerrufsfrist.
         </p>
         <details>
           <summary>Widerrufsinformation lesen</summary>

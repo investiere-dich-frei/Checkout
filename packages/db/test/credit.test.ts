@@ -1,7 +1,19 @@
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
 import type { CreditAnswers } from "@idf/core/credit";
-import { CreditError, decideCreditCheck, optionCredit, parseCreditAnswers, startCreditCheck, usableCheck, type CheckCustomer } from "../src/credit.ts";
+import {
+  CreditError,
+  decideCreditCheck,
+  getCreditSettings,
+  optionCredit,
+  parseCreditAnswers,
+  redactExpiredCreditChecks,
+  startCreditCheck,
+  updateCreditSettings,
+  usableCheck,
+  type CheckCustomer,
+} from "../src/credit.ts";
+import { enqueueWebhook } from "../src/webhooks.ts";
 import { CreditRequired, placeOrder, type PlaceOrderInput } from "../src/orders.ts";
 import { createTestDb, tx, type TestDb } from "./helpers.ts";
 
@@ -229,6 +241,86 @@ describe("Ratenkauf mit Kredit", () => {
     assert.match(third.reasons.join(" "), /schon 2 Anfragen/);
     // Rot bleibt rot.
     assert.equal((await start("nochmal@example.org", { ...good, paymentProblems: true })).result, "rot");
+  });
+
+  it("Länder: Ratenkredit nur bei Anschrift in den eingestellten Ländern (zunächst DE)", async () => {
+    const start = (country: string) =>
+      tx(db.pool, (c) =>
+        startCreditCheck(c, { priceOptionId: o.raten!, customer: { ...who(`land-${country}@example.org`), country }, answers: good, couponCode: null, sellerUserId: null, purchaseDay: day, offerUrl: url }),
+      );
+    await assert.rejects(start("AT"), (e: Error) => e instanceof CreditError && /nur bei einer Anschrift in Deutschland/.test(e.message));
+    await assert.rejects(start("CH"), CreditError);
+    const s = await getCreditSettings(db.pool);
+    await tx(db.pool, (c) => updateCreditSettings(c, { ...s, creditCountries: ["de", "ch"] }, "test"));
+    assert.equal((await start("CH")).result, "gruen");
+    await assert.rejects(start("AT"), /Deutschland oder der Schweiz/);
+    await assert.rejects(tx(db.pool, (c) => updateCreditSettings(c, { ...s, creditCountries: ["Deutschland"] }, "test")), CreditError);
+    await tx(db.pool, (c) => updateCreditSettings(c, { ...s, creditCountries: ["DE"] }, "test"));
+  });
+
+  it("Sofortzugang-Produkte: bei Ratenkredit ohne Wertersatz-Zustimmung Zugang erst nach der Widerrufsfrist", async () => {
+    const email = "sofort@example.org";
+    await db.pool.query(`update app.products set immediate_access = true where name = 'Kurs'`);
+    try {
+      const check = await tx(db.pool, (c) =>
+        startCreditCheck(c, { priceOptionId: o.raten!, customer: who(email), answers: good, couponCode: null, sellerUserId: null, purchaseDay: day, offerUrl: url }),
+      );
+      const placed = await tx(db.pool, (c) =>
+        placeOrder(c, { ...base, priceOptionId: o.raten!, customer: { kind: "privat", ...who(email) }, credit: { checkId: check.checkId, agreed: true, valueCompensation: false } }),
+      );
+      await tx(db.pool, (c) => enqueueWebhook(c, "abo.beendet", placed.orderId));
+      const payload = (await db.pool.query(`select payload from app.webhook_outbox where payload -> 'order' ->> 'order_id' = $1`, [placed.orderId])).rows[0].payload;
+      const d = (await db.pool.query(`select ((created_at at time zone 'Europe/Berlin')::date + 15)::text d from app.orders where id = $1`, [placed.orderId])).rows[0].d;
+      assert.equal(payload.order.access_from, d);
+      assert.equal(payload.order.sofortstart_at, null);
+    } finally {
+      await db.pool.query(`update app.products set immediate_access = false where name = 'Kurs'`);
+    }
+  });
+
+  it("Löschen: Antworten werden nach Ablauf geschwärzt, sonst bleibt die Prüfung festgeschrieben", async () => {
+    const email = "loeschen@example.org";
+    const fresh = await tx(db.pool, (c) =>
+      startCreditCheck(c, { priceOptionId: o.raten!, customer: who(email), answers: good, couponCode: null, sellerUserId: null, purchaseDay: day, offerUrl: url }),
+    );
+    // Eine alte, nie genutzte Prüfung (7 Monate) als Kopie mit früherem Datum.
+    const old = (
+      await db.pool.query(
+        `insert into app.credit_checks (price_option_id, method, rules_version, rules, customer, email, answers, purchase_day, monthly_rate_cents,
+           credit_cents, free_income_cents, result, reasons, created_at, expires_at)
+         select price_option_id, method, rules_version, rules, customer, email, answers, purchase_day, monthly_rate_cents,
+                credit_cents, free_income_cents, result, reasons, now() - interval '7 months', now() - interval '7 months' + interval '7 days'
+           from app.credit_checks where id = $1 returning id`,
+        [fresh.checkId],
+      )
+    ).rows[0].id as string;
+    // Das Audit-Log enthält die Antworten nicht.
+    const audit = (await db.pool.query(`select new_data from app.audit_log where table_name = 'credit_checks' and record_id = $1`, [old])).rows[0].new_data;
+    assert.equal(audit.answers, undefined);
+    assert.equal(audit.email, undefined);
+    assert.equal(audit.result, "gruen");
+
+    // Von Hand ändern oder nur teilweise schwärzen bleibt verboten.
+    await assert.rejects(db.pool.query(`update app.credit_checks set answers = '{}'::jsonb where id = $1`, [old]), /GoBD/);
+    await assert.rejects(
+      db.pool.query(
+        `update app.credit_checks set redacted_at = now(), answers = '{}', customer = '{}', email = 'geschwärzt', free_income_cents = null, result = 'rot' where id = $1`,
+        [old],
+      ),
+      /GoBD/,
+    );
+    await assert.rejects(db.pool.query(`delete from app.credit_checks where id = $1`, [old]), /GoBD/);
+
+    assert.ok((await tx(db.pool, (c) => redactExpiredCreditChecks(c))) >= 1);
+    const rows = (await db.pool.query(`select id, answers, customer, email, free_income_cents, result, redacted_at from app.credit_checks where id = any($1)`, [[old, fresh.checkId]])).rows;
+    const o1 = rows.find((r) => r.id === old)!;
+    assert.deepEqual([o1.answers, o1.customer, o1.email, o1.free_income_cents, o1.result], [{}, {}, "geschwärzt", null, "gruen"]);
+    assert.ok(o1.redacted_at);
+    const f = rows.find((r) => r.id === fresh.checkId)!;
+    assert.equal(f.redacted_at, null);
+    assert.equal(f.answers.netIncomeCents, good.netIncomeCents);
+    // Einmal geschwärzt, nicht noch einmal und nicht zurück.
+    await assert.rejects(db.pool.query(`update app.credit_checks set redacted_at = now() where id = $1`, [old]), /GoBD/);
   });
 
   it("Aufschlag: keine Prüfung und keine Bestellung", async () => {

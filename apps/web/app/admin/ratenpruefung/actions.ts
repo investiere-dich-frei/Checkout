@@ -65,6 +65,7 @@ export async function updateCreditSettingsAction(_prev: FormState, form: FormDat
           enabled: form.get("enabled") === "on",
           contactEmail: text(form, "contact_email"),
           contactPhone: text(form, "contact_phone") || null,
+          creditCountries: text(form, "credit_countries").split(/[\s,;]+/).filter(Boolean),
           livingCostCents: euroCents(text(form, "living_cost"), "Lebenshaltung") ?? current.livingCostCents,
           livingCostPerDependentCents: euroCents(text(form, "living_cost_dependent"), "Zuschlag je Person") ?? current.livingCostPerDependentCents,
           greenMaxShareBp: Math.round(Number(share) * 100),

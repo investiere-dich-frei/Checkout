@@ -77,7 +77,7 @@ export async function enqueueOrderConfirmation(client: pg.ClientBase, orderId: s
     lines.push(
       "",
       "Dein Start",
-      o.value_compensation_consent_at || o.immediate_access
+      o.value_compensation_consent_at
         ? "Deinen Zugang bekommst du sofort."
         : `Deinen Zugang bekommst du am ${day(o.access_from)}, am Tag nach Ablauf der Widerrufsfrist.`,
       "",

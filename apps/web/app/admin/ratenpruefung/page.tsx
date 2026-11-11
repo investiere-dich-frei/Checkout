@@ -136,6 +136,10 @@ export default async function CreditChecksPage() {
               <input name="contact_phone" defaultValue={settings.contactPhone ?? ""} />
             </label>
             <label>
+              Länder der Anschrift für Ratenkredit (Kürzel, z. B. „DE“ oder „DE, CH“; Österreich erst nach Freigabe durch den Anwalt)
+              <input name="credit_countries" defaultValue={settings.creditCountries.join(", ")} required />
+            </label>
+            <label>
               Lebenshaltung ohne Wohnen, € je Monat
               <input name="living_cost" defaultValue={euroInput(settings.livingCostCents)} />
             </label>
