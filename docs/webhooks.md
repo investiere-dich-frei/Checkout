@@ -10,10 +10,10 @@ Für alles, was nach einem Kauf außerhalb des Checkouts passieren muss, etwa de
 | `zahlung.erstattet` | Erstattung bestätigt, Rechnung damit ganz erstattet (Stornorechnung oder letzte Korrektur) |
 | `zahlung.teilerstattet` | Teilerstattung bestätigt, Rechnungskorrektur erstellt; der Zugang bleibt bestehen |
 | `zahlung.fehlgeschlagen` | automatische Abbuchung abgelehnt und Kundin gemahnt (`attempts`, `next_try`; `final` = letzte Mahnung) |
-| `abo.beendet` | Abo nach Kündigung beendet (`ends_on` = letzter Tag) |
+| `abo.beendet` | Abo nach Kündigung beendet (`ends_on` = letzter Tag; bei Storno aus der Verwaltung mit `storno` und `reason`) |
 | `abo.pausiert` | Abo pausiert (`starts_on`, `ends_on`; `ends_on` leer = unbefristet) |
 | `abo.fortgesetzt` | Pause beendet, Abo läuft ab `resumed_on` weiter |
-| `bestellung.beendet` | offene Raten entfallen (z. B. Widerruf) |
+| `bestellung.beendet` | Storno: offene Raten entfallen, Abo endet heute (`storno` = `ohne_rueckzahlung` oder `mit_rueckzahlung`, `reason` = Grund) |
 
 Jede Meldung enthält die Bestellung mit Kundin (E-Mail, Name, Anschrift, Land, HubSpot-ID), Produkt (mit `thrivecart_product_id`, damit n8n die bestehenden Zuordnungen weiter nutzen kann), Preisoption (mit Art und Abstand der Zahlungen) und Vertriebskürzel. Empfänger ist der n8n-Ablauf „IDF Checkout Meldungen“; er übersetzt die Meldung in die Felder des Thrivecart-Webhooks und nutzt dieselben Zuordnungen (`tc_products`).
 

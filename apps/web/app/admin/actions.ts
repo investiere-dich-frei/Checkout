@@ -2,18 +2,18 @@
 
 import { canChange, resolveNotice } from "@idf/db/admin";
 import { endSession, redeemLogin, requestLogin } from "@idf/db/auth";
-import { endSubscription } from "@idf/db/billing";
 import { ProductError } from "@idf/db/products";
-import { cancelOrder, RefundError } from "@idf/db/refunds";
+import { RefundError } from "@idf/db/refunds";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { pool, transaction } from "../../lib/db";
-import { formatCents } from "../../lib/format";
+import { formatCents, todayBerlin } from "../../lib/format";
 import { paypal } from "../../lib/paypal";
 import { parseEuro } from "../../lib/product-form";
 import { refundInvoice } from "../../lib/refund";
 import { SESSION_COOKIE, requireUser } from "../../lib/session";
+import { performStorno } from "../../lib/storno";
 import { stripe } from "../../lib/stripe";
 
 async function baseUrl(): Promise<string> {
@@ -67,16 +67,6 @@ export async function resolveNoticeAction(form: FormData) {
   revalidatePath("/admin");
 }
 
-export async function endSubscriptionAction(form: FormData) {
-  const user = await requireUser();
-  if (!canChange(user)) throw new Error("Keine Berechtigung");
-  const orderId = String(form.get("order_id") ?? "");
-  const endsOn = String(form.get("ends_on") ?? "");
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(endsOn)) return;
-  await transaction(`user:${user.id}`, (c) => endSubscription(c, orderId, endsOn, `user:${user.id}`));
-  revalidatePath(`/admin/bestellungen/${orderId}`);
-}
-
 export async function refundInvoiceAction(_prev: { message: string | null }, form: FormData): Promise<{ message: string | null }> {
   const user = await requireUser();
   const orderId = String(form.get("order_id") ?? "");
@@ -102,9 +92,25 @@ export async function refundInvoiceAction(_prev: { message: string | null }, for
   }
 }
 
-export async function cancelOrderAction(form: FormData) {
+export async function stornoOrderAction(_prev: { message: string | null; ok?: boolean }, form: FormData): Promise<{ message: string | null; ok?: boolean }> {
   const user = await requireUser();
+  if (!canChange(user)) return { message: "Keine Berechtigung", ok: false };
   const orderId = String(form.get("order_id") ?? "");
-  await transaction(`user:${user.id}`, (c) => cancelOrder(c, user, orderId));
-  revalidatePath(`/admin/bestellungen/${orderId}`);
+  const kind = String(form.get("kind") ?? "");
+  const reason = String(form.get("reason") ?? "").trim();
+  if (kind !== "ohne_rueckzahlung" && kind !== "mit_rueckzahlung") return { message: "Bitte wählen: mit oder ohne Rückzahlung.", ok: false };
+  if (!reason) return { message: "Bitte einen Grund angeben.", ok: false };
+  const when = String(form.get("when") ?? "sofort");
+  const endsOn = kind === "ohne_rueckzahlung" && when === "datum" ? String(form.get("ends_on") ?? "") : null;
+  if (endsOn === "") return { message: "Bitte das Enddatum angeben.", ok: false };
+  const invoiceIds = kind === "mit_rueckzahlung" ? form.getAll("invoice_id").map(String) : [];
+  try {
+    const r = await performStorno(pool(), { stripe: stripe(), paypal: paypal() }, user, { orderId, kind, reason, today: todayBerlin(), endsOn, invoiceIds });
+    revalidatePath(`/admin/bestellungen/${orderId}`);
+    return { message: r.lines.join(" "), ok: r.ok };
+  } catch (err) {
+    if (err instanceof RefundError) return { message: err.message, ok: false };
+    console.error("Storno fehlgeschlagen", (err as Error).message);
+    return { message: "Storno nicht möglich. Bitte später erneut versuchen.", ok: false };
+  }
 }

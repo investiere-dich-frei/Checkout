@@ -18,6 +18,26 @@ function fakeFetch(responses: Record<string, unknown>, status: Record<string, nu
 const TOKEN = { "/v1/oauth2/token": { access_token: "tok", expires_in: 3600 } };
 
 describe("PayPal-Zugang", () => {
+  it("kündigt ein PayPal-Abo; schon gekündigt gilt als erledigt", async () => {
+    const calls: string[] = [];
+    let cancelStatus = 204;
+    const fn = (async (url: string, init: RequestInit) => {
+      const path = new URL(url).pathname;
+      calls.push(`${init.method} ${path}`);
+      if (path === "/v1/oauth2/token") return new Response(JSON.stringify({ access_token: "tok", expires_in: 3600 }));
+      if (path.endsWith("/cancel")) return new Response(cancelStatus === 204 ? null : "{}", { status: cancelStatus });
+      return new Response(JSON.stringify({ id: "I-ABCDEF1234", status: "CANCELLED" }));
+    }) as unknown as typeof fetch;
+    const api = new PaypalApi(config, fn);
+    await api.cancelSubscription("I-ABCDEF1234", "Storno");
+    assert.ok(calls.includes("POST /v1/billing/subscriptions/I-ABCDEF1234/cancel"));
+    cancelStatus = 422;
+    await api.cancelSubscription("I-ABCDEF1234", "Storno");
+    cancelStatus = 500;
+    await assert.rejects(api.cancelSubscription("I-ABCDEF1234", "Storno"), PaypalError);
+    await assert.rejects(api.cancelSubscription("kaputt", "Storno"), /Ungültige/);
+  });
+
   it("nutzt ohne ausdrückliches live die Testumgebung", () => {
     assert.equal(paypalConfig({}), null);
     assert.equal(paypalConfig({ PAYPAL_CLIENT_ID: "a", PAYPAL_CLIENT_SECRET: "b" })?.baseUrl, "https://api-m.sandbox.paypal.com");

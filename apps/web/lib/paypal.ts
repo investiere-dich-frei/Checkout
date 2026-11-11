@@ -93,6 +93,23 @@ export class PaypalApi {
     return this.get(`/v1/billing/subscriptions/${id}`);
   }
 
+  /** PayPal-Abo (I-…) kündigen: PayPal bucht danach nichts mehr ab. Ein schon beendetes Abo gilt als erledigt. */
+  async cancelSubscription(id: string, reason: string): Promise<void> {
+    if (!/^I-[A-Z0-9]{6,30}$/.test(id)) throw new PaypalError("Ungültige PayPal-Abo-ID", 400);
+    const res = await this.fetchFn(`${this.config.baseUrl}/v1/billing/subscriptions/${id}/cancel`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${await this.accessToken()}`, "content-type": "application/json" },
+      body: JSON.stringify({ reason: reason.slice(0, 127) || "Storno" }),
+    });
+    if (res.status === 204) return;
+    if (res.status === 422) {
+      // SUBSCRIPTION_STATUS_INVALID: schon gekündigt oder abgelaufen.
+      const s = await this.getSubscription(id);
+      if (s.status === "CANCELLED" || s.status === "EXPIRED") return;
+    }
+    throw new PaypalError(`PayPal antwortet mit ${res.status} auf /v1/billing/subscriptions/…/cancel`, res.status);
+  }
+
   /** Zahlungen eines PayPal-Abos im Zeitraum. */
   async subscriptionTransactions(id: string, from: Date, to: Date): Promise<PaypalSubscriptionTransaction[]> {
     if (!/^I-[A-Z0-9]{6,30}$/.test(id)) throw new PaypalError("Ungültige PayPal-Abo-ID", 400);

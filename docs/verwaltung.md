@@ -74,8 +74,19 @@ Jede Änderung (Kündigung erledigt, Abo beendet) steht mit der handelnden Perso
   2. Der Server löst sie beim Anbieter aus (Stripe-Refund oder PayPal-Capture-Refund, bei Teilerstattung mit Betrag). Die Erstattungs-ID ist der Idempotenzschlüssel; ein Doppelklick erstattet nicht doppelt.
   3. Erst nach Bestätigung entstehen Stornorechnung bzw. Rechnungskorrektur, PDF, E-Mail und eine Erstattungsbuchung. Ist die Rechnung damit ganz erstattet, wird die Rate „storniert“; ist nichts Bezahltes mehr übrig, ist die Bestellung „erstattet“.
   4. Lehnt der Anbieter ab, bleibt die Rechnung unverändert und die Erstattung „fehlgeschlagen“. Ein neuer Versuch ist möglich.
-- „Offene Raten entfallen lassen“ beendet eine Bestellung: offene Raten werden storniert, ein Abo endet heute. Bereits Bezahltes wird nur über die Erstattung zurückgezahlt.
-- Bei einem Widerruf: erst „Offene Raten entfallen lassen“, dann jede bezahlte Rechnung erstatten.
+- **Stornieren** (eigener Abschnitt auf der Bestelldetailseite, nur Admin, immer mit Grund und Rückfrage) hat zwei Wege:
+  - **Storno ohne Rückzahlung**: Es wird nichts mehr abgebucht, Bezahltes bleibt bezahlt. Bei Raten entfallen die
+    offenen Raten; ein Abo endet sofort oder zum gewählten letzten Tag der Laufzeit (bis dahin wird weiter abgebucht).
+  - **Storno mit Rückzahlung**: Die Bestellung endet sofort, und die angehakten Rechnungen werden voll (bzw. mit dem
+    noch offenen Rest) erstattet, je Rechnung mit Stornorechnung und E-Mail an die Kundin. Lehnt der Anbieter eine
+    Erstattung ab, bleibt die Bestellung trotzdem beendet; die Erstattung lässt sich unter „Rechnungen“ erneut auslösen.
+  - Jeder Storno steht festgeschrieben in `app.order_cancellations` (Art, Tag, Grund, Person; Migration 0033) und auf
+    der Bestellseite. Ein schon festgeschriebenes Laufzeitende wird nie geändert; ein früherer Storno wirkt über
+    diesen Eintrag (danach entstehen keine Fälligkeiten mehr).
+  - Aus Thrivecart übernommene PayPal-Abos enden nur sofort; dabei wird das Abo auch bei PayPal gekündigt. Klappt das
+    nicht, steht ein Hinweis da, das Abo von Hand in PayPal zu kündigen.
+  - Die Meldungen `bestellung.beendet` bzw. `abo.beendet` tragen `storno` (Art) und `reason` (Grund).
+- „Einzelne Rechnung erstatten“ unter „Rechnungen“ erstattet ohne die Bestellung zu beenden, auch Teilbeträge.
 
 ## Mahnwesen (automatisch)
 
@@ -167,8 +178,8 @@ abgeschlossen ist: per PayPal-Meldung (`PAYMENT.SALE.COMPLETED`) und zur Sicherh
 (`pnpm einzug` fragt bei jedem übernommenen Abo mit fälliger Zahlung die Zahlungen ab). Jede Zahlung genau
 einmal, auf die älteste offene Fälligkeit (±5 Tage), bei genau passendem Betrag; sonst „prüfen“. Zahlungen
 aus der Zeit vor dem Umzug bleiben bei Thrivecart. In Thrivecart danach nur die Abrechnung beenden, nie
-„Cancel“ (kündigt das PayPal-Abo mit). Erstattungen und Kündigungen übernommener PayPal-Abos laufen noch
-nicht über die Kasse.
+„Cancel“ (kündigt das PayPal-Abo mit). Ein Storno in der Kasse kündigt das PayPal-Abo bei PayPal
+(siehe „Erstattung und Storno“).
 
 ## Kundenbereich (für Kundinnen)
 

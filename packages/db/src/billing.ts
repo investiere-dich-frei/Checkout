@@ -42,7 +42,11 @@ export async function extendSubscriptions(client: pg.ClientBase, untilDay: strin
     ends_on: string | null;
     last_seq: number;
   }>(
-    `select t.order_item_id, t.order_id, t.plan, t.purchase_day::text, t.amount_basis, t.tax_rate_bp, t.ends_on::text,
+    // Ein Storno (app.order_cancellations) beendet das Abo zu seinem Tag, auch vor einem schon festgeschriebenen Laufzeitende.
+    `select t.order_item_id, t.order_id, t.plan, t.purchase_day::text, t.amount_basis, t.tax_rate_bp,
+            nullif(least(coalesce(t.ends_on, 'infinity'::date),
+                         coalesce((select min(x.effective_on) from app.order_cancellations x where x.order_id = t.order_id), 'infinity'::date)),
+                   'infinity'::date)::text ends_on,
             (select max(seq) from app.order_installments i where i.order_item_id = t.order_item_id) last_seq
        from app.subscription_terms t
        join app.orders o on o.id = t.order_id
@@ -239,13 +243,13 @@ export async function rememberPaymentMethod(
 }
 
 /** Abo nach Kündigung beenden: letzter Tag der Laufzeit. Einmalig. */
-export async function endSubscription(client: Db, orderId: string, endsOn: string, endedBy: string): Promise<boolean> {
+export async function endSubscription(client: Db, orderId: string, endsOn: string, endedBy: string, extra: Record<string, unknown> = {}): Promise<boolean> {
   const r = await client.query(
     `update app.subscription_terms set ends_on = $2, ended_by = $3 where order_id = $1 and ends_on is null`,
     [orderId, endsOn, endedBy],
   );
   if (!r.rowCount) return false;
-  await enqueueWebhook(client as pg.ClientBase, "abo.beendet", orderId, { ends_on: endsOn });
+  await enqueueWebhook(client as pg.ClientBase, "abo.beendet", orderId, { ends_on: endsOn, ...extra });
   // Offene Fälligkeiten nach dem Vertragsende entfallen.
   await client.query(
     `update app.order_installments set status = 'storniert' where order_id = $1 and due_date > $2 and status in ('offen', 'fehlgeschlagen')`,

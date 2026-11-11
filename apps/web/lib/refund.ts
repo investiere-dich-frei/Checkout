@@ -6,7 +6,7 @@ import type { PaypalApi } from "./paypal";
 
 export type RefundResult = { ok: true; stornoNumber: string; scope: "voll" | "teil"; amountCents: number; currency: string } | { ok: false; message: string };
 
-async function inTx<T>(pool: pg.Pool, actor: string, fn: (c: pg.PoolClient) => Promise<T>): Promise<T> {
+export async function inTx<T>(pool: pg.Pool, actor: string, fn: (c: pg.PoolClient) => Promise<T>): Promise<T> {
   const c = await pool.connect();
   try {
     await c.query("begin");
