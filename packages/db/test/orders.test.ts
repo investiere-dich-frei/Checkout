@@ -110,7 +110,7 @@ describe("Bestellung aufgeben", () => {
 
   it("Reverse Charge nur mit geprüfter USt-IdNr.", async () => {
     const firm = { kind: "unternehmen" as const, company_name: "Firma", email: "f@example.org", country: "AT", vat_id: "ATU00000000" };
-    const unchecked = await tx(db.pool, (c) => placeOrder(c, { ...base, priceOptionId: options.raten!, customer: firm }));
+    const unchecked = await tx(db.pool, (c) => placeOrder(c, { ...base, priceOptionId: options.raten!, customer: firm, businessPurpose: true }));
     assert.equal(unchecked.tax.rateBp, 2000);
     const checked = await tx(db.pool, (c) => placeOrder(c, { ...base, vatIdVerified: true, priceOptionId: options.raten!, customer: firm }));
     assert.equal(checked.tax.rule, "eu_reverse_charge");

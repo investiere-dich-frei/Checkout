@@ -1,7 +1,7 @@
 "use server";
 
 import { currentLegalTexts } from "@idf/db/catalog";
-import { usableCheck } from "@idf/db/credit";
+import { precontractForCheck, usableCheck } from "@idf/db/credit";
 import { enqueueOrderConfirmation } from "@idf/db/customer-mails";
 import { CouponRejected, CreditRequired, OrderError, placeOrder } from "@idf/db/orders";
 import { headers } from "next/headers";
@@ -29,6 +29,14 @@ export async function submitCreditOrder(_prev: CreditOrderState, form: FormData)
     return { errors: {}, message: "Bestellen ist gerade nicht möglich. Bitte versuche es später noch einmal." };
   }
 
+  // Bestellt wird nur auf die Standardinformation, die angezeigt war. Hat sie sich seitdem geändert
+  // (anderer Tag, geänderte Preisoption), muss die Kundin die neue Fassung erst sehen.
+  const purchaseDay = todayBerlin();
+  const shown = await precontractForCheck(db, check, purchaseDay);
+  if (shown.sha !== String(form.get("info_sha") ?? "")) {
+    return { errors: {}, message: "Die Informationen zu deiner Ratenzahlung haben sich geändert. Bitte lade die Seite neu, lies sie noch einmal und bestelle dann." };
+  }
+
   let orderId: string;
   try {
     const base = await publicBaseUrl();
@@ -42,9 +50,9 @@ export async function submitCreditOrder(_prev: CreditOrderState, form: FormData)
         privacyVersionId: legal.datenschutz!.id,
         withdrawalVersionId: legal.widerruf!.id,
         withdrawalWaiver: false,
-        purchaseDay: todayBerlin(),
+        purchaseDay,
         couponCode: check.couponCode,
-        credit: { checkId: check.id, agreed: true, valueCompensation: form.get("value_compensation") === "on" },
+        credit: { checkId: check.id, agreed: true, valueCompensation: form.get("value_compensation") === "on", shownInformation: shown.text },
       });
       await enqueueOrderConfirmation(c, p.orderId, `${base}/bestellung/${p.orderId}`);
       return p;

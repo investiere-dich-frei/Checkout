@@ -144,6 +144,7 @@ async function placeFromForm(form: FormData): Promise<Omit<CheckoutState, "chall
         withdrawalWaiver: parsed.value.withdrawalWaiver,
         purchaseDay: todayBerlin(),
         couponCode: String(form.get("coupon") ?? "").trim() || null,
+        businessPurpose: form.get("business_purpose") === "on",
       });
       if (vies) {
         await c.query(

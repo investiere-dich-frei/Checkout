@@ -6,6 +6,7 @@ import { todayBerlin } from "../lib/format";
 import { isPaypalLive, paypal } from "../lib/paypal";
 import { assertTestDatabase, parseStichtag } from "../lib/stichtag";
 import { syncPaypalAbos } from "../lib/takeover";
+import { redactExpiredCreditChecks } from "@idf/db/credit";
 
 // Täglicher Einzug fälliger Raten und Abo-Zahlungen. Läuft per Timer auf dem App-Server.
 // Gibt nur Zahlen aus, keine Kundendaten.
@@ -49,6 +50,20 @@ try {
   } else {
     console.error("PUBLIC_BASE_URL fehlt: Mahnwesen übersprungen (Links zum Kundenbereich brauchen die Adresse).");
     dunningErrors = 1;
+  }
+  // Ratenkauf: Fragebogen-Antworten nach Ablauf der Aufbewahrung schwärzen (docs/ratenkauf.md).
+  const client = await pool.connect();
+  try {
+    await client.query("begin");
+    await client.query("select set_config('app.actor', 'system:einzug', true)");
+    console.log("Ratenprüfungen geschwärzt:", await redactExpiredCreditChecks(client));
+    await client.query("commit");
+  } catch (e) {
+    await client.query("rollback");
+    console.error("Schwärzen der Ratenprüfungen fehlgeschlagen:", (e as Error).message);
+    dunningErrors += 1;
+  } finally {
+    client.release();
   }
   process.exitCode = run.errors || abo?.errors || dunningErrors ? 1 : 0;
 } finally {

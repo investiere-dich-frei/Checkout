@@ -24,7 +24,22 @@ Pläne mit Aufschlag („Zinsen“) verkauft die Kasse nicht als Kredit, weil da
 
 Wiederholte Anfragen: Die Selbstauskunft ließe sich mit anderen Zahlen wiederholen, bis sie grün ergibt. Deshalb wird grün zu gelb (Team entscheidet), wenn dieselbe E-Mail-Adresse für dasselbe Produkt in den letzten 30 Tagen schon abgelehnt wurde oder schon zwei Anfragen gestellt hat (Verfahren `fragebogen-2`).
 
+Nachweise nach der Gegenprüfung vom 11.11.2026 (Migration 0036):
+
+- Bestellt wird nur auf die Standardinformation, die angezeigt war (Prüfsumme). Sie wird im Wortlaut mit der Bestellung festgeschrieben (`standardinformation_bestellung`) und mit dem Ratenvertrag gemailt.
+- Ratenverträge haben eine lesbare Nummer `RV-n` (eigener Zähler, kein Rechnungskreis).
+- Ratenvertrag und Widerrufserinnerung haben eigene Mail-Zwecke (`ratenvertrag`, `ratenkauf_erinnerung`). Der Versandzeitpunkt der Vertrags-Mail ist der Beginn der Widerrufsfrist und steht in der Bestellansicht.
+- Die Erinnerung entfällt, wenn die Bestellung vorher widerrufen oder storniert wurde (`cancelled_at`, Grund; Inhalt bleibt unverändert).
+- Der Fragebogen verlangt die Bestätigung, mindestens 18 Jahre alt zu sein.
+- Unternehmen kaufen solche Raten ohne Prüfung, aber nur mit geprüfter USt-IdNr. oder mit der Bestätigung, für ihre gewerbliche oder selbständige Tätigkeit zu kaufen (`orders.business_purpose_confirmed_at`).
+
 Eine Prüfung gilt 7 Tage (bei Freigabe ab der Entscheidung) und nur für dieselbe Preisoption und dieselbe E-Mail-Adresse.
+
+## Sofortzugang, Länder und Löschen (Entscheidungen Christian vom 11.11.2026)
+
+- **Sofortzugang:** Bei Ratenkauf mit Kredit gibt es den Zugang nur mit Zustimmung zum Wertersatz sofort, sonst am Tag nach Ablauf der 14 Tage. Das gilt auch für Produkte mit `immediate_access`; sonst ließe sich der Kurs 14 Tage nutzen und ohne Wertersatz widerrufen.
+- **Länder:** Ratenkredit nur bei Anschrift in den eingestellten Ländern (`credit_settings.credit_countries`, zunächst nur DE). Österreich hat ein eigenes Verbraucherkreditgesetz ab 20.11.2026; die Schweiz nimmt zinsfreie Raten voraussichtlich aus (Art. 7 KKG). Beides erst nach Bestätigung durch den Anwalt freischalten.
+- **Löschen:** Der tägliche Einzug schwärzt Fragebogen-Antworten, Kundenangaben und E-Mail-Adresse einer Prüfung (`redactExpiredCreditChecks`): ohne Bestellung nach 6 Monaten, mit Ratenvertrag 3 Jahre nach der letzten Rate. Ergebnis, Regeln, Beträge und Begründungen bleiben als Nachweis (§ 505b Abs. 4 BGB n. F.). Die Datenbank erlaubt nur diesen Übergang (Migration 0037); das Audit-Log speichert die Antworten seit 0037 nicht mehr.
 
 ## Schalter und Regeln
 

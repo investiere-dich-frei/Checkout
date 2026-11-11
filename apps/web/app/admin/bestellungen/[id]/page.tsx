@@ -39,6 +39,19 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
   const d = await orderDetail(pool(), user, id);
   if (!d) notFound();
   const h = d.head;
+  // Ratenkauf: Vertragsnummer, Zustellung der Vertrags-Mail (Beginn der Widerrufsfrist) und Erinnerung.
+  const credit = h.credit_check_id
+    ? (
+        await pool().query<{ contract_no: string | null; contract_sent_at: Date | null; reminder_sent_at: Date | null; reminder_cancelled: string | null }>(
+          `select (select contract_no from app.credit_documents where order_id = $1 and kind = 'ratenvertrag') contract_no,
+                  (select sent_at from app.mail_outbox where related_id = $1 and purpose = 'ratenvertrag' order by created_at limit 1) contract_sent_at,
+                  (select sent_at from app.mail_outbox where related_id = $1 and purpose = 'ratenkauf_erinnerung' order by created_at limit 1) reminder_sent_at,
+                  (select cancel_reason from app.mail_outbox where related_id = $1 and purpose = 'ratenkauf_erinnerung' order by created_at limit 1) reminder_cancelled`,
+          [id],
+        )
+      ).rows[0]
+    : null;
+  const businessPurposeAt = (h as { business_purpose_confirmed_at?: Date | null }).business_purpose_confirmed_at ?? null;
   const name = h.company_name || [h.first_name, h.last_name].filter(Boolean).join(" ");
   const today = todayBerlin();
   const pauses = h.is_abo ? await listPauses(pool(), id) : [];
@@ -114,14 +127,23 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
         </p>
         {h.credit_check_id && (
           <p>
-            Ratenkauf mit Kredit: Ratenvertrag am {dateTime.format(h.credit_agreement_at)} (Texte {h.credit_texts_version}) · Widerruf möglich bis{" "}
-            {formatDay(creditWithdrawalEnd(todayOf(h.created_at)))} (bei Fehlern in den Pflichtangaben länger, höchstens 12 Monate und 14 Tage)
+            Ratenkauf mit Kredit: Ratenvertrag {credit?.contract_no ?? ""} am {dateTime.format(h.credit_agreement_at)} (Texte {h.credit_texts_version}) ·{" "}
+            {credit?.contract_sent_at ? (
+              <>
+                Vertrag zugestellt am {dateTime.format(credit.contract_sent_at)} · Widerruf möglich bis {formatDay(creditWithdrawalEnd(todayOf(credit.contract_sent_at)))}
+              </>
+            ) : (
+              <>Vertrags-Mail noch nicht verschickt, Widerrufsfrist läuft noch nicht</>
+            )}{" "}
+            (bei Fehlern in den Pflichtangaben länger, höchstens 12 Monate und 14 Tage) · Erinnerung:{" "}
+            {credit?.reminder_sent_at ? dateTime.format(credit.reminder_sent_at) : credit?.reminder_cancelled ? `entfallen (${credit.reminder_cancelled})` : "vorgemerkt"}
             {h.value_compensation_consent_at
               ? ` · Sofortstart mit Wertersatz am ${dateTime.format(h.value_compensation_consent_at)}`
               : " · kein Sofortstart, Zugang nach Ablauf der Widerrufsfrist"}{" "}
             · <a href="/admin/ratenpruefung">Prüfung</a>
           </p>
         )}
+        {businessPurposeAt && <p>Unternehmen hat bestätigt, für die gewerbliche oder selbständige Tätigkeit zu kaufen: {dateTime.format(businessPurposeAt)}</p>}
         {h.coupon_code && (
           <p>
             Gutschein{" "}
