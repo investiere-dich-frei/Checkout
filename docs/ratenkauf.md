@@ -26,14 +26,17 @@ Eine Prüfung gilt 7 Tage (bei Freigabe ab der Entscheidung) und nur für diesel
 
 ## Schalter und Regeln
 
-Verwaltung → Ratenprüfung. Der Schalter „Ratenkauf mit Kredit einschalten“ steht zunächst auf aus. Solange er aus ist, sind Kredit-Preisoptionen ab 20.11.2026 nicht bestellbar. Einschalten erst, wenn RA Dr. Metzner die Texte freigegeben hat.
+Verwaltung → Ratenprüfung. Der Schalter „Ratenkauf mit Kredit einschalten“ steht zunächst auf aus. Solange er aus ist, sind Kredit-Preisoptionen ab 20.11.2026 nicht bestellbar. Einschalten erst, wenn der Anwalt die Texte freigegeben hat.
 
 Regeln (Änderungen gelten nur für neue Prüfungen): Lebenshaltung ohne Wohnen (600 €), Zuschlag je Person (400 €), Anteil des freien Einkommens für grün (50 %), Betrag ab dem das Team immer prüft, Betrag ab dem eine Auskunftei abgefragt werden soll (noch nicht angebunden, solche Fälle werden gelb).
 
 ## Rechtstexte
 
-`packages/db/src/credit-texts.ts`, Fassung `CREDIT_TEXTS_VERSION`. Solange sie mit `entwurf` beginnt, sind die Texte Entwürfe zur Prüfung durch RA Dr. Metzner. Jede Bestellung speichert die Fassung (`app.orders.credit_texts_version`); Standardinformation und Ratenvertrag liegen unveränderbar mit Prüfsumme in `app.credit_documents`.
+`packages/db/src/credit-texts.ts`, Fassung `CREDIT_TEXTS_VERSION`. Solange sie mit `entwurf` beginnt, sind die Texte Entwürfe zur Prüfung durch einen Anwalt. Jede Bestellung speichert die Fassung (`app.orders.credit_texts_version`); Standardinformation und Ratenvertrag liegen unveränderbar mit Prüfsumme in `app.credit_documents`.
 
 ## Mahnungen
+
+Verzugszinsen und Mahngebühren berechnen wir bei Ratenkäufen nicht (Entscheidung Christian vom 11.11.2026); die Texte sagen das ausdrücklich.
+
 
 Bei Kredit-Bestellungen enthalten Zahlungserinnerungen und letzte Mahnung den Hinweis auf kostenlose Schuldnerberatung (§ 497a BGB). Die Gesamtfälligstellung bleibt an § 498 BGB gebunden und wird nicht automatisch ausgelöst.
