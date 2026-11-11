@@ -197,7 +197,7 @@ export function planCredit(plan: PricePlan, purchaseDay: string, cashPriceCents:
 // Fragebogen
 // ---------------------------------------------------------------------------
 
-export type AnswerErrors = Partial<Record<keyof CreditAnswers | "confirmed", string>>;
+export type AnswerErrors = Partial<Record<keyof CreditAnswers | "confirmed" | "adult", string>>;
 
 /** Euro-Eingabe wie „2.500“, „2500,50“ in Cent. */
 function parseEuro(v: string): number | null {
@@ -231,6 +231,7 @@ export function parseCreditAnswers(get: (k: string) => string): { ok: true; valu
   if (dependents < 0) errors.dependents = "Bitte gib die Zahl der Personen an (0, wenn niemand).";
   const problems = get("credit_problems");
   if (problems !== "ja" && problems !== "nein") errors.paymentProblems = "Bitte beantworte die Frage zu Zahlungsproblemen.";
+  if (get("credit_adult") !== "on") errors.adult = "Eine Ratenzahlung ist nur ab 18 Jahren möglich. Bitte bestätige dein Alter.";
   if (get("credit_confirm") !== "on") errors.confirmed = "Bitte bestätige, dass deine Angaben vollständig und richtig sind.";
   if (Object.keys(errors).length) return { ok: false, errors };
   return { ok: true, value: { employment, netIncomeCents, housingCents, otherCreditsCents, dependents, paymentProblems: problems === "ja" } };
@@ -436,7 +437,17 @@ export async function usableCheck(db: Db, checkId: string): Promise<UsableCheck 
 // Texte und E-Mails
 // ---------------------------------------------------------------------------
 
-const sha256 = (s: string) => createHash("sha256").update(s, "utf8").digest("hex");
+export const sha256 = (s: string) => createHash("sha256").update(s, "utf8").digest("hex");
+
+/**
+ * Standardinformation für den zweiten Schritt, so wie sie angezeigt wird. Die Bestellung prüft die Prüfsumme
+ * der angezeigten Fassung und schreibt genau diese fest.
+ */
+export async function precontractForCheck(db: Db, check: UsableCheck, contractDay: string): Promise<{ data: CreditTextData; text: string; sha: string }> {
+  const data = await creditTextData(db, { priceOptionId: check.priceOptionId, customer: check.customer, couponCode: check.couponCode, contractDay });
+  const text = precontractInformation(data);
+  return { data, text, sha: sha256(text) };
+}
 
 /**
  * Daten für die Rechtstexte: Zahlplan wie bei der Bestellung (gleiche Rechenwege, inklusive Gutschein),
@@ -511,11 +522,21 @@ async function checkRow(client: pg.ClientBase, checkId: string) {
   return r;
 }
 
-async function enqueue(client: pg.ClientBase, to: string, subject: string, body: string, relatedId: string, delayDays = 0): Promise<void> {
+type CreditMailPurpose = "ratenkauf" | "ratenvertrag" | "ratenkauf_erinnerung";
+
+async function enqueue(
+  client: pg.ClientBase,
+  to: string,
+  subject: string,
+  body: string,
+  relatedId: string,
+  delayDays = 0,
+  purpose: CreditMailPurpose = "ratenkauf",
+): Promise<void> {
   await client.query(
     `insert into app.mail_outbox (purpose, to_address, subject, body_text, related_id, next_attempt_at)
-     values ('ratenkauf', $1, $2, $3, $4, now() + make_interval(days => $5))`,
-    [to, subject, body, relatedId, delayDays],
+     values ($6, $1, $2, $3, $4, now() + make_interval(days => $5))`,
+    [to, subject, body, relatedId, delayDays, purpose],
   );
 }
 
@@ -576,7 +597,13 @@ async function sendCheckMail(client: pg.ClientBase, checkId: string, kind: "gelb
  * Nach der Bestellung: Ratenvertrag festschreiben und per E-Mail schicken (Textform), Erinnerung an das
  * Widerrufsrecht für Tag CREDIT_REMINDER_DAYS vormerken. Läuft in der Transaktion der Bestellung.
  */
-export async function recordCreditContract(client: pg.ClientBase, orderId: string, contractDay: string): Promise<void> {
+export async function recordCreditContract(
+  client: pg.ClientBase,
+  orderId: string,
+  contractDay: string,
+  /** Standardinformation im Wortlaut, wie sie beim Bestellen angezeigt war; fehlt sie, wird sie hier erstellt. */
+  shownInformation?: string | null,
+): Promise<void> {
   const o = (
     await client.query(
       `select o.id, o.credit_check_id, o.value_compensation_consent_at is not null value_compensation,
@@ -604,19 +631,43 @@ export async function recordCreditContract(client: pg.ClientBase, orderId: strin
   );
   data.schedule = inst.rows.map((r) => ({ dueDate: r.due_date, grossCents: Number(r.gross_cents) }));
   data.cashPriceCents = Math.min(data.cashPriceCents, data.schedule.reduce((t, s) => t + s.grossCents, 0));
-  const text = creditContract(data, { orderNumber: orderId, valueCompensation: o.value_compensation });
+  const info = shownInformation ?? precontractInformation(data);
   await client.query(
-    `insert into app.credit_documents (credit_check_id, order_id, kind, version, content, sha256) values ($1, $2, 'ratenvertrag', $3, $4, $5)`,
-    [o.credit_check_id, orderId, CREDIT_TEXTS_VERSION, text, sha256(text)],
+    `insert into app.credit_documents (credit_check_id, order_id, kind, version, content, sha256)
+     values ($1, $2, 'standardinformation_bestellung', $3, $4, $5)`,
+    [o.credit_check_id, orderId, CREDIT_TEXTS_VERSION, info, sha256(info)],
+  );
+  const contractNo = `RV-${(await client.query<{ n: string }>(`select nextval('app.credit_contract_no_seq')::text n`)).rows[0]!.n}`;
+  const text = creditContract(data, { orderNumber: contractNo, valueCompensation: o.value_compensation });
+  await client.query(
+    `insert into app.credit_documents (credit_check_id, order_id, kind, version, content, sha256, contract_no)
+     values ($1, $2, 'ratenvertrag', $3, $4, $5, $6)`,
+    [o.credit_check_id, orderId, CREDIT_TEXTS_VERSION, text, sha256(text), contractNo],
   );
   const footer = companyFooter({ legal_name: o.legal_name, street: o.co_street, postal_code: o.co_postal_code, city: o.co_city, vat_id: o.vat_id, register_info: o.register_info });
   const to = String(o.email).trim().toLowerCase();
   await enqueue(
     client,
     to,
-    `Dein Ratenzahlungsvertrag: ${o.product}`,
-    [salutation(o), "", "hier ist dein Ratenzahlungsvertrag mit allen Angaben. Bitte bewahre diese E-Mail auf.", "", text, "", footer].join("\n"),
+    `Dein Ratenzahlungsvertrag ${contractNo}: ${o.product}`,
+    [
+      salutation(o),
+      "",
+      "hier ist dein Ratenzahlungsvertrag mit allen Angaben. Bitte bewahre diese E-Mail auf.",
+      "",
+      text,
+      "",
+      "----------------------------------------",
+      "Zu deinen Unterlagen: die Europäische Standardinformation, wie sie dir beim Abschluss angezeigt wurde.",
+      "",
+      info,
+      "----------------------------------------",
+      "",
+      footer,
+    ].join("\n"),
     orderId,
+    0,
+    "ratenvertrag",
   );
   await enqueue(
     client,
@@ -625,6 +676,7 @@ export async function recordCreditContract(client: pg.ClientBase, orderId: strin
     [salutation(o), "", creditWithdrawalReminder(data, creditWithdrawalEnd(contractDay)), "", footer].join("\n"),
     orderId,
     CREDIT_REMINDER_DAYS,
+    "ratenkauf_erinnerung",
   );
 }
 

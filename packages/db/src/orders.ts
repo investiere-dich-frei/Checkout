@@ -46,7 +46,12 @@ export interface PlaceOrderInput {
    * checkId ist eine freigegebene Bonitätsprüfung, agreed das Kästchen zum Ratenvertrag,
    * valueCompensation der freiwillige Sofortstart mit Wertersatz.
    */
-  credit?: { checkId: string; agreed: boolean; valueCompensation: boolean } | null;
+  credit?: { checkId: string; agreed: boolean; valueCompensation: boolean; shownInformation?: string | null } | null;
+  /**
+   * Unternehmen ohne geprüfte USt-IdNr. bei Raten, die für Privatkundinnen ein Kredit wären: ausdrückliche
+   * Bestätigung, für die gewerbliche oder selbständige Tätigkeit zu kaufen.
+   */
+  businessPurpose?: boolean;
 }
 
 export interface PlacedOrder {
@@ -114,8 +119,20 @@ export async function placeOrder(client: pg.ClientBase, input: PlaceOrderInput):
   const c = input.customer;
   const isBusiness = c.kind === "unternehmen";
 
-  // Verbraucherkreditrecht (§ 506 BGB n. F.) gilt nur für Verbraucher, also Privatkundinnen.
-  const credit = isBusiness ? null : await optionCredit(client, opt.price_option_id, input.purchaseDay);
+  // Verbraucherkreditrecht (§ 506 BGB n. F.) gilt nur für Verbraucher, also Privatkundinnen. Damit niemand als
+  // „Unternehmen“ an der Prüfung vorbeikommt, braucht ein Unternehmen bei solchen Raten eine geprüfte USt-IdNr.
+  // oder die ausdrückliche Bestätigung, für seine gewerbliche oder selbständige Tätigkeit zu kaufen.
+  const optCredit = await optionCredit(client, opt.price_option_id, input.purchaseDay);
+  const credit = isBusiness ? null : optCredit;
+  let businessPurposeConfirmed = false;
+  if (isBusiness && optCredit?.isCredit && !(input.vatIdVerified && c.vat_id)) {
+    if (!input.businessPurpose) {
+      throw new CreditRequired(
+        "Ratenzahlung als Unternehmen bitte mit gültiger USt-IdNr. oder mit der Bestätigung, dass du für deine gewerbliche oder selbständige Tätigkeit kaufst.",
+      );
+    }
+    businessPurposeConfirmed = true;
+  }
   let creditCheckId: string | null = null;
   if (credit?.isCredit) {
     if (credit.surchargeCents > 0) throw new CreditRequired("Ratenzahlung mit Aufschlag bieten wir nicht an.");
@@ -196,9 +213,9 @@ export async function placeOrder(client: pg.ClientBase, input: PlaceOrderInput):
   const order = await client.query<{ id: string }>(
     `insert into app.orders (company_id, customer_id, seller_user_id, status, currency, total_gross_cents,
        agb_version_id, privacy_version_id, withdrawal_version_id, withdrawal_waiver_at, buyer_country, buyer_is_business,
-       credit_check_id, credit_agreement_at, value_compensation_consent_at, credit_texts_version)
+       credit_check_id, credit_agreement_at, value_compensation_consent_at, credit_texts_version, business_purpose_confirmed_at)
      values ($1, $2, $3, 'offen', $4, $5, $6, $7, $8, case when $9 then now() end, $10, $11,
-       $12, case when $12::uuid is not null then now() end, case when $13 then now() end, $14) returning id`,
+       $12, case when $12::uuid is not null then now() end, case when $13 then now() end, $14, case when $15 then now() end) returning id`,
     [
       opt.company_id,
       customerId,
@@ -216,6 +233,7 @@ export async function placeOrder(client: pg.ClientBase, input: PlaceOrderInput):
       creditCheckId,
       !!creditCheckId && !!input.credit?.valueCompensation,
       creditCheckId ? CREDIT_TEXTS_VERSION : null,
+      businessPurposeConfirmed,
     ],
   );
   const orderId = order.rows[0]!.id;
@@ -259,7 +277,7 @@ export async function placeOrder(client: pg.ClientBase, input: PlaceOrderInput):
   }
 
   // Ratenvertrag (Textform) und Erinnerung an das Widerrufsrecht in derselben Transaktion.
-  if (creditCheckId) await recordCreditContract(client, orderId, input.purchaseDay);
+  if (creditCheckId) await recordCreditContract(client, orderId, input.purchaseDay, input.credit?.shownInformation ?? null);
 
   return { orderId, customerId, orderItemId, tax, installments, coupon: couponResult };
 }

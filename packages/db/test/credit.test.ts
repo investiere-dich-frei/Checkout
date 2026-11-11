@@ -15,7 +15,8 @@ import {
 } from "../src/credit.ts";
 import { enqueueWebhook } from "../src/webhooks.ts";
 import { CreditRequired, placeOrder, type PlaceOrderInput } from "../src/orders.ts";
-import { createTestDb, tx, type TestDb } from "./helpers.ts";
+import { sendPendingMails } from "../src/mail-outbox.ts";
+import { createTestDb, greenCreditCheck, tx, type TestDb } from "./helpers.ts";
 
 // Ausgedachte Gesellschaft, Produkte und Kundinnen, keine echten Daten.
 describe("Ratenkauf mit Kredit", () => {
@@ -82,9 +83,10 @@ describe("Ratenkauf mit Kredit", () => {
 
   const mails = async (email: string) =>
     (
-      await db.pool.query<{ subject: string; body_text: string; due_in_days: number }>(
-        `select subject, body_text, round(extract(epoch from next_attempt_at - now()) / 86400)::int due_in_days
-           from app.mail_outbox where purpose = 'ratenkauf' and to_address = $1 order by created_at, next_attempt_at`,
+      await db.pool.query<{ subject: string; body_text: string; due_in_days: number; purpose: string }>(
+        `select subject, body_text, purpose, round(extract(epoch from next_attempt_at - now()) / 86400)::int due_in_days
+           from app.mail_outbox where purpose in ('ratenkauf', 'ratenvertrag', 'ratenkauf_erinnerung') and to_address = $1
+          order by created_at, next_attempt_at`,
         [email],
       )
     ).rows;
@@ -111,6 +113,7 @@ describe("Ratenkauf mit Kredit", () => {
       credit_dependents: "1",
       credit_problems: "nein",
       credit_confirm: "on",
+      credit_adult: "on",
     };
     const r = parseCreditAnswers((k) => form[k] ?? "");
     assert.deepEqual(r, {
@@ -119,7 +122,7 @@ describe("Ratenkauf mit Kredit", () => {
     });
     const bad = parseCreditAnswers(() => "");
     assert.equal(bad.ok, false);
-    if (!bad.ok) assert.deepEqual(Object.keys(bad.errors).sort(), ["confirmed", "dependents", "employment", "housingCents", "netIncomeCents", "paymentProblems"].filter((k) => k !== "dependents").sort());
+    if (!bad.ok) assert.deepEqual(Object.keys(bad.errors).sort(), ["adult", "confirmed", "dependents", "employment", "housingCents", "netIncomeCents", "paymentProblems"].filter((k) => k !== "dependents").sort());
   });
 
   it("verkauft keine Kredit-Raten, solange der Ratenkauf ausgeschaltet ist", async () => {
@@ -157,7 +160,12 @@ describe("Ratenkauf mit Kredit", () => {
       CreditRequired,
     );
     const placed = await tx(db.pool, (c) =>
-      placeOrder(c, { ...base, priceOptionId: o.raten!, customer, credit: { checkId: check.checkId, agreed: true, valueCompensation: true } }),
+      placeOrder(c, {
+        ...base,
+        priceOptionId: o.raten!,
+        customer,
+        credit: { checkId: check.checkId, agreed: true, valueCompensation: true, shownInformation: "Angezeigte Fassung" },
+      }),
     );
     const order = (await db.pool.query(`select * from app.orders where id = $1`, [placed.orderId])).rows[0];
     assert.equal(order.credit_check_id, check.checkId);
@@ -166,15 +174,27 @@ describe("Ratenkauf mit Kredit", () => {
     // Sofortstart nach § 356 Abs. 5 BGB gibt es beim Kredit nicht, auch wenn das Formular ihn mitschickt.
     assert.equal(order.withdrawal_waiver_at, null);
 
-    const docs = (await db.pool.query(`select kind, content from app.credit_documents where credit_check_id = $1 order by created_at`, [check.checkId])).rows;
-    assert.deepEqual(docs.map((d) => d.kind), ["standardinformation", "ratenvertrag"]);
+    const docs = (
+      await db.pool.query(`select kind, content, contract_no, order_id from app.credit_documents where credit_check_id = $1 order by created_at, kind`, [
+        check.checkId,
+      ])
+    ).rows;
+    assert.deepEqual(docs.map((d) => d.kind), ["standardinformation", "ratenvertrag", "standardinformation_bestellung"]);
+    // Beim Bestellen angezeigte Fassung wird im Wortlaut festgeschrieben.
+    assert.equal(docs[2]!.content, "Angezeigte Fassung");
+    assert.equal(docs[2]!.order_id, placed.orderId);
+    assert.match(docs[1]!.contract_no, /^RV-\d+$/);
+    assert.match(docs[1]!.content, new RegExp(`Nr\\. ${docs[1]!.contract_no} vom`));
     assert.match(docs[1]!.content, /Barzahlungspreis: 1\.200,00\s€/);
     assert.match(docs[1]!.content, /Widerrufsinformation für den Ratenzahlungsvertrag/);
     assert.match(docs[1]!.content, /Du hast verlangt, sofort Zugang zu bekommen/);
 
     const after = await mails(email);
     assert.equal(after.length, 3);
-    assert.match(after[1]!.subject, /Ratenzahlungsvertrag/);
+    assert.match(after[1]!.subject, /Ratenzahlungsvertrag RV-\d+/);
+    assert.match(after[1]!.body_text, /Angezeigte Fassung/);
+    assert.equal(after[1]!.purpose, "ratenvertrag");
+    assert.equal(after[2]!.purpose, "ratenkauf_erinnerung");
     assert.match(after[2]!.subject, /Erinnerung/);
     assert.equal(after[2]!.due_in_days, 2);
     assert.match(after[2]!.body_text, /bis einschließlich 09\.12\.2026/);
@@ -332,9 +352,43 @@ describe("Ratenkauf mit Kredit", () => {
     );
   });
 
+  it("Widerrufserinnerung entfällt nach Storno", async () => {
+    const email = "storno@example.org";
+    const checkId = await greenCreditCheck(db.pool, o.raten!, email, day);
+    const placed = await tx(db.pool, (c) =>
+      placeOrder(c, { ...base, priceOptionId: o.raten!, customer: { kind: "privat", ...who(email) }, credit: { checkId, agreed: true, valueCompensation: false } }),
+    );
+    await db.pool.query(
+      `insert into app.order_cancellations (order_id, kind, effective_on, reason, created_by) values ($1, 'ohne_rueckzahlung', current_date, 'Test', 'test')`,
+      [placed.orderId],
+    );
+    await db.pool.query(`update app.mail_outbox set next_attempt_at = now() where to_address = $1`, [email]);
+    const sentTo: string[] = [];
+    await sendPendingMails(db.pool, async (m) => {
+      sentTo.push(`${m.to}|${m.subject}`);
+      return { messageId: "test" };
+    }, 200);
+    const reminder = (
+      await db.pool.query(`select sent_at, cancelled_at, cancel_reason from app.mail_outbox where to_address = $1 and purpose = 'ratenkauf_erinnerung'`, [email])
+    ).rows[0];
+    assert.equal(reminder.sent_at, null);
+    assert.ok(reminder.cancelled_at);
+    assert.ok(sentTo.some((x) => x.startsWith(`${email}|Dein Ratenzahlungsvertrag`)));
+    assert.ok(!sentTo.some((x) => x.startsWith(`${email}|Erinnerung`)));
+    // Entfallen bleibt entfallen.
+    await assert.rejects(db.pool.query(`update app.mail_outbox set cancelled_at = null, cancel_reason = null where to_address = $1 and purpose = 'ratenkauf_erinnerung'`, [email]));
+  });
+
   it("Unternehmen und kurze Raten brauchen keine Prüfung", async () => {
     const firm = { kind: "unternehmen" as const, company_name: "Firma GmbH", email: "firma@example.org", country: "DE" };
-    await tx(db.pool, (c) => placeOrder(c, { ...base, priceOptionId: o.raten!, customer: firm }));
+    // Ohne geprüfte USt-IdNr. nur mit Bestätigung, für die gewerbliche Tätigkeit zu kaufen.
+    await assert.rejects(tx(db.pool, (c) => placeOrder(c, { ...base, priceOptionId: o.raten!, customer: firm })), /gewerbliche/);
+    const f = await tx(db.pool, (c) => placeOrder(c, { ...base, priceOptionId: o.raten!, customer: firm, businessPurpose: true }));
+    const fo = (await db.pool.query(`select business_purpose_confirmed_at, credit_check_id from app.orders where id = $1`, [f.orderId])).rows[0];
+    assert.ok(fo.business_purpose_confirmed_at);
+    assert.equal(fo.credit_check_id, null);
+    // Mit geprüfter USt-IdNr. ohne Bestätigung.
+    await tx(db.pool, (c) => placeOrder(c, { ...base, priceOptionId: o.raten!, customer: { ...firm, vat_id: "DE123456789" }, vatIdVerified: true }));
     const r = await tx(db.pool, (c) => placeOrder(c, { ...base, priceOptionId: o.kurz!, customer: { kind: "privat", ...who("kurz@example.org") } }));
     const order = (await db.pool.query(`select withdrawal_waiver_at, credit_check_id from app.orders where id = $1`, [r.orderId])).rows[0];
     assert.ok(order.withdrawal_waiver_at);
