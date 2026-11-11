@@ -118,7 +118,7 @@ export const DEFAULT_CREDIT_RULES: CreditRules = {
 };
 
 /** Kennung des Verfahrens und seiner Regeln; ändert sich, wenn sich die Logik ändert, nicht die Zahlen. */
-export const QUESTIONNAIRE_RULES_VERSION = "fragebogen-1";
+export const QUESTIONNAIRE_RULES_VERSION = "fragebogen-2";
 
 export type CreditResult = "gruen" | "gelb" | "rot";
 
