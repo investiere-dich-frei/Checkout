@@ -2,6 +2,8 @@
 
 import type { AmountBasis, PricePlan } from "@idf/core/pricing";
 import type { TaxCategory } from "@idf/core/tax";
+import { EMPLOYMENTS } from "@idf/core/credit";
+import { CREDIT_WARNING } from "@idf/db/credit-texts";
 import { SOFORTSTART_TEXT } from "@idf/db/legal";
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { COUNTRIES } from "../../../../lib/countries";
@@ -47,6 +49,75 @@ function Field(props: { name: string; label: string; type?: string; autoComplete
   );
 }
 
+/** Fragebogen zur Bonität (nur Ratenkauf mit Kredit, nur Privatkundinnen). Namen wie in @idf/db/credit parseCreditAnswers. */
+function CreditQuestions(props: { state: CheckoutState }) {
+  const e = props.state.errors;
+  const v = props.state.values;
+  const err = (k: string) => (e[k] ? <p className="error" id={`${k}-error`}>{e[k]}</p> : null);
+  const money = (name: string, label: string, hint: string, errKey: string) => (
+    <div className="full float">
+      <input id={name} name={name} inputMode="decimal" placeholder=" " defaultValue={v[name] ?? ""} aria-invalid={e[errKey] ? true : undefined} aria-describedby={`${name}-hint`} />
+      <label htmlFor={name}>{label}</label>
+      <p className="note" id={`${name}-hint`}>{hint}</p>
+      {err(errKey)}
+    </div>
+  );
+  return (
+    <section className="card" aria-labelledby="raten-fragen">
+      <h2 id="raten-fragen">Kurz zu deiner Ratenzahlung</h2>
+      <p className="note">
+        Bevor wir dir eine Ratenzahlung anbieten, müssen wir gesetzlich prüfen, ob die Raten zu deinen Finanzen passen (§ 505a BGB). Dafür brauchen wir ein paar
+        Angaben. Wir nutzen sie nur für diese Prüfung, fragen keine Auskunftei und keine sozialen Netzwerke ab.
+      </p>
+      <div className="grid" key={JSON.stringify(v)}>
+        <div className="full float float-select">
+          <select id="credit_employment" name="credit_employment" defaultValue={v.credit_employment ?? ""} aria-invalid={e.employment ? true : undefined}>
+            <option value="" disabled>
+              Bitte wählen
+            </option>
+            {Object.entries(EMPLOYMENTS).map(([k, label]) => (
+              <option key={k} value={k}>
+                {label}
+              </option>
+            ))}
+          </select>
+          <label htmlFor="credit_employment">Ich bin …</label>
+          {err("employment")}
+        </div>
+        {money("credit_income", "Monatliches Netto-Einkommen in €", "Alles, was dir im Monat zur Verfügung steht (Gehalt, Rente, Unterhalt …).", "netIncomeCents")}
+        {money("credit_housing", "Monatliche Wohnkosten in €", "Miete mit Nebenkosten oder Kreditrate fürs Zuhause.", "housingCents")}
+        {money("credit_other", "Andere Raten pro Monat in €", "Kredite, Leasing, „Später bezahlen“ (Klarna, PayPal …). 0, wenn keine.", "otherCreditsCents")}
+        <div className="full float">
+          <input id="credit_dependents" name="credit_dependents" inputMode="numeric" placeholder=" " defaultValue={v.credit_dependents ?? "0"} aria-invalid={e.dependents ? true : undefined} />
+          <label htmlFor="credit_dependents">Personen, die du finanziell mitversorgst</label>
+          <p className="note">Zum Beispiel Kinder. 0, wenn niemand.</p>
+          {err("dependents")}
+        </div>
+        <fieldset className="full">
+          <legend>Gibt es bei dir gerade ein Mahnverfahren, eine Pfändung oder eine Insolvenz?</legend>
+          <div className="radio-row">
+            <label>
+              <input type="radio" name="credit_problems" value="nein" defaultChecked={v.credit_problems === "nein"} /> Nein
+            </label>
+            <label>
+              <input type="radio" name="credit_problems" value="ja" defaultChecked={v.credit_problems === "ja"} /> Ja
+            </label>
+          </div>
+          {err("paymentProblems")}
+        </fieldset>
+      </div>
+      <label className="check">
+        <input type="checkbox" name="credit_confirm" />
+        <span>Meine Angaben sind vollständig und richtig.</span>
+      </label>
+      {err("confirmed")}
+      <p className="note">
+        Die Auswertung läuft automatisch. Du kannst jederzeit verlangen, dass ein Mensch aus unserem Team die Entscheidung prüft und dir erklärt.
+      </p>
+    </section>
+  );
+}
+
 export function CheckoutForm(props: {
   slug: string;
   offer: OfferProps;
@@ -55,6 +126,8 @@ export function CheckoutForm(props: {
   withdrawalText: string;
   /** Gutschein aus dem Link (?gutschein=CODE), schon geprüft. */
   initialCoupon?: CouponPreview | null;
+  /** Ratenkauf mit Kredit: null, wenn kein Kredit. enabled = false, solange der Ratenkauf ausgeschaltet ist. */
+  credit?: { enabled: boolean; monthlyRateCents: number } | null;
   /** Rechenaufgabe gegen automatisierte Bestellungen (lib/pow.ts). */
   challenge: string;
   powBits: number;
@@ -116,10 +189,14 @@ export function CheckoutForm(props: {
   const money = (c: number) => formatCents(c, offer.currency);
   const interval = offer.plan.intervalMonths ? INTERVAL[offer.plan.intervalMonths] ?? `alle ${offer.plan.intervalMonths} Monate` : "";
   const later = p.schedule.filter((s) => s.dueDate !== props.purchaseDay);
+  // Kreditrecht gilt nur für Verbraucher; Unternehmen bestellen wie bisher.
+  const creditFlow = !!props.credit && kind === "privat";
+  const creditBlocked = creditFlow && !props.credit!.enabled;
 
   return (
     <form action={action} noValidate>
       <input type="hidden" name="price_option_id" value={offer.priceOptionId} />
+      <input type="hidden" name="slug" value={props.slug} />
       {props.sellerCode && <input type="hidden" name="seller" value={props.sellerCode} />}
       <input type="hidden" name="coupon" value={applied?.code ?? ""} />
       <input type="hidden" name="pow_challenge" value={state.challenge} />
@@ -247,7 +324,19 @@ export function CheckoutForm(props: {
           {p.rateBp > 0 ? `inkl. ${formatRate(p.rateBp)} Umsatzsteuer` : p.note}
           {kind === "unternehmen" && country !== "DE" && " Reverse Charge wird nach Prüfung der USt-IdNr. auf der Rechnung berücksichtigt."}
         </p>
+        {props.credit && (
+          <p className="note">
+            <strong>{CREDIT_WARNING}</strong> Bei uns kostet die Ratenzahlung nichts extra: 0,00 % Zinsen, der Gesamtpreis ist derselbe wie bei Einmalzahlung.
+          </p>
+        )}
       </section>
+
+      {creditFlow && !creditBlocked && <CreditQuestions state={state} />}
+      {creditBlocked && (
+        <p className="error" role="alert">
+          Ratenzahlung können wir gerade nicht anbieten. Bitte wähle die Einmalzahlung oder frag uns nach einem kürzeren Zahlplan.
+        </p>
+      )}
 
       <section className="card" aria-labelledby="zustimmung">
         <h2 id="zustimmung">Zustimmung</h2>
@@ -259,7 +348,12 @@ export function CheckoutForm(props: {
           </span>
         </label>
         {state.errors.terms && <p className="error" id="terms-error">{state.errors.terms}</p>}
-        {offer.immediateAccess ? (
+        {creditFlow ? (
+          <p className="note">
+            Im nächsten Schritt bekommst du die Informationen zu deiner Ratenzahlung und schließt den Ratenvertrag ab. Dort entscheidest du auch über den sofortigen
+            Start.
+          </p>
+        ) : offer.immediateAccess ? (
           <p className="note">Deinen Zugang bekommst du sofort nach dem Kauf.</p>
         ) : (
           <>
@@ -272,10 +366,12 @@ export function CheckoutForm(props: {
             </p>
           </>
         )}
-        <details>
-          <summary>Widerrufsbelehrung lesen</summary>
-          <p style={{ whiteSpace: "pre-line" }}>{props.withdrawalText}</p>
-        </details>
+        {!creditFlow && (
+          <details>
+            <summary>Widerrufsbelehrung lesen</summary>
+            <p style={{ whiteSpace: "pre-line" }}>{props.withdrawalText}</p>
+          </details>
+        )}
       </section>
 
       {state.message && (
@@ -283,16 +379,26 @@ export function CheckoutForm(props: {
           {state.message}
         </p>
       )}
-      <p className="total" aria-live="polite">
-        Jetzt zu zahlen: {money(p.dueNowCents)}
-      </p>
+      {!creditFlow && (
+        <p className="total" aria-live="polite">
+          Jetzt zu zahlen: {money(p.dueNowCents)}
+        </p>
+      )}
       {powFailed && (
         <p className="error" role="alert">
           Dein Browser kann die Sicherheitsprüfung nicht ausführen. Bitte nutze einen aktuellen Browser oder schreib uns an service@investieredichfrei.de.
         </p>
       )}
-      <button type="submit" className="order" disabled={pending || !ready}>
-        {pending ? "Bestellung wird gesendet …" : ready ? "Zahlungspflichtig bestellen" : "Einen Moment, Sicherheitsprüfung …"}
+      <button type="submit" className="order" disabled={pending || !ready || creditBlocked}>
+        {pending
+          ? creditFlow
+            ? "Angaben werden geprüft …"
+            : "Bestellung wird gesendet …"
+          : !ready
+            ? "Einen Moment, Sicherheitsprüfung …"
+            : creditFlow
+              ? "Weiter: Angaben prüfen"
+              : "Zahlungspflichtig bestellen"}
       </button>
     </form>
   );

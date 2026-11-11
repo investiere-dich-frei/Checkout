@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
 import { OrderError, placeOrder, type PlaceOrderInput } from "../src/orders.ts";
-import { createTestDb, tx, type TestDb } from "./helpers.ts";
+import { createTestDb, greenCreditCheck, tx, type TestDb } from "./helpers.ts";
 
 // Ausgedachte Gesellschaft, Produkte und Kundinnen, keine echten Daten.
 describe("Bestellung aufgeben", () => {
@@ -85,8 +85,16 @@ describe("Bestellung aufgeben", () => {
     assert.equal(r.installments[0]!.grossCents, 599640);
   });
 
+  // Raten über 50 Tage an Privatkundinnen sind ab 20.11.2026 ein Kredit und brauchen eine Prüfung.
+  const ratenOrder = async () => {
+    const checkId = await greenCreditCheck(db.pool, options.raten!, "erika@example.org", base.purchaseDay);
+    return tx(db.pool, (c) =>
+      placeOrder(c, { ...base, priceOptionId: options.raten!, customer: consumer("DE"), credit: { checkId, agreed: true, valueCompensation: false } }),
+    );
+  };
+
   it("Raten: alle Fälligkeiten werden festgeschrieben, Monatsende bleibt", async () => {
-    const r = await tx(db.pool, (c) => placeOrder(c, { ...base, priceOptionId: options.raten!, customer: consumer("DE") }));
+    const r = await ratenOrder();
     assert.deepEqual(
       r.installments.map((i) => [i.dueDate, i.grossCents]),
       [["2026-11-30", 3700], ["2026-12-30", 3700], ["2027-01-30", 3700]],
@@ -125,7 +133,7 @@ describe("Bestellung aufgeben", () => {
   });
 
   it("Fälligkeiten und Positionen sind festgeschrieben, nur der Status ändert sich", async () => {
-    const r = await tx(db.pool, (c) => placeOrder(c, { ...base, priceOptionId: options.raten!, customer: consumer("DE") }));
+    const r = await ratenOrder();
     await assert.rejects(db.pool.query(`update app.order_installments set gross_cents = 1 where order_id = $1`, [r.orderId]), /GoBD/);
     await assert.rejects(db.pool.query(`update app.order_installments set due_date = '2030-01-01' where order_id = $1`, [r.orderId]), /GoBD/);
     await assert.rejects(db.pool.query(`delete from app.order_installments where order_id = $1`, [r.orderId]), /GoBD/);

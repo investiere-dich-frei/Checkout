@@ -15,8 +15,9 @@ async function orderPayload(client: pg.ClientBase, orderId: string) {
   const { rows } = await client.query(
     `select o.id order_id, o.status, o.currency, o.total_gross_cents, o.created_at,
             -- Kurszugang: sofort bei Sofortstart oder Sofortzugang, sonst am Tag nach Ablauf der Widerrufsfrist.
-            o.withdrawal_waiver_at sofortstart_at,
-            case when o.withdrawal_waiver_at is not null or p.immediate_access then (o.created_at at time zone 'Europe/Berlin')::date
+            -- Ratenkauf mit Kredit: Sofortstart heißt dort Zustimmung zum Wertersatz.
+            coalesce(o.withdrawal_waiver_at, o.value_compensation_consent_at) sofortstart_at,
+            case when o.withdrawal_waiver_at is not null or o.value_compensation_consent_at is not null or p.immediate_access then (o.created_at at time zone 'Europe/Berlin')::date
                  else (o.created_at at time zone 'Europe/Berlin')::date + $2::int end::text access_from,
             jsonb_build_object('id', c.id, 'email', c.email, 'first_name', c.first_name, 'last_name', c.last_name,
                                'company_name', c.company_name, 'street', c.street, 'postal_code', c.postal_code, 'city', c.city,
