@@ -22,6 +22,8 @@ Pläne mit Aufschlag („Zinsen“) verkauft die Kasse nicht als Kredit, weil da
 4. Vertragsseite: Standardinformation lesen, drei Kästchen ohne Vorauswahl (AGB, Ratenvertrag, freiwillig Wertersatz), „Zahlungspflichtig bestellen“.
 5. Danach: Bestellbestätigung, Ratenvertrag mit Widerrufsinformation per E-Mail, Erinnerung an das Widerrufsrecht zwei Tage später (Art. 247 § 2 Abs. 4 EGBGB).
 
+Wiederholte Anfragen: Die Selbstauskunft ließe sich mit anderen Zahlen wiederholen, bis sie grün ergibt. Deshalb wird grün zu gelb (Team entscheidet), wenn dieselbe E-Mail-Adresse für dasselbe Produkt in den letzten 30 Tagen schon abgelehnt wurde oder schon zwei Anfragen gestellt hat (Verfahren `fragebogen-2`).
+
 Eine Prüfung gilt 7 Tage (bei Freigabe ab der Entscheidung) und nur für dieselbe Preisoption und dieselbe E-Mail-Adresse.
 
 ## Schalter und Regeln

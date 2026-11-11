@@ -280,7 +280,8 @@ export async function startCreditCheck(client: pg.ClientBase, input: StartCheckI
   if (credit.surchargeCents > 0) throw new CreditError("Ratenzahlung mit Aufschlag bieten wir nicht an.");
   const method = input.method ?? questionnaireMethod;
   const rules = rulesOf(settings);
-  const a = await method.assess({ answers: input.answers, monthlyRateCents: credit.monthlyRateCents, creditCents: credit.creditCents, rules });
+  const assessed = await method.assess({ answers: input.answers, monthlyRateCents: credit.monthlyRateCents, creditCents: credit.creditCents, rules });
+  const a = await withEarlierChecks(client, input.customer.email, input.priceOptionId, assessed);
 
   const { rows } = await client.query<{ id: string }>(
     `insert into app.credit_checks (price_option_id, method, rules_version, rules, customer, email, coupon_code, seller_user_id,
@@ -311,6 +312,39 @@ export async function startCreditCheck(client: pg.ClientBase, input: StartCheckI
   else if (a.result === "gelb") await sendCheckMail(client, checkId, "gelb");
   else await sendCheckMail(client, checkId, "rot");
   return { checkId, result: a.result, reasons: a.reasons };
+}
+
+/** Zeitraum, in dem frühere Anfragen derselben E-Mail-Adresse zum selben Produkt mitzählen. */
+export const EARLIER_CHECKS_DAYS = 30;
+/** Ab so vielen früheren Anfragen im Zeitraum entscheidet das Team, auch ohne frühere Ablehnung. */
+export const EARLIER_CHECKS_LIMIT = 2;
+
+/**
+ * Die Selbstauskunft lässt sich mit anderen Zahlen wiederholen, bis sie „grün“ ergibt. Deshalb wird eine
+ * automatische Freigabe zu „gelb“ (Prüfung durch das Team), wenn dieselbe E-Mail-Adresse für dasselbe
+ * Produkt in den letzten EARLIER_CHECKS_DAYS Tagen schon abgelehnt wurde oder mehrfach angefragt hat.
+ * Rot bleibt rot. Das Team sieht den Grund in der Ratenprüfung.
+ */
+async function withEarlierChecks<T extends CreditAssessment>(client: pg.ClientBase, email: string, priceOptionId: string, a: T): Promise<T> {
+  if (a.result !== "gruen") return a;
+  const { rows } = await client.query<{ n: string; rejected: string }>(
+    `select count(*) n,
+            count(*) filter (where c.result = 'rot' or d.decision = 'abgelehnt') rejected
+       from app.credit_checks c
+       join app.price_options o on o.id = c.price_option_id
+       left join app.credit_check_decisions d on d.credit_check_id = c.id
+      where c.email = $1
+        and o.product_id = (select product_id from app.price_options where id = $2)
+        and c.created_at > now() - make_interval(days => $3)`,
+    [email.trim().toLowerCase(), priceOptionId, EARLIER_CHECKS_DAYS],
+  );
+  const n = Number(rows[0]?.n ?? 0);
+  const rejected = Number(rows[0]?.rejected ?? 0);
+  const reasons: string[] = [];
+  if (rejected > 0) reasons.push(`Für diese E-Mail-Adresse wurde eine Ratenzahlung für dieses Produkt in den letzten ${EARLIER_CHECKS_DAYS} Tagen schon abgelehnt.`);
+  else if (n >= EARLIER_CHECKS_LIMIT) reasons.push(`Diese E-Mail-Adresse hat in den letzten ${EARLIER_CHECKS_DAYS} Tagen schon ${n} Anfragen für dieses Produkt gestellt.`);
+  if (!reasons.length) return a;
+  return { ...a, result: "gelb", reasons };
 }
 
 /** Entscheidung des Teams zu einer Prüfung (gelb, oder rot auf Wunsch der Kundin nach menschlicher Überprüfung). */

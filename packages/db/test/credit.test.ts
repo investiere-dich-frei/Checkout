@@ -213,6 +213,24 @@ describe("Ratenkauf mit Kredit", () => {
     assert.match(body, /prüft ein Mensch/);
   });
 
+  it("wiederholte Anfrage: nach Ablehnung oder mehrfachen Versuchen entscheidet das Team", async () => {
+    const start = (email: string, answers: CreditAnswers) =>
+      tx(db.pool, (c) => startCreditCheck(c, { priceOptionId: o.raten!, customer: who(email), answers, couponCode: null, sellerUserId: null, purchaseDay: day, offerUrl: url }));
+    // Erst rot, dann mit geschönten Zahlen: nicht mehr automatisch grün.
+    assert.equal((await start("nochmal@example.org", { ...good, netIncomeCents: 100_000 })).result, "rot");
+    const again = await start("Nochmal@Example.org", good);
+    assert.equal(again.result, "gelb");
+    assert.match(again.reasons.join(" "), /schon abgelehnt/);
+    // Ohne Ablehnung: erste und zweite Anfrage grün, ab der dritten prüft das Team.
+    assert.equal((await start("oft@example.org", good)).result, "gruen");
+    assert.equal((await start("oft@example.org", good)).result, "gruen");
+    const third = await start("oft@example.org", good);
+    assert.equal(third.result, "gelb");
+    assert.match(third.reasons.join(" "), /schon 2 Anfragen/);
+    // Rot bleibt rot.
+    assert.equal((await start("nochmal@example.org", { ...good, paymentProblems: true })).result, "rot");
+  });
+
   it("Aufschlag: keine Prüfung und keine Bestellung", async () => {
     await assert.rejects(
       tx(db.pool, (c) =>
