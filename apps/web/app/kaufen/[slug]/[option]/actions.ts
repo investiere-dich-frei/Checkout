@@ -5,7 +5,8 @@ import { findSeller, currentLegalTexts } from "@idf/db/catalog";
 import { enqueueOrderConfirmation } from "@idf/db/customer-mails";
 import { describeDiscount, type Discount } from "@idf/core/discount";
 import { findCoupon } from "@idf/db/coupons";
-import { CouponRejected, OrderError, placeOrder } from "@idf/db/orders";
+import { CreditError, optionCredit, parseCreditAnswers, startCreditCheck } from "@idf/db/credit";
+import { CouponRejected, CreditRequired, OrderError, placeOrder } from "@idf/db/orders";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { parseCheckoutForm, type FieldErrors } from "../../../../lib/checkout-form";
@@ -24,7 +25,23 @@ export interface CheckoutState {
   challenge: string;
 }
 
-const KEPT_FIELDS = ["first_name", "last_name", "company_name", "email", "street", "postal_code", "city", "vat_id", "coupon"];
+const KEPT_FIELDS = [
+  "first_name",
+  "last_name",
+  "company_name",
+  "email",
+  "street",
+  "postal_code",
+  "city",
+  "vat_id",
+  "coupon",
+  "credit_employment",
+  "credit_income",
+  "credit_housing",
+  "credit_other",
+  "credit_dependents",
+  "credit_problems",
+];
 
 export type CouponPreview = { ok: true; code: string; discount: Discount; text: string } | { ok: false; message: string };
 
@@ -77,6 +94,12 @@ async function placeFromForm(form: FormData): Promise<Omit<CheckoutState, "chall
     return { errors: {}, message: "Bestellen ist gerade nicht möglich. Bitte versuche es später noch einmal.", values };
   }
   const sellerUserId = sellerCode ? await findSeller(db, sellerCode) : null;
+
+  // Ratenkauf mit Kredit (nur Privatkundinnen): erst Bonitätsprüfung, der Vertrag folgt im zweiten Schritt.
+  if (parsed.value.customer.kind === "privat") {
+    const credit = await optionCredit(db, priceOptionId, todayBerlin());
+    if (credit?.isCredit) return startCheckFromForm(form, parsed.value.customer, priceOptionId, sellerUserId, values);
+  }
 
   // Reverse Charge nur mit USt-IdNr., die VIES als gültig bestätigt (Unternehmen im EU-Ausland).
   const customer = parsed.value.customer;
@@ -136,11 +159,65 @@ async function placeFromForm(form: FormData): Promise<Omit<CheckoutState, "chall
     orderId = placed.orderId;
   } catch (err) {
     if (err instanceof CouponRejected) return { errors: { coupon: err.message }, message: "Bitte prüfe den Gutscheincode.", values };
+    if (err instanceof CreditRequired) return { errors: {}, message: err.message, values };
     if (err instanceof OrderError) return { errors: {}, message: "Dieses Angebot ist leider nicht mehr verfügbar.", values };
     console.error("Bestellung fehlgeschlagen", (err as Error).message);
     return { errors: {}, message: "Die Bestellung hat nicht geklappt. Bitte versuche es noch einmal.", values };
   }
   redirect(`/bestellung/${orderId}`);
+}
+
+/**
+ * Erster Schritt beim Ratenkauf: Fragebogen auswerten und festschreiben. Grün und gelb führen auf die
+ * Seite des zweiten Schritts (dort Standardinformation und Vertrag bzw. „wir prüfen“), rot bleibt hier.
+ */
+async function startCheckFromForm(
+  form: FormData,
+  customer: { first_name?: string | null; last_name?: string | null; email: string; street?: string | null; postal_code?: string | null; city?: string | null; country: string },
+  priceOptionId: string,
+  sellerUserId: string | null,
+  values: Record<string, string>,
+): Promise<Omit<CheckoutState, "challenge">> {
+  const answers = parseCreditAnswers((k) => String(form.get(k) ?? ""));
+  if (!answers.ok) return { errors: answers.errors, message: "Bitte beantworte die Fragen zur Ratenzahlung.", values };
+  const slug = String(form.get("slug") ?? "");
+  const offerPath = `/kaufen/${encodeURIComponent(slug)}/${priceOptionId}`;
+  let outcome;
+  try {
+    const base = await publicBaseUrl();
+    outcome = await transaction("system:checkout", (c) =>
+      startCreditCheck(c, {
+        priceOptionId,
+        customer: {
+          first_name: customer.first_name ?? "",
+          last_name: customer.last_name ?? "",
+          email: customer.email,
+          street: customer.street ?? "",
+          postal_code: customer.postal_code ?? "",
+          city: customer.city ?? "",
+          country: customer.country,
+        },
+        answers: answers.value,
+        couponCode: String(form.get("coupon") ?? "").trim() || null,
+        sellerUserId,
+        purchaseDay: todayBerlin(),
+        offerUrl: `${base}${offerPath}`,
+      }),
+    );
+  } catch (err) {
+    if (err instanceof CreditError) return { errors: {}, message: err.message, values };
+    console.error("Bonitätsprüfung fehlgeschlagen", (err as Error).message);
+    return { errors: {}, message: "Die Prüfung hat nicht geklappt. Bitte versuche es noch einmal.", values };
+  }
+  if (outcome.result === "rot") {
+    return {
+      errors: {},
+      message:
+        "Eine Ratenzahlung können wir dir leider nicht anbieten. Du kannst das Angebot mit Einmalzahlung kaufen. Die Begründung und wie du eine Prüfung durch einen Menschen verlangen kannst, haben wir dir per E-Mail geschickt.",
+      values,
+    };
+  }
+  redirect(`${offerPath}/raten/${outcome.checkId}`);
 }
 
 /** Öffentliche Adresse der Bestellseiten für Links in E-Mails. */

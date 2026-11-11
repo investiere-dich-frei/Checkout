@@ -6,7 +6,8 @@
     "./tax": "./src/tax.ts",
     "./pricing": "./src/pricing.ts",
     "./discount": "./src/discount.ts",
-    "./manual-plan": "./src/manual-plan.ts"
+    "./manual-plan": "./src/manual-plan.ts",
+    "./credit": "./src/credit.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",

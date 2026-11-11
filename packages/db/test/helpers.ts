@@ -125,3 +125,25 @@ export async function tx<T>(pool: pg.Pool, fn: (c: pg.PoolClient) => Promise<T>)
     c.release();
   }
 }
+
+/**
+ * Ratenkauf mit Kredit für Tests freischalten: Schalter an, grüne Prüfung mit Standardinformation.
+ * Gibt die Prüfung zurück, die placeOrder als credit.checkId bekommt.
+ */
+export async function greenCreditCheck(db: pg.Pool, priceOptionId: string, email: string, purchaseDay: string): Promise<string> {
+  await db.query(`update app.credit_settings set enabled = true where id`);
+  const customer = { first_name: "Erika", last_name: "Muster", email, street: "Teststr. 2", postal_code: "10115", city: "Berlin", country: "DE" };
+  const id = (
+    await db.query(
+      `insert into app.credit_checks (price_option_id, method, rules_version, rules, customer, email, answers, purchase_day,
+         monthly_rate_cents, credit_cents, free_income_cents, result, reasons, expires_at)
+       values ($1, 'fragebogen', 'test', '{}', $2, $3, '{}', $4, 0, 0, 0, 'gruen', '[]', now() + interval '7 days') returning id`,
+      [priceOptionId, JSON.stringify(customer), email.toLowerCase(), purchaseDay],
+    )
+  ).rows[0].id as string;
+  await db.query(
+    `insert into app.credit_documents (credit_check_id, kind, version, content, sha256) values ($1, 'standardinformation', 'test', 'Info', 'x')`,
+    [id],
+  );
+  return id;
+}

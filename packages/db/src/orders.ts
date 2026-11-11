@@ -3,6 +3,8 @@ import { paymentSchedule, splitAmount, type AmountBasis, type PricePlan } from "
 import { decideTax, type TaxCategory, type TaxDecision } from "@idf/core/tax";
 import type pg from "pg";
 import { findCoupon, type ApplicableCoupon } from "./coupons.ts";
+import { getCreditSettings, optionCredit, recordCreditContract, usableCheck } from "./credit.ts";
+import { CREDIT_TEXTS_VERSION } from "./credit-texts.ts";
 
 /**
  * Bestellung aufgeben: Kunde, Bestellung, Position und Zahlplan entstehen in
@@ -39,6 +41,12 @@ export interface PlaceOrderInput {
   purchaseDay: string;
   /** Gutscheincode aus dem Kaufformular; wird hier erneut geprüft. */
   couponCode?: string | null;
+  /**
+   * Ratenkauf mit Kredit (Raten über 50 Tage oder mit Aufschlag): Pflicht für Privatkundinnen.
+   * checkId ist eine freigegebene Bonitätsprüfung, agreed das Kästchen zum Ratenvertrag,
+   * valueCompensation der freiwillige Sofortstart mit Wertersatz.
+   */
+  credit?: { checkId: string; agreed: boolean; valueCompensation: boolean } | null;
 }
 
 export interface PlacedOrder {
@@ -54,6 +62,8 @@ export interface PlacedOrder {
 export class OrderError extends Error {}
 /** Der Gutschein ist nicht (mehr) einlösbar; die Meldung ist für die Kundin geschrieben. */
 export class CouponRejected extends OrderError {}
+/** Ratenkauf nicht möglich (fehlende oder abgelaufene Prüfung, fehlende Zustimmung); Meldung für die Kundin. */
+export class CreditRequired extends OrderError {}
 
 interface OptionRow {
   price_option_id: string;
@@ -103,6 +113,22 @@ export async function placeOrder(client: pg.ClientBase, input: PlaceOrderInput):
 
   const c = input.customer;
   const isBusiness = c.kind === "unternehmen";
+
+  // Verbraucherkreditrecht (§ 506 BGB n. F.) gilt nur für Verbraucher, also Privatkundinnen.
+  const credit = isBusiness ? null : await optionCredit(client, opt.price_option_id, input.purchaseDay);
+  let creditCheckId: string | null = null;
+  if (credit?.isCredit) {
+    if (credit.surchargeCents > 0) throw new CreditRequired("Ratenzahlung mit Aufschlag bieten wir nicht an.");
+    if (!(await getCreditSettings(client)).enabled) throw new CreditRequired("Ratenzahlung ist gerade nicht möglich.");
+    const check = input.credit ? await usableCheck(client, input.credit.checkId) : null;
+    if (!check || check.priceOptionId !== opt.price_option_id || check.customer.email.trim().toLowerCase() !== c.email.trim().toLowerCase()) {
+      throw new CreditRequired("Für die Ratenzahlung fehlt die Prüfung deiner Angaben, oder sie ist abgelaufen.");
+    }
+    if (!input.credit!.agreed) throw new CreditRequired("Bitte stimme dem Ratenzahlungsvertrag zu.");
+    // Lock gegen doppelte Verwendung derselben Prüfung in parallelen Bestellungen (unique credit_check_id fängt den Rest).
+    await client.query(`select 1 from app.credit_checks where id = $1 for share`, [check.id]);
+    creditCheckId = check.id;
+  }
   const tax = decideTax(
     opt.tax_category,
     { country: c.country, isBusiness, vatIdVerified: isBusiness && input.vatIdVerified && !!c.vat_id },
@@ -166,8 +192,10 @@ export async function placeOrder(client: pg.ClientBase, input: PlaceOrderInput):
 
   const order = await client.query<{ id: string }>(
     `insert into app.orders (company_id, customer_id, seller_user_id, status, currency, total_gross_cents,
-       agb_version_id, privacy_version_id, withdrawal_version_id, withdrawal_waiver_at, buyer_country, buyer_is_business)
-     values ($1, $2, $3, 'offen', $4, $5, $6, $7, $8, case when $9 then now() end, $10, $11) returning id`,
+       agb_version_id, privacy_version_id, withdrawal_version_id, withdrawal_waiver_at, buyer_country, buyer_is_business,
+       credit_check_id, credit_agreement_at, value_compensation_consent_at, credit_texts_version)
+     values ($1, $2, $3, 'offen', $4, $5, $6, $7, $8, case when $9 then now() end, $10, $11,
+       $12, case when $12::uuid is not null then now() end, case when $13 then now() end, $14) returning id`,
     [
       opt.company_id,
       customerId,
@@ -177,10 +205,14 @@ export async function placeOrder(client: pg.ClientBase, input: PlaceOrderInput):
       input.agbVersionId,
       input.privacyVersionId,
       input.withdrawalVersionId,
-      // Bei Sofortzugang gibt es kein Häkchen, also auch keine Erklärung.
-      input.withdrawalWaiver && !opt.immediate_access,
+      // Bei Sofortzugang gibt es kein Häkchen, also auch keine Erklärung. Bei Ratenkauf mit Kredit greift
+      // § 356 Abs. 5 BGB nicht (§ 312g Abs. 3 BGB); dort gilt stattdessen die Zustimmung zum Wertersatz.
+      input.withdrawalWaiver && !opt.immediate_access && !creditCheckId,
       c.country.toUpperCase(),
       isBusiness,
+      creditCheckId,
+      !!creditCheckId && !!input.credit?.valueCompensation,
+      creditCheckId ? CREDIT_TEXTS_VERSION : null,
     ],
   );
   const orderId = order.rows[0]!.id;
@@ -222,6 +254,9 @@ export async function placeOrder(client: pg.ClientBase, input: PlaceOrderInput):
     );
     couponResult = { code: coupon.code, discountGrossCents: discountGross };
   }
+
+  // Ratenvertrag (Textform) und Erinnerung an das Widerrufsrecht in derselben Transaktion.
+  if (creditCheckId) await recordCreditContract(client, orderId, input.purchaseDay);
 
   return { orderId, customerId, orderItemId, tax, installments, coupon: couponResult };
 }

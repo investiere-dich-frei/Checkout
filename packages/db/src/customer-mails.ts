@@ -30,6 +30,7 @@ export function companyFooter(co: { legal_name: string; street: string; postal_c
 export async function enqueueOrderConfirmation(client: pg.ClientBase, orderId: string, orderUrl: string): Promise<string> {
   const { rows } = await client.query(
     `select o.created_at, o.currency, o.total_gross_cents, o.withdrawal_waiver_at, p.immediate_access,
+            o.credit_check_id, o.value_compensation_consent_at,
             ((o.created_at at time zone 'Europe/Berlin')::date + $2::int)::text access_from,
             cu.email, cu.first_name, cu.last_name, cu.company_name,
             co.legal_name, co.street, co.postal_code, co.city, co.vat_id, co.register_info,
@@ -71,7 +72,18 @@ export async function enqueueOrderConfirmation(client: pg.ClientBase, orderId: s
     `Zur Bestellung und Bezahlung: ${orderUrl}`,
     "Die Rechnung bekommst du per E-Mail, sobald die Zahlung eingegangen ist.",
   ];
-  if (o.withdrawal_waiver_at) {
+  if (o.credit_check_id) {
+    // Ratenkauf mit Kredit: Widerruf nach § 495 BGB; Sofortstart nur mit Wertersatz (§ 357b Abs. 2 BGB).
+    lines.push(
+      "",
+      "Dein Start",
+      o.value_compensation_consent_at || o.immediate_access
+        ? "Deinen Zugang bekommst du sofort."
+        : `Deinen Zugang bekommst du am ${day(o.access_from)}, am Tag nach Ablauf der Widerrufsfrist.`,
+      "",
+      "Deinen Ratenzahlungsvertrag mit der Widerrufsinformation bekommst du in einer eigenen E-Mail.",
+    );
+  } else if (o.withdrawal_waiver_at) {
     lines.push(
       "",
       "Dein Sofortstart",
@@ -90,10 +102,7 @@ export async function enqueueOrderConfirmation(client: pg.ClientBase, orderId: s
   lines.push(
     "",
     "Kündigen oder widerrufen kannst du jederzeit über die Links „Verträge hier kündigen“ und „Vertrag widerrufen“ auf unseren Bestellseiten.",
-    "",
-    `Widerrufsbelehrung (Fassung ${o.widerruf_version})`,
-    "",
-    o.widerruf_text,
+    ...(o.credit_check_id ? [] : ["", `Widerrufsbelehrung (Fassung ${o.widerruf_version})`, "", o.widerruf_text]),
     "",
     `Allgemeine Geschäftsbedingungen (Fassung ${o.agb_version})`,
     "",

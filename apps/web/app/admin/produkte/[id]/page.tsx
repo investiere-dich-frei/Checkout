@@ -1,3 +1,4 @@
+import { classifyCredit, CREDIT_LAW_START } from "@idf/core/credit";
 import { canChange, canSeeAll } from "@idf/db/admin";
 import { getProduct, listAccessTemplates, type PriceOptionRow } from "@idf/db/products";
 import { headers } from "next/headers";
@@ -20,6 +21,25 @@ function describePlan(o: PriceOptionRow): string {
   const first = o.amountCents > 0 ? `${formatCents(o.amountCents)} beim Kauf, dann ` : "";
   if (o.kind === "abo") return `${first}${formatCents(o.recurringAmountCents ?? 0)} ${every}${trial}, bis zur Kündigung`;
   return `${first}${o.recurringCount} × ${formatCents(o.recurringAmountCents ?? 0)} ${every}${trial}`;
+}
+
+/**
+ * Ratenkauf ab 20.11.2026: Raten über 50 Tage oder mit Aufschlag sind ein Kredit (§ 506 BGB n. F.).
+ * Barzahlungspreis = günstigste aktive Einmalzahlung mit gleicher Preisbasis.
+ */
+function creditNote(o: PriceOptionRow, all: PriceOptionRow[]): string | null {
+  const cash = all
+    .filter((x) => x.kind === "einmal" && x.active && x.amountBasis === o.amountBasis && x.id !== o.id)
+    .reduce<number | null>((m, x) => (m === null || x.amountCents < m ? x.amountCents : m), null);
+  const day = todayBerlin() < CREDIT_LAW_START ? CREDIT_LAW_START : todayBerlin();
+  const c = classifyCredit(
+    { kind: o.kind, amountCents: o.amountCents, recurringAmountCents: o.recurringAmountCents, recurringCount: o.recurringCount, intervalMonths: o.intervalMonths, trialDays: o.trialDays },
+    day,
+    cash,
+  );
+  if (!c.isCredit) return null;
+  if (c.surchargeCents > 0) return `Kredit mit Aufschlag von ${formatCents(c.surchargeCents)}: an Privatkundinnen nicht verkaufbar`;
+  return "Kredit: Privatkundinnen durchlaufen die Ratenprüfung";
 }
 
 /** Was eine Käuferin in Deutschland zahlt, berechnet wie im Checkout. */
@@ -169,6 +189,12 @@ export default async function ProductPage(props: { params: Promise<{ id: string 
                       {o.label}
                       <br />
                       <span className="note">{KIND_LABEL[o.kind]}</span>
+                      {creditNote(o, product.options) && (
+                        <>
+                          <br />
+                          <span className="badge badge-warn">{creditNote(o, product.options)}</span>
+                        </>
+                      )}
                     </td>
                     <td>{describePlan(o)}</td>
                     <td>{o.amountBasis}</td>

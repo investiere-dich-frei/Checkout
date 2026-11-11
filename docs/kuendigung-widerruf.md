@@ -39,6 +39,7 @@ select received_at, kind, full_name, contract_reference from app.contract_notice
 - Mit Häkchen: `app.orders.withdrawal_waiver_at` ist gesetzt, Zugang sofort. Ohne Häkchen: Kauf trotzdem möglich, Zugang am Tag nach Ablauf der Widerrufsfrist (Kauftag + 15 Tage).
 - Die Bestellbestätigung nennt den erklärten Text oder den Starttermin; die Webhooks an n8n tragen `sofortstart_at` und `access_from`.
 - Ausnahme wie in Thrivecart (SOP CS-009, n8n-Ablauf „ThriveCart Webhook“): Produkte mit `app.products.immediate_access` (Masterclass Essential, Thrivecart 166) zeigen kein Häkchen; der Zugang beginnt am Kauftag (Migration 0018).
+- Ratenkauf mit Kredit (ab 20.11.2026, siehe `docs/ratenkauf.md`): Das Sofortstart-Häkchen entfällt, weil der Widerruf nach § 312g Abs. 3 BGB aus dem Verbraucherkreditrecht folgt und der Sofortstart ihn dort nicht beendet. An seine Stelle tritt die freiwillige Zustimmung zum Wertersatz (§ 357b BGB, `value_compensation_consent_at`). Mit Zustimmung startet der Zugang sofort, ohne Zustimmung am Tag nach Ablauf der 14 Tage.
 
 ## Postausgang
 

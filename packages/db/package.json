@@ -31,7 +31,9 @@
     "./dunning": "./src/dunning.ts",
     "./team": "./src/team.ts",
     "./throttle": "./src/throttle.ts",
-    "./settings": "./src/settings.ts"
+    "./settings": "./src/settings.ts",
+    "./credit": "./src/credit.ts",
+    "./credit-texts": "./src/credit-texts.ts"
   },
   "scripts": {
     "migrate": "tsx src/cli.ts",

@@ -17,6 +17,7 @@ import {
   resendInvoiceAction,
   resumeSubscriptionAction,
 } from "../../kunden/actions";
+import { creditWithdrawalEnd } from "@idf/core/credit";
 import { ActionForm } from "../../produkte/forms";
 import { RefundForm } from "./refund-form";
 import { StornoForm, type StornoInvoice } from "./storno-form";
@@ -28,6 +29,7 @@ const DUNNING_LABELS: Record<string, string> = {
   letzte_mahnung: "Letzte Mahnung",
   karte_ablauf: "Karte läuft ab",
 };
+const todayOf = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Berlin" }).format(d);
 const dateTime = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", dateStyle: "medium", timeStyle: "short" });
 
 export default async function OrderAdminPage(props: { params: Promise<{ id: string }> }) {
@@ -110,6 +112,16 @@ export default async function OrderAdminPage(props: { params: Promise<{ id: stri
           {h.tax_note && <> · {h.tax_note}</>}
           {h.withdrawal_waiver_at && <> · Verzicht auf Widerrufsrecht am {dateTime.format(h.withdrawal_waiver_at)}</>}
         </p>
+        {h.credit_check_id && (
+          <p>
+            Ratenkauf mit Kredit: Ratenvertrag am {dateTime.format(h.credit_agreement_at)} (Texte {h.credit_texts_version}) · Widerruf möglich bis{" "}
+            {formatDay(creditWithdrawalEnd(todayOf(h.created_at)))} (bei Fehlern in den Pflichtangaben länger, höchstens 12 Monate und 14 Tage)
+            {h.value_compensation_consent_at
+              ? ` · Sofortstart mit Wertersatz am ${dateTime.format(h.value_compensation_consent_at)}`
+              : " · kein Sofortstart, Zugang nach Ablauf der Widerrufsfrist"}{" "}
+            · <a href="/admin/ratenpruefung">Prüfung</a>
+          </p>
+        )}
         {h.coupon_code && (
           <p>
             Gutschein{" "}

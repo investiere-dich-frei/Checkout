@@ -1,5 +1,6 @@
 import type pg from "pg";
 import { MAX_ATTEMPTS, ORDER_STARTED_SQL, RETRY_AFTER_DAYS } from "./billing.ts";
+import { DEBT_ADVICE } from "./credit-texts.ts";
 import { companyFooter, day, euro, salutation } from "./customer-mails.ts";
 import { createPortalToken } from "./customer-portal.ts";
 import { enqueueWebhook } from "./webhooks.ts";
@@ -212,7 +213,7 @@ export async function sendDunningNotice(client: pg.ClientBase, c: DunningCase, b
   if (exists.rowCount) return false;
   const { rows } = await client.query(
     `select cu.email, cu.first_name, cu.last_name, cu.company_name, p.name product, o.currency,
-            i.seq, i.due_date::text, i.gross_cents, to_jsonb(co) company
+            i.seq, i.due_date::text, i.gross_cents, to_jsonb(co) company, o.credit_check_id is not null credit
        from app.order_installments i
        join app.orders o on o.id = i.order_id
        join app.customers cu on cu.id = o.customer_id
@@ -285,6 +286,10 @@ export async function sendDunningNotice(client: pg.ClientBase, c: DunningCase, b
     ...text,
     "",
     "Wenn du Fragen hast, antworte einfach auf diese E-Mail.",
+    // Ratenkauf mit Kredit: bei Zahlungsschwierigkeiten auf Schuldnerberatung hinweisen (§ 497a Abs. 1 BGB n. F.).
+    ...(r.credit && (c.kind === "fehlgeschlagen" || c.kind === "ohne_zahlungsart" || c.kind === "letzte_mahnung")
+      ? ["", `Wenn es gerade finanziell eng ist, sprich uns an: Wir finden gemeinsam eine Lösung, z. B. eine Zahlpause. ${DEBT_ADVICE}`]
+      : []),
     "",
     companyFooter(r.company),
   ].join("\n");

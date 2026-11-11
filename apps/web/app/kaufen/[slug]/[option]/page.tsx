@@ -1,5 +1,6 @@
 import { currentLegalTexts, findSeller, getOffer } from "@idf/db/catalog";
 import { DEFAULT_CONTENT, resolvePage } from "@idf/db/checkout-pages";
+import { getCreditSettings, optionCredit } from "@idf/db/credit";
 import { notFound } from "next/navigation";
 import { CheckoutPageView } from "../../../../lib/checkout-page-view";
 import { pool } from "../../../../lib/db";
@@ -30,6 +31,9 @@ export default async function CheckoutPage(props: {
   const linkCode = (gutschein ?? coupon ?? "").trim();
   const initialCoupon = linkCode ? await checkCouponAction(linkCode, offer.priceOptionId) : null;
   // Eine fehlerhafte Gestaltung darf den Verkauf nie verhindern.
+  // Ratenkauf mit Kredit (Raten über 50 Tage oder mit Aufschlag): Fragebogen und eigener zweiter Schritt.
+  const credit = await optionCredit(db, offer.priceOptionId, todayBerlin());
+  const creditEnabled = credit?.isCredit ? (await getCreditSettings(db)).enabled : false;
   const content = await resolvePage(db, offer.productId).catch((err) => {
     console.error("Kaufseite: Gestaltung nicht lesbar, Vorgabe verwendet", (err as Error).message);
     return DEFAULT_CONTENT;
@@ -56,6 +60,11 @@ export default async function CheckoutPage(props: {
         purchaseDay={todayBerlin()}
         withdrawalText={legal.widerruf.content}
         initialCoupon={initialCoupon}
+        credit={
+          credit?.isCredit
+            ? { enabled: creditEnabled && credit.surchargeCents === 0, monthlyRateCents: credit.monthlyRateCents }
+            : null
+        }
         challenge={createChallenge()}
         powBits={POW_BITS}
       />
