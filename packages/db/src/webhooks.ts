@@ -30,6 +30,8 @@ async function orderPayload(client: pg.ClientBase, orderId: string) {
                                'access_like_product_id', p.access_like_product_id,
                                'external_refs', p.external_refs) product,
             jsonb_build_object('id', po.id, 'label', po.label, 'kind', po.kind, 'interval_months', po.interval_months,
+                               -- Gesamtzahl der Raten: Empfänger rechnen bei Storno den bezahlten Anteil (Lernplattform).
+                               'installments', po.installments,
                                'thrivecart_option_id', po.thrivecart_option_id) price_option,
             u.sales_code seller,
             -- Aus Thrivecart übernommen: Kurszugang besteht schon, der Empfänger legt keinen neuen an.

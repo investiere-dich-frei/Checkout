@@ -15,7 +15,7 @@ Für alles, was nach einem Kauf außerhalb des Checkouts passieren muss, etwa de
 | `abo.fortgesetzt` | Pause beendet, Abo läuft ab `resumed_on` weiter |
 | `bestellung.beendet` | Storno: offene Raten entfallen, Abo endet heute (`storno` = `ohne_rueckzahlung` oder `mit_rueckzahlung`, `reason` = Grund) |
 
-Jede Meldung enthält die Bestellung mit Kundin (E-Mail, Name, Anschrift, Land, HubSpot-ID), Produkt (mit `thrivecart_product_id`, damit n8n die bestehenden Zuordnungen weiter nutzen kann), Preisoption (mit Art und Abstand der Zahlungen) und Vertriebskürzel. Empfänger ist der n8n-Ablauf „IDF Checkout Meldungen“; er übersetzt die Meldung in die Felder des Thrivecart-Webhooks und nutzt dieselben Zuordnungen (`tc_products`).
+Jede Meldung enthält die Bestellung mit Kundin (E-Mail, Name, Anschrift, Land, HubSpot-ID), Produkt (mit `thrivecart_product_id`, damit n8n die bestehenden Zuordnungen weiter nutzen kann), Preisoption (mit Art, Abstand der Zahlungen und bei Raten deren Gesamtzahl `installments`) und Vertriebskürzel. Empfänger ist der n8n-Ablauf „IDF Checkout Meldungen“; er übersetzt die Meldung in die Felder des Thrivecart-Webhooks und nutzt dieselben Zuordnungen (`tc_products`).
 
 Produkte, die nur im neuen System angelegt werden, haben keine Thrivecart-Nummer. Für sie wählt man in der Verwaltung beim Produkt „Kurszugang und HubSpot wie bei“ ein bestehendes Produkt (Migration 0031, `access_like_product_id`). Die Meldung trägt dann dessen `thrivecart_product_id`. Ohne Zuordnung überspringt n8n Kurszugang und HubSpot-Deal, und das Produkt zeigt in der Verwaltung einen Hinweis.
 
