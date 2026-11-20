@@ -4,6 +4,7 @@ import { getCreditSettings, optionCredit } from "@idf/db/credit";
 import { notFound } from "next/navigation";
 import { CheckoutPageView } from "../../../../lib/checkout-page-view";
 import { pool } from "../../../../lib/db";
+import { fetchPrefill } from "../../../../lib/prefill";
 import { createChallenge, POW_BITS } from "../../../../lib/pow";
 import { todayBerlin } from "../../../../lib/format";
 import { checkCouponAction } from "./actions";
@@ -15,11 +16,15 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default async function CheckoutPage(props: {
   params: Promise<{ slug: string; option: string }>;
-  searchParams: Promise<{ v?: string; gutschein?: string; coupon?: string }>;
+  searchParams: Promise<{ v?: string; gutschein?: string; coupon?: string; vf?: string | string[] }>;
 }) {
   const { slug, option } = await props.params;
-  const { v, gutschein, coupon } = await props.searchParams;
+  const { v, gutschein, coupon, vf } = await props.searchParams;
   if (!UUID.test(option)) notFound();
+  // Mitglieder aus der Lernplattform (?vf=<Token>): Name und E-Mail als änderbare Startwerte.
+  // Läuft parallel zu den Abfragen; ohne gültigen Token, Konfiguration oder Antwort bleibt das
+  // Formular leer. fetchPrefill wirft nie.
+  const prefillRequest = fetchPrefill(vf);
 
   const db = pool();
   const offer = await getOffer(db, slug, option);
@@ -38,6 +43,7 @@ export default async function CheckoutPage(props: {
     console.error("Kaufseite: Gestaltung nicht lesbar, Vorgabe verwendet", (err as Error).message);
     return DEFAULT_CONTENT;
   });
+  const prefill = await prefillRequest;
 
   return (
     <CheckoutPageView
@@ -60,6 +66,7 @@ export default async function CheckoutPage(props: {
         purchaseDay={todayBerlin()}
         withdrawalText={legal.widerruf.content}
         initialCoupon={initialCoupon}
+        initialValues={prefill}
         credit={
           credit?.isCredit
             ? { enabled: creditEnabled && credit.surchargeCents === 0, monthlyRateCents: credit.monthlyRateCents }

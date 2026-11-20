@@ -38,6 +38,8 @@ Beim Go-live `checkout_database: idf` setzen und auf die Live-Schlüssel umstell
    - `stripe_secret_key`, `stripe_publishable_key`, `stripe_webhook_secret`;
    - `paypal_client_id`, `paypal_client_secret`, `paypal_webhook_id`, optional `paypal_env: live`;
    - `outbound_webhook_url`, `outbound_webhook_secret` (n8n);
+   - `lernplattform_url`, `lernplattform_signatur_geheimnis` (Vorausfüllen der Kaufseite, siehe `docs/kaufseiten.md`;
+     Geheimnis = `KASSE_SIGNATUR_GEHEIMNIS` der Lernplattform, Schlüsselbund-Eintrag `lernplattform-kasse-signatur`). Optional: Ohne sie füllt die Kaufseite nichts vor.
    - die Graph-Zugangsdaten gibt es schon (Alarm-Mails).
    - Absender der Kunden-E-Mails ist `buchhaltung@investieredichfrei.de` (`checkout_mail_from`, Entscheidung Christian 30.10.2026). Die Entra-App darf bisher nur als service@ senden: Postfach buchhaltung@ in den Exchange-Bereich „IDF Ueberwachung - nur service@“ aufnehmen (RBAC für Anwendungen), sonst lehnt Graph das Senden ab.
 3. DNS: `buchhaltung.investieredichfrei.de` als A-Eintrag auf 2.31.89.112.

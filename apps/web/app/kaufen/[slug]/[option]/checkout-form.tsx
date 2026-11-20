@@ -131,6 +131,8 @@ export function CheckoutForm(props: {
   withdrawalText: string;
   /** Gutschein aus dem Link (?gutschein=CODE), schon geprüft. */
   initialCoupon?: CouponPreview | null;
+  /** Startwerte aus der Lernplattform (first_name, last_name, email), änderbar. */
+  initialValues?: Record<string, string>;
   /** Ratenkauf mit Kredit: null, wenn kein Kredit. enabled = false, solange der Ratenkauf ausgeschaltet ist. */
   credit?: { enabled: boolean; monthlyRateCents: number } | null;
   /** Rechenaufgabe gegen automatisierte Bestellungen (lib/pow.ts). */
@@ -141,9 +143,16 @@ export function CheckoutForm(props: {
   const [state, action, pending] = useActionState<CheckoutState, FormData>(submitOrder, {
     errors: {},
     message: null,
-    values: {},
+    values: props.initialValues ?? {},
     challenge: props.challenge,
   });
+  // Den Token fürs Vorausfüllen (?vf=…) aus der Adresszeile nehmen, andere Angaben (v, gutschein) bleiben.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has("vf")) return;
+    url.searchParams.delete("vf");
+    window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+  }, []);
   // Die Aufgabe wird im Hintergrund gelöst, während die Kundin das Formular ausfüllt.
   const [solved, setSolved] = useState<{ challenge: string; nonce: string } | null>(null);
   const [powFailed, setPowFailed] = useState(false);
