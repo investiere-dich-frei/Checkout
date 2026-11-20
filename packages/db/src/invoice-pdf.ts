@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { PDFDocument, rgb, StandardFonts, type PDFFont, type PDFPage } from "pdf-lib";
 import type pg from "pg";
+import { BRAND, LOGO_PNG_BASE64, LOGO_PNG_HEIGHT, LOGO_PNG_WIDTH } from "./brand.ts";
 
 /**
  * Rechnung als PDF mit den Pflichtangaben nach § 14 Abs. 4 UStG. Erzeugt aus den
@@ -60,6 +61,17 @@ function wrap(text: string, font: PDFFont, size: number, width: number): string[
   return out;
 }
 
+/** Hex-Farbe der Marke in pdf-lib-Farbe. */
+function hex(h: string) {
+  const n = Number.parseInt(h.slice(1), 16);
+  return rgb(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255);
+}
+const INK = hex(BRAND.black);
+const ROSE = hex(BRAND.darkRose);
+const SOFT = hex(BRAND.textSoft);
+const LINE = hex(BRAND.lightGrey);
+const BAND = hex(BRAND.blush);
+
 export async function renderInvoicePdf(d: InvoiceData): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
   // Feste Metadaten: dieselbe Rechnung ergibt dasselbe Dokument.
@@ -68,24 +80,38 @@ export async function renderInvoicePdf(d: InvoiceData): Promise<Uint8Array> {
   doc.setModificationDate(stamp);
   doc.setProducer("idf-checkout");
   doc.setCreator("idf-checkout");
-  doc.setTitle(`Rechnung ${d.invoiceNumber}`);
+  const title = d.kind === "storno" ? "Stornorechnung" : d.kind === "korrektur" ? "Rechnungskorrektur" : "Rechnung";
+  doc.setTitle(`${title} ${d.invoiceNumber}`);
   doc.setAuthor(d.company.legal_name);
 
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+  const logo = await doc.embedPng(Buffer.from(LOGO_PNG_BASE64, "base64"));
   const page: PDFPage = doc.addPage([595.28, 841.89]);
   const left = 56;
   const right = 595.28 - 56;
-  let y = 790;
-  const text = (s: string, x: number, size = 10, f = font, color = rgb(0.2, 0.2, 0.2)) => page.drawText(safe(s), { x, y, size, font: f, color });
-  const textRight = (s: string, x: number, size = 10, f = font) => page.drawText(safe(s), { x: x - f.widthOfTextAtSize(safe(s), size), y, size, font: f });
+  let y = 0;
+  const text = (s: string, x: number, size = 10, f = font, color = INK) => page.drawText(safe(s), { x, y, size, font: f, color });
+  const textRight = (s: string, x: number, size = 10, f = font, color = INK) =>
+    page.drawText(safe(s), { x: x - f.widthOfTextAtSize(safe(s), size), y, size, font: f, color });
+  const rule = (at: number, color = LINE, thickness = 0.75) => page.drawLine({ start: { x: left, y: at }, end: { x: right, y: at }, thickness, color });
 
+  // Kopf: Logo links, Absender rechts, Linie in Dark Rose
   const c = d.company;
-  text(c.legal_name, left, 14, bold);
-  y -= 16;
-  text(`${c.street} · ${c.postal_code} ${c.city}`, left, 9);
-  y -= 40;
+  const logoWidth = 180;
+  const logoHeight = (logoWidth * LOGO_PNG_HEIGHT) / LOGO_PNG_WIDTH;
+  page.drawImage(logo, { x: left, y: 800 - logoHeight, width: logoWidth, height: logoHeight });
+  y = 790;
+  for (const [i, l] of [c.legal_name, c.street, `${c.postal_code} ${c.city}`].entries()) {
+    textRight(l, right, 8.5, i === 0 ? bold : font, i === 0 ? INK : SOFT);
+    y -= 11;
+  }
+  rule(744, ROSE, 1.2);
 
+  // Anschrift mit Absenderzeile (wie im Fensterumschlag)
+  y = 712;
+  text(`${c.legal_name} · ${c.street} · ${c.postal_code} ${c.city}`, left, 7, font, SOFT);
+  y -= 18;
   const cu = d.customer;
   const buyer = [
     cu.company_name,
@@ -102,35 +128,38 @@ export async function renderInvoicePdf(d: InvoiceData): Promise<Uint8Array> {
     y -= 13;
   }
 
-  y = headY;
+  // Rechnungsangaben rechts in einem hellen Kasten
   const meta: [string, string][] = [
-    [d.kind === "storno" ? "Stornorechnung" : d.kind === "korrektur" ? "Rechnungskorrektur" : "Rechnung", d.invoiceNumber],
+    [title, d.invoiceNumber],
     ["Rechnungsdatum", day(d.issueDate)],
     ["Leistungsdatum", d.serviceFrom === d.serviceTo ? day(d.serviceFrom) : `${day(d.serviceFrom)} - ${day(d.serviceTo)}`],
   ];
   if (d.correctsNumber) meta.push(["zu Rechnung", d.correctsNumber]);
+  const boxX = 330;
+  const boxTop = headY + 14;
+  const boxHeight = meta.length * 15 + 12;
+  page.drawRectangle({ x: boxX, y: boxTop - boxHeight, width: right - boxX, height: boxHeight, color: BAND });
+  y = headY;
   for (const [k, v] of meta) {
-    text(k, 340, 9);
-    textRight(v, right, 10, bold);
-    y -= 14;
+    text(k, boxX + 10, 8.5, font, SOFT);
+    textRight(v, right - 10, 9.5, bold);
+    y -= 15;
   }
-  y = Math.min(y, headY - buyer.length * 13) - 36;
+  y = Math.min(headY - buyer.length * 13, boxTop - boxHeight) - 40;
 
-  text(`${d.kind === "storno" ? "Stornorechnung" : d.kind === "korrektur" ? "Rechnungskorrektur" : "Rechnung"} ${d.invoiceNumber}`, left, 16, bold);
-  y -= 30;
+  text(`${title} ${d.invoiceNumber}`, left, 18, bold, ROSE);
+  y -= 28;
 
-  // Tabelle
-  // Rechte Kanten der Zahlenspalten.
-  const cols = { pos: left, desc: left + 28, qty: 330, net: 400, rate: 445, gross: right };
+  // Tabelle mit hellem Kopfband
+  const cols = { pos: left + 6, desc: left + 32, qty: 330, net: 405, rate: 452, gross: right - 6 };
+  page.drawRectangle({ x: left, y: y - 6, width: right - left, height: 20, color: LINE });
   text("Pos.", cols.pos, 8, bold);
   text("Leistung", cols.desc, 8, bold);
   textRight("Menge", cols.qty, 8, bold);
   textRight("Netto", cols.net, 8, bold);
   textRight("USt", cols.rate, 8, bold);
   textRight("Brutto", cols.gross, 8, bold);
-  y -= 6;
-  page.drawLine({ start: { x: left, y }, end: { x: right, y }, thickness: 0.5, color: rgb(0.6, 0.6, 0.6) });
-  y -= 14;
+  y -= 24;
   for (const it of d.items) {
     const lines = wrap(it.description, font, 9, cols.qty - 40 - cols.desc);
     text(String(it.position), cols.pos, 9);
@@ -143,15 +172,16 @@ export async function renderInvoicePdf(d: InvoiceData): Promise<Uint8Array> {
       y -= 12;
     }
     y -= 4;
+    rule(y + 8);
+    y -= 6;
   }
-  page.drawLine({ start: { x: left, y: y + 6 }, end: { x: right, y: y + 6 }, thickness: 0.5, color: rgb(0.6, 0.6, 0.6) });
-  y -= 10;
+  y -= 8;
 
-  // Summen je Steuersatz
+  // Summen je Steuersatz, Gesamtbetrag hervorgehoben
   const rates = [...new Set(d.items.map((i) => i.taxRateBp))];
-  const sumRow = (label: string, value: string, f = font) => {
-    text(label, 340, 10, f);
-    textRight(value, right, 10, f);
+  const sumRow = (label: string, value: string) => {
+    text(label, boxX + 10, 9.5, font, SOFT);
+    textRight(value, right - 6, 9.5);
     y -= 15;
   };
   sumRow("Summe netto", money(d.netCents, d.currency));
@@ -160,12 +190,16 @@ export async function renderInvoicePdf(d: InvoiceData): Promise<Uint8Array> {
     const net = d.items.filter((i) => i.taxRateBp === r).reduce((t, i) => t + i.netCents, 0);
     sumRow(`Umsatzsteuer ${percent(r)} auf ${money(net, d.currency)}`, money(tax, d.currency));
   }
-  sumRow("Gesamtbetrag", money(d.grossCents, d.currency), bold);
-  y -= 14;
+  y -= 4;
+  page.drawRectangle({ x: boxX, y: y - 7, width: right - boxX, height: 22, color: BAND });
+  page.drawLine({ start: { x: boxX, y: y + 15 }, end: { x: right, y: y + 15 }, thickness: 1.2, color: ROSE });
+  text("Gesamtbetrag", boxX + 10, 11, bold);
+  textRight(money(d.grossCents, d.currency), right - 6, 11, bold);
+  y -= 36;
 
   const notes = [...new Set(d.items.map((i) => i.note).filter((n): n is string => !!n))];
   if (d.note) notes.push(d.note);
-  if (d.paid) notes.push("Der Betrag ist bereits bezahlt.");
+  if (d.paid) notes.push("Der Betrag ist bereits bezahlt. Vielen Dank!");
   for (const n of notes) {
     for (const l of wrap(n, font, 9, right - left)) {
       text(l, left, 9);
@@ -175,13 +209,14 @@ export async function renderInvoicePdf(d: InvoiceData): Promise<Uint8Array> {
   }
 
   // Fußzeile mit Pflichtangaben der Gesellschaft
-  y = 60;
+  rule(78, ROSE, 0.75);
+  y = 62;
   const footer = [
     `${c.legal_name} · ${c.street} · ${c.postal_code} ${c.city}`,
     [c.vat_id ? `USt-IdNr.: ${c.vat_id}` : null, c.tax_number ? `Steuernummer: ${c.tax_number}` : null, c.register_info].filter(Boolean).join(" · "),
   ];
   for (const l of footer) {
-    text(l, left, 8, font, rgb(0.4, 0.4, 0.4));
+    text(l, left, 7.5, font, SOFT);
     y -= 11;
   }
 

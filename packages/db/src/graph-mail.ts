@@ -1,3 +1,5 @@
+import { LOGO_PNG_BASE64 } from "./brand.ts";
+import { LOGO_CONTENT_ID, renderMailHtml } from "./mail-html.ts";
 import type { SendMail } from "./mail-outbox.ts";
 
 /**
@@ -47,15 +49,27 @@ export function graphSender(config: GraphConfig, fetchFn: typeof fetch = fetch):
       body: JSON.stringify({
         message: {
           subject: mail.subject,
-          body: { contentType: "Text", content: mail.body },
+          // Gestaltete HTML-Fassung; maßgeblich bleibt der Text im Postausgang.
+          body: { contentType: "HTML", content: renderMailHtml(mail.subject, mail.body) },
           toRecipients: [{ emailAddress: { address: mail.to } }],
           internetMessageHeaders: [{ name: "X-IDF-Mail-Id", value: mail.id }],
-          attachments: mail.attachments.map((a) => ({
-            "@odata.type": "#microsoft.graph.fileAttachment",
-            name: a.name,
-            contentType: a.contentType,
-            contentBytes: a.content.toString("base64"),
-          })),
+          attachments: [
+            ...mail.attachments.map((a) => ({
+              "@odata.type": "#microsoft.graph.fileAttachment",
+              name: a.name,
+              contentType: a.contentType,
+              contentBytes: a.content.toString("base64"),
+            })),
+            // Logo im Kopf der Mail, eingebettet statt aus dem Netz geladen.
+            {
+              "@odata.type": "#microsoft.graph.fileAttachment",
+              name: "investiere-dich-frei.png",
+              contentType: "image/png",
+              contentBytes: LOGO_PNG_BASE64,
+              isInline: true,
+              contentId: LOGO_CONTENT_ID,
+            },
+          ],
         },
         // Im Postfach als Nachweis des Versands.
         saveToSentItems: true,

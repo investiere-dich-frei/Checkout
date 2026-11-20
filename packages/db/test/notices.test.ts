@@ -151,5 +151,9 @@ describe("Kündigung, Widerruf und Postausgang", () => {
     const msg = JSON.parse(mail.body).message;
     assert.equal(msg.toRecipients[0].emailAddress.address, "erika@example.org");
     assert.equal(msg.attachments[0].contentBytes, Buffer.from("%PDF").toString("base64"));
+    // Gestaltete HTML-Fassung mit eingebettetem Logo.
+    assert.equal(msg.body.contentType, "HTML");
+    assert.match(msg.body.content, /<p[^>]*>Text<\/p>/);
+    assert.deepEqual([msg.attachments[1].isInline, msg.attachments[1].contentId, msg.attachments.length], [true, "idf-logo", 2]);
   });
 });
