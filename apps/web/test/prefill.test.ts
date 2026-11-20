@@ -63,8 +63,14 @@ describe("Vorausfüllen aus der Lernplattform", () => {
       new Promise((_resolve, reject) => {
         init.signal!.addEventListener("abort", () => reject(init.signal!.reason));
       })) as unknown as typeof fetch;
+    // AbortSignal.timeout hält die Ereignisschleife nicht offen; ohne diesen Zeitgeber endet der Testlauf vorzeitig.
+    const keepAlive = setTimeout(() => {}, 10_000);
     const started = Date.now();
-    assert.deepEqual(await fetchPrefill(TOKEN, env, hanging), {});
+    try {
+      assert.deepEqual(await fetchPrefill(TOKEN, env, hanging), {});
+    } finally {
+      clearTimeout(keepAlive);
+    }
     const took = Date.now() - started;
     assert.ok(took >= 1900 && took < 4000, `Dauer ${took} ms`);
   });
