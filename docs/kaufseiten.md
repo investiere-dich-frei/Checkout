@@ -39,6 +39,35 @@ Bestellknopf „Zahlungspflichtig bestellen“, AGB-, Datenschutz- und Widerrufs
 - Ist eine gespeicherte Seite nicht lesbar, zeigt der Checkout die Vorgabe statt
   eines Fehlers: Ein Gestaltungsfehler verhindert nie einen Verkauf.
 
+## Vorausfüllen für Mitglieder der Lernplattform
+
+Kommt ein Mitglied aus der Lernplattform, stehen Vorname, Nachname und E-Mail schon im
+Formular. Die Werte bleiben änderbar; die Kundin sieht sonst keinen Unterschied.
+
+- Die Lernplattform hängt `vf=<Token>` an den Kauflink (43 Zeichen base64url, zufällig,
+  einmalig, 30 Minuten gültig). Personendaten stehen nie in der Adresse.
+- Die Kaufseite prüft das Format (`^[A-Za-z0-9_-]{43}$`) und fragt serverseitig
+  `POST ${LERNPLATTFORM_URL}/api/v1/kasse/vorausfuellen` mit `{"token":"<Token>"}` an,
+  signiert wie die ausgehenden Webhooks: `x-idf-timestamp` (Unix-Sekunden) und
+  `x-idf-signature: sha256=<HMAC-SHA256 über "<Zeitstempel>.<Inhalt>">`.
+- Antwort 200: `{"vorname": string|null, "nachname": string|null, "email": string}` →
+  Startwerte für `first_name`, `last_name`, `email`. Alles andere (404, Fehler, keine
+  Antwort nach 2 Sekunden, fehlende Einstellungen) → Formular bleibt leer. Ein Fehler
+  verhindert nie einen Kauf. Token und Werte werden nie geloggt, die Antwort nicht
+  zwischengespeichert.
+- Im Browser wird `vf` nach dem Laden aus der Adresszeile entfernt; `v` und `gutschein`
+  bleiben.
+- Code: `apps/web/lib/prefill.ts`, Test `apps/web/test/prefill.test.ts`.
+
+Einstellungen (in `/etc/idf/checkout.env`, verwaltet über Ansible):
+
+| Variable | Inhalt |
+| --- | --- |
+| `LERNPLATTFORM_URL` | Adresse der Lernplattform ohne Pfad (Ansible: `lernplattform_url`) |
+| `LERNPLATTFORM_SIGNATUR_GEHEIMNIS` | Gemeinsames Geheimnis (Ansible: `lernplattform_signatur_geheimnis` in `secrets.sops.yml`). Derselbe Wert wie `KASSE_SIGNATUR_GEHEIMNIS` der Lernplattform, Schlüsselbund-Eintrag `lernplattform-kasse-signatur`. |
+
+Fehlt eine der beiden, füllt die Kaufseite nichts vor.
+
 ## Übernahme aus Thrivecart
 
 Die öffentlichen Thrivecart-Kaufseiten (ohne Login gesichert, Ordner mit
