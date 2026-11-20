@@ -72,7 +72,9 @@ describe("Dashboard: Kennzahlen", () => {
       privacyVersionId: legal[1]!,
       withdrawalVersionId: legal[2]!,
       withdrawalWaiver: true,
-      purchaseDay: today,
+      // Fester Kauftag vor dem Stichtag des neuen Kreditrechts (20.11.2026): Der Test prüft Kennzahlen, nicht den Ratenkauf.
+      // Mit „heute“ wäre der Ratenkauf in Österreich ab dem Stichtag ein Kredit und würde abgelehnt.
+      purchaseDay: "2026-11-19",
     };
 
     const consumer = (country: string) => ({ kind: "privat" as const, first_name: "Erika", last_name: "Muster", email: "erika@example.org", country });
